@@ -1,0 +1,332 @@
+[
+    {
+        "name": "Issue command and wait for completion",
+        "id": "com.plexiti.commons.application.CommandAndCompletion",
+        "appliesTo": [
+            "bpmn:ServiceTask",
+            "bpmn:SendTask",
+            "bpmn:IntermediateThrowEvent",
+            "bpmn:EndEvent"
+        ],
+        "properties": [
+            {
+                "label": "Bean Binding",
+                "type": "Hidden",
+                "value": "${act}",
+                "editable": false,
+                "binding": {
+                    "type": "property",
+                    "name": "camunda:delegateExpression"
+                }
+            },
+            {
+                "label": "Issue command",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "command"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            }
+        ],
+        "entriesVisible": {
+            "_all": true,
+            "camunda:modelerTemplate": true
+        }
+    },
+    {
+        "name": "Issue command and wait for event",
+        "id": "com.plexiti.commons.application.CommandAndEvent",
+        "appliesTo": [
+            "bpmn:ServiceTask",
+            "bpmn:SendTask",
+            "bpmn:IntermediateThrowEvent",
+            "bpmn:EndEvent"
+        ],
+        "properties": [
+            {
+                "label": "Bean Binding",
+                "type": "Hidden",
+                "value": "${act}",
+                "editable": false,
+                "binding": {
+                    "type": "property",
+                    "name": "camunda:delegateExpression"
+                }
+            },
+            {
+                "label": "Issue command",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "command"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            },
+            {
+                "label": "Handle success event",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "success"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            },
+            {
+                "label": "Handle failure event",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "failure"
+                },
+                "constraints": {
+                    "notEmpty": false
+                }
+            }
+        ],
+        "entriesVisible": {
+            "_all": true,
+            "camunda:modelerTemplate": true
+        }
+    },
+    {
+        "name": "Raise event and move on",
+        "id": "com.plexiti.commons.application.RaisedIntermediateEvent",
+        "isDefault": false,
+        "appliesTo": [
+            "bpmn:SendTask",
+            "bpmn:IntermediateThrowEvent"
+        ],
+        "properties": [
+            {
+                "label": "Bean Binding",
+                "type": "Hidden",
+                "value": "${event}",
+                "editable": false,
+                "binding": {
+                    "type": "property",
+                    "name": "camunda:delegateExpression"
+                }
+            },
+            {
+                "label": "Raise event",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "event"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            }
+        ],
+        "entriesVisible": {
+            "_all": true
+        }
+    },
+    {
+        "name": "Raise event and finish path",
+        "id": "com.plexiti.commons.application.RaisedEndEvent",
+        "isDefault": false,
+        "appliesTo": [
+            "bpmn:EndEvent"
+        ],
+        "properties": [
+            {
+                "label": "Bean Binding",
+                "type": "Hidden",
+                "value": "${event}",
+                "editable": false,
+                "binding": {
+                    "type": "property",
+                    "name": "camunda:delegateExpression"
+                }
+            },
+            {
+                "label": "Raise event",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "event"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            }
+        ],
+        "entriesVisible": {
+            "_all": true
+        }
+    },
+    {
+        "name": "Fire command and move on",
+        "id": "com.plexiti.commons.application.FiredIntermediateCommand",
+        "isDefault": false,
+        "appliesTo": [
+            "bpmn:SendTask",
+            "bpmn:IntermediateThrowEvent"
+        ],
+        "properties": [
+            {
+                "label": "Bean Binding",
+                "type": "Hidden",
+                "value": "${command}",
+                "editable": false,
+                "binding": {
+                    "type": "property",
+                    "name": "camunda:delegateExpression"
+                }
+            },
+            {
+                "label": "Fire command",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "command"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            }
+        ],
+        "entriesVisible": {
+            "_all": true
+        }
+    },
+    {
+        "name": "Fire command and finish path",
+        "id": "com.plexiti.commons.application.FiredEndCommand",
+        "isDefault": false,
+        "appliesTo": [
+            "bpmn:EndEvent"
+        ],
+        "properties": [
+            {
+                "label": "Bean Binding",
+                "type": "Hidden",
+                "value": "${command}",
+                "editable": false,
+                "binding": {
+                    "type": "property",
+                    "name": "camunda:delegateExpression"
+                }
+            },
+            {
+                "label": "Fire command",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "command"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            }
+        ],
+        "entriesVisible": {
+            "_all": true
+        }
+    },
+    {
+        "name": "Issue query and wait for response",
+        "id": "com.plexiti.commons.application.Query",
+        "isDefault": false,
+        "appliesTo": [
+            "bpmn:ServiceTask"
+        ],
+        "properties": [
+            {
+                "label": "Bean Binding",
+                "type": "Hidden",
+                "value": "${query}",
+                "editable": false,
+                "binding": {
+                    "type": "property",
+                    "name": "camunda:delegateExpression"
+                }
+            },
+            {
+                "label": "Issue query",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "query"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            }
+        ],
+        "entriesVisible": {
+            "_all": true
+        }
+    },
+    {
+        "name": "Wait for event and move on",
+        "id": "com.plexiti.commons.application.EventListener",
+        "isDefault": false,
+        "appliesTo": [
+            "bpmn:StartEvent",
+            "bpmn:ReceiveTask",
+            "bpmn:IntermediateCatchEvent",
+            "bpmn:BoundaryEvent"
+        ],
+        "properties": [
+            {
+                "label": "React on event",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "event"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            }
+        ],
+        "entriesVisible": {
+            "_all": true
+        }
+    },
+    {
+        "name": "Wait for command and move on",
+        "id": "com.plexiti.commons.application.CommandListener",
+        "isDefault": false,
+        "appliesTo": [
+            "bpmn:StartEvent"
+        ],
+        "properties": [
+            {
+                "label": "Act on command",
+                "description": "Enter full class name or explicit name",
+                "type": "String",
+                "binding": {
+                    "type": "camunda:property",
+                    "name": "command"
+                },
+                "constraints": {
+                    "notEmpty": true
+                }
+            }
+        ],
+        "entriesVisible": {
+            "_all": true
+        }
+    }
+]

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="1.16.2">
+  <bpmn:collaboration id="Collaboration_1pjufs3">
+    <bpmn:participant id="Participant_05w6bmj" name="Payment Retrieval" processRef="PaymentRetrievalStep1" />
+  </bpmn:collaboration>
+  <bpmn:process id="PaymentRetrievalStep1" name="PaymentRetrievalStep1" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Retrieve &#10;payment" camunda:modelerTemplate="com.plexiti.commons.application.CommandListener">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="command" value="RetrievePayment" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>SequenceFlow_0olusoo</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0olusoo" sourceRef="StartEvent_1" targetRef="Task_1s6qdgo" />
+    <bpmn:serviceTask id="Task_0grpb7k" name="Charge credit card" camunda:modelerTemplate="com.plexiti.commons.application.CommandAndEvent" camunda:delegateExpression="${act}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="failure" value="" />
+          <camunda:property name="command" value="ChargeCreditCard" />
+          <camunda:property name="success" value="CreditCardCharged" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0qnh080</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0taqw9q</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_0taqw9q" sourceRef="Task_0grpb7k" targetRef="ExclusiveGateway_06jed83" />
+    <bpmn:sequenceFlow id="SequenceFlow_0s1qgnp" sourceRef="Task_1s6qdgo" targetRef="ExclusiveGateway_0vhu5hh" />
+    <bpmn:serviceTask id="Task_1s6qdgo" name="Withdraw amount" camunda:modelerTemplate="com.plexiti.commons.application.CommandAndEvent" camunda:delegateExpression="${act}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="failure" value="" />
+          <camunda:property name="command" value="WithdrawAmount" />
+          <camunda:property name="success" value="AmountWithdrawn" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_0olusoo</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0s1qgnp</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="ExclusiveGateway_0vhu5hh" name="Payment covered?" default="SequenceFlow_19bylo3">
+      <bpmn:incoming>SequenceFlow_0s1qgnp</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_0qnh080</bpmn:outgoing>
+      <bpmn:outgoing>SequenceFlow_19bylo3</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_0qnh080" name="No" sourceRef="ExclusiveGateway_0vhu5hh" targetRef="Task_0grpb7k">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">#{flow.evaluate(condition = 1)}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="SequenceFlow_19bylo3" sourceRef="ExclusiveGateway_0vhu5hh" targetRef="ExclusiveGateway_06jed83" />
+    <bpmn:exclusiveGateway id="ExclusiveGateway_06jed83">
+      <bpmn:incoming>SequenceFlow_0taqw9q</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_19bylo3</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_068kxw8</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="SequenceFlow_068kxw8" sourceRef="ExclusiveGateway_06jed83" targetRef="EndEvent_0sx4fyj" />
+    <bpmn:endEvent id="EndEvent_0sx4fyj" name="Payment retrieved" camunda:modelerTemplate="com.plexiti.commons.application.RaisedEndEvent" camunda:delegateExpression="${event}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="event" value="PaymentRetrieved" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>SequenceFlow_068kxw8</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1pjufs3">
+      <bpmndi:BPMNShape id="Participant_05w6bmj_di" bpmnElement="Participant_05w6bmj">
+        <dc:Bounds x="149" y="43" width="671" height="248" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="219" y="147" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="216" y="190" width="43" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0olusoo_di" bpmnElement="SequenceFlow_0olusoo">
+        <di:waypoint x="255" y="165" />
+        <di:waypoint x="296" y="165" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_17b2on1_di" bpmnElement="Task_0grpb7k">
+        <dc:Bounds x="510" y="125" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_0sx4fyj_di" bpmnElement="EndEvent_0sx4fyj">
+        <dc:Bounds x="729" y="147" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="702" y="190" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0taqw9q_di" bpmnElement="SequenceFlow_0taqw9q">
+        <di:waypoint x="610" y="165" />
+        <di:waypoint x="645" y="165" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_0s1qgnp_di" bpmnElement="SequenceFlow_0s1qgnp">
+        <di:waypoint x="396" y="165" />
+        <di:waypoint x="425" y="165" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_0j2mlrb_di" bpmnElement="Task_1s6qdgo">
+        <dc:Bounds x="296" y="125" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ExclusiveGateway_0vhu5hh_di" bpmnElement="ExclusiveGateway_0vhu5hh" isMarkerVisible="true">
+        <dc:Bounds x="425" y="140" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="428" y="197" width="46" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0qnh080_di" bpmnElement="SequenceFlow_0qnh080">
+        <di:waypoint x="475" y="165" />
+        <di:waypoint x="510" y="165" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="485" y="147" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="SequenceFlow_19bylo3_di" bpmnElement="SequenceFlow_19bylo3">
+        <di:waypoint x="450" y="140" />
+        <di:waypoint x="450" y="88" />
+        <di:waypoint x="670" y="88" />
+        <di:waypoint x="670" y="140" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="551" y="70" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ExclusiveGateway_06jed83_di" bpmnElement="ExclusiveGateway_06jed83" isMarkerVisible="true">
+        <dc:Bounds x="645" y="140" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_068kxw8_di" bpmnElement="SequenceFlow_068kxw8">
+        <di:waypoint x="695" y="165" />
+        <di:waypoint x="729" y="165" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
