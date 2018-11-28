@@ -12,11 +12,11 @@ data class PaymentRetrieval(val init: RetrievePayment) {
 }
 
 class RetrievePayment(val id: String, val accountId: String, val payment: Float)
-class PaymentRetrievalAccepted(val paymentId: String)
+class PaymentRetrievalAccepted(val paymentId: String? = null)
 class PaymentRetrieved(val paymentId: String)
 class PaymentFailed(val paymentId: String)
 class PaymentCoveredManually(val paymentId: String)
-class ChargeCreditCard(val reference: String, val payment: Float)
+class ChargeCreditCard(val reference: String? = null, val payment: Float? = null)
 class CreditCardCharged(val reference: String)
 class CreditCardExpired(val reference: String)
 class CreditCardDetailsUpdated(val reference: String)

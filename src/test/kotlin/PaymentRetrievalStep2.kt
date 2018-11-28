@@ -1,29 +1,29 @@
-import io.factdriven.flowlang.flow
+import io.factdriven.flowlang.execute
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-val flow2 = flow<PaymentRetrieval> {
-    on message type(RetrievePayment::class) progress { message ->
+val flow2 = execute<PaymentRetrieval> {
+    on message type(RetrievePayment::class) milestone { message ->
         PaymentRetrievalAccepted(paymentId = message.accountId)
     }
-    perform service {
-        create intent {
-            WithdrawAmount(reference = flow.paymentId, payment = flow.uncovered)
+    execute service {
+        produce intent {
+            WithdrawAmount(reference = status.paymentId, payment = status.uncovered)
         }
-        on message type(AmountWithdrawn::class) having { "reference" to flow.paymentId } success {}
+        on message pattern(AmountWithdrawn(reference = status.paymentId)) success {}
     }
-    choose one { labeled("Payment covered?")
-        given { flow.uncovered > 0 } flow { labeled("No")
-            perform service {
-                create intent {
-                    ChargeCreditCard(reference = flow.paymentId, payment = flow.uncovered)
+    select one { labeled("Payment covered?")
+        given { status.uncovered > 0 } execute { labeled("No")
+            execute service {
+                produce intent {
+                    ChargeCreditCard(reference = status.paymentId, payment = status.uncovered)
                 }
-                on message type(CreditCardCharged::class) having { "reference" to flow.paymentId } success {}
+                on message type(CreditCardCharged::class) having { "reference" to status.paymentId } success {}
             }
         }
     }
-    create success {
-        PaymentRetrieved(flow.paymentId)
+    produce success {
+        PaymentRetrieved(status.paymentId)
     }
 }

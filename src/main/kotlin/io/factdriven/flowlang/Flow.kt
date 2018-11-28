@@ -1,33 +1,42 @@
 package io.factdriven.flowlang
 
-import kotlin.reflect.KClass
-
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 
-fun <A: Any> flow(flow: Flow<A>.() -> Unit): Flow<A> = Flow<A>().apply(flow)
+typealias Message = Any
+typealias Messages = List<Message>
+typealias Listeners = List<Listener<Message>>
+typealias Instance = Any
 
-class Flow<A: Any> {
-
-    lateinit var flow: A
-
-    val on: Catch<A>  get() = Catch()
-
-    val perform: Call get() = Call()
-
-    val choose: Choose<A> get() = Choose<A>()
-
-    val create: Throw<A, Any> get() = Throw<A, Any>()
-
-    fun <M: Any> type(type: KClass<M>, vars: (() -> Map<String, Any>)? = null): () -> Listener<M> {
-        return {
-            Listener(type, vars)
-        }
-    }
-
-    infix fun labeled(label: String) { }
-
+/**
+ * Reconstruct the past flow instance state based on a given history of messages.
+ * @param history of (consumed and produced) messages
+ * @param flow definition
+ * @return instance summarizing the state of a specific flow
+ */
+fun <I: Instance> past(history: Messages, flow: Definition<I>): I {
+    TODO()
 }
 
-data class Listener<M: Any>(val type: KClass<M>, val vars: (() -> Map<String, Any>)? = null)
+/**
+ * Produce new messages based on a given history of messages and a trigger message.
+ * @param history of (consumed and produced) messages
+ * @param flow definition
+ * @param trigger message coming in and influencing the flow instance
+ * @return new messages produced
+ */
+fun <I: Instance> present(history: Messages, flow: Definition<I>, trigger: Message): Messages {
+    TODO()
+}
+
+/**
+ * Produce a current list of listeners based on a given history of messages and a trigger message.
+ * @param history of (consumed and produced) messages
+ * @param flow definition
+ * @param trigger message coming in and influencing the flow instance
+ * @return new message listeners produced
+ */
+fun <I: Instance> future(history: Messages, flow: Definition<I>, trigger: Message): Listeners {
+    TODO()
+}
