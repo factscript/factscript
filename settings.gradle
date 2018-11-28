@@ -1,2 +1,3 @@
 rootProject.name = 'flowlang'
-
+include 'core'
+include 'transform'

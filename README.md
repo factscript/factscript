@@ -1,1 +1,1 @@
-![](https://raw.githubusercontent.com/martinschimak/flowlang/master/src/test/resources/PaymentRetrievalStep6.svg?token=ABmmDwgsHBgCMpaol5Ae7xZY0eGa4Bcgks5cBsiFwA%3D%3D&sanitize=true)
+![](https://raw.githubusercontent.com/martinschimak/flowlang/master/transform/src/test/resources/PaymentRetrievalStep6.svg?token=ABmmDxuaK17uKqCs4yLOi8mXG7bTi2B1ks5cB_klwA%3D%3D&sanitize=true)
