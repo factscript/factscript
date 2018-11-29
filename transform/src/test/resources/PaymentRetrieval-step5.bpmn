@@ -65,7 +65,7 @@
     </bpmn:endEvent>
     <bpmn:boundaryEvent id="BoundaryEvent_1hoy53a" name="Credit card expired" attachedToRef="Task_0grpb7k">
       <bpmn:outgoing>SequenceFlow_0znhsho</bpmn:outgoing>
-      <bpmn:errorEventDefinition camunda:errorCodeVariable="CreditCardExpired" />
+      <bpmn:errorEventDefinition errorRef="Error_16ghsr7" />
     </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="SequenceFlow_0lqfne7" sourceRef="ExclusiveGateway_08suvpu" targetRef="Task_0grpb7k" />
     <bpmn:sequenceFlow id="SequenceFlow_0taqw9q" sourceRef="Task_0grpb7k" targetRef="ExclusiveGateway_06jed83" />
@@ -87,21 +87,39 @@
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P14D</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
-    <bpmn:sequenceFlow id="SequenceFlow_00ok7zd" sourceRef="BoundaryEvent_1o3rz3q" targetRef="EndEvent_1vtbujm" />
+    <bpmn:sequenceFlow id="SequenceFlow_00ok7zd" sourceRef="BoundaryEvent_1o3rz3q" targetRef="IntermediateThrowEvent_08m6zxd" />
+    <bpmn:sequenceFlow id="SequenceFlow_13uzj9i" sourceRef="IntermediateThrowEvent_08m6zxd" targetRef="EndEvent_1vtbujm" />
+    <bpmn:boundaryEvent id="BoundaryEvent_0h7nzlg" attachedToRef="Task_1s6qdgo">
+      <bpmn:compensateEventDefinition />
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Task_02kovad" name="Credit amount" camunda:modelerTemplate="com.plexiti.commons.application.CommandAndCompletion" isForCompensation="true" camunda:delegateExpression="${act}">
+      <bpmn:extensionElements>
+        <camunda:properties>
+          <camunda:property name="command" value="CreditAmount" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
     <bpmn:endEvent id="EndEvent_1vtbujm" name="Payment failed" camunda:modelerTemplate="com.plexiti.commons.application.RaisedEndEvent" camunda:delegateExpression="${event}">
       <bpmn:extensionElements>
         <camunda:properties>
           <camunda:property name="event" value="PaymentFailed" />
         </camunda:properties>
       </bpmn:extensionElements>
-      <bpmn:incoming>SequenceFlow_00ok7zd</bpmn:incoming>
+      <bpmn:incoming>SequenceFlow_13uzj9i</bpmn:incoming>
       <bpmn:errorEventDefinition />
     </bpmn:endEvent>
+    <bpmn:intermediateThrowEvent id="IntermediateThrowEvent_08m6zxd">
+      <bpmn:incoming>SequenceFlow_00ok7zd</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_13uzj9i</bpmn:outgoing>
+      <bpmn:compensateEventDefinition />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:association id="Association_02g70iy" associationDirection="One" sourceRef="BoundaryEvent_0h7nzlg" targetRef="Task_02kovad" />
   </bpmn:process>
+  <bpmn:error id="Error_16ghsr7" name="Error_0prngm4" errorCode="CreditCardExpired" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1pjufs3">
       <bpmndi:BPMNShape id="Participant_05w6bmj_di" bpmnElement="Participant_05w6bmj">
-        <dc:Bounds x="149" y="43" width="764" height="386" />
+        <dc:Bounds x="149" y="43" width="887" height="386" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="219" y="147" width="36" height="36" />
@@ -190,19 +208,36 @@
       <bpmndi:BPMNShape id="BoundaryEvent_0pcbqnh_di" bpmnElement="BoundaryEvent_1o3rz3q">
         <dc:Bounds x="635" y="323" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="601" y="355" width="39" height="14" />
+          <dc:Bounds x="669" y="350" width="39" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="SequenceFlow_00ok7zd_di" bpmnElement="SequenceFlow_00ok7zd">
         <di:waypoint x="653" y="359" />
         <di:waypoint x="653" y="391" />
-        <di:waypoint x="690" y="391" />
+        <di:waypoint x="680" y="391" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="EndEvent_1qa2jf7_di" bpmnElement="EndEvent_1vtbujm">
-        <dc:Bounds x="690" y="373" width="36" height="36" />
+        <dc:Bounds x="745" y="373" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="735" y="384" width="73" height="14" />
+          <dc:Bounds x="726" y="349" width="73" height="14" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_13uzj9i_di" bpmnElement="SequenceFlow_13uzj9i">
+        <di:waypoint x="716" y="391" />
+        <di:waypoint x="745" y="391" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="IntermediateThrowEvent_143hu6c_di" bpmnElement="IntermediateThrowEvent_08m6zxd">
+        <dc:Bounds x="680" y="373" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BoundaryEvent_1t5egec_di" bpmnElement="BoundaryEvent_0h7nzlg">
+        <dc:Bounds x="327" y="187" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_02g70iy_di" bpmnElement="Association_02g70iy">
+        <di:waypoint x="345" y="223" />
+        <di:waypoint x="345" y="261" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_1fl1gbd_di" bpmnElement="Task_02kovad">
+        <dc:Bounds x="295" y="261" width="100" height="80" />
       </bpmndi:BPMNShape>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

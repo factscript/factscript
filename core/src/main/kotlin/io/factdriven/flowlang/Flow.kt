@@ -31,7 +31,7 @@ fun <I: Instance> present(history: Messages, flow: Definition<I>, trigger: Messa
 }
 
 /**
- * Produce a current list of listeners based on a given history of messages and a trigger message.
+ * Produce a list of listeners based on a given history of messages and a trigger message.
  * @param history of (consumed and produced) messages
  * @param flow definition
  * @param trigger message coming in and influencing the flow instance

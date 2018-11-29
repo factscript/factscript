@@ -4,16 +4,10 @@ import io.factdriven.flowlang.execute
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 val flow0 = execute<PaymentRetrieval> {
-    on message type(RetrievePayment::class) milestone {
-        PaymentRetrievalAccepted()
-    }
+    on message type(RetrievePayment::class)
     execute service {
-        produce intent {
-            ChargeCreditCard()
-        }
+        produce intention { ChargeCreditCard() }
         on message type(CreditCardCharged::class) success {}
     }
-    produce success {
-        PaymentRetrieved(status.paymentId)
-    }
+    produce success { PaymentRetrieved() }
 }

@@ -8,7 +8,7 @@ val flow4 = execute<PaymentRetrieval> {
         PaymentRetrievalAccepted(paymentId = message.accountId)
     }
     execute service {
-        produce intent {
+        produce intention {
             WithdrawAmount(reference = status.paymentId, payment = status.uncovered)
         }
         on message type(AmountWithdrawn::class) having { "reference" to status.paymentId } success {}
@@ -16,7 +16,7 @@ val flow4 = execute<PaymentRetrieval> {
     select one { labeled("Payment covered?")
         given { status.uncovered > 0 } execute { labeled("No")
             execute service {
-                produce intent {
+                produce intention {
                     ChargeCreditCard(reference = status.paymentId, payment = status.uncovered)
                 }
                 on message type(CreditCardCharged::class) having { "reference" to status.paymentId } success {}

@@ -7,7 +7,7 @@ open class Action<S: Instance, M: Any> {
 
     infix fun mitigation(definition: Definition<S>.() -> Unit): Definition<S> = TODO()
 
-    infix fun intent(id: (M) -> Any) {
+    infix fun intention(id: (M) -> Any) {
         TODO()
     }
 
