@@ -14,6 +14,6 @@ class Option<A: Any> {
 
     fun given(condition: () -> Boolean): Option<A> { TODO() }
 
-    infix fun execute(definition: Definition<A>.() -> Unit): Definition<A> = TODO()
+    infix fun execute(definition: FlowDefinition<A>.() -> Unit): FlowDefinition<A> = TODO()
 
 }

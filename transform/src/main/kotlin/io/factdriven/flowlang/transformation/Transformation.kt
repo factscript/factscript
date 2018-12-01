@@ -1,6 +1,6 @@
 package io.factdriven.flowlang.transformation
 
-import io.factdriven.flowlang.Definition
+import io.factdriven.flowlang.FlowDefinition
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
@@ -26,7 +26,7 @@ import java.io.IOException
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-fun transform(flow: Definition<*>): BpmnModelInstance {
+fun transform(flow: FlowDefinition<*>): BpmnModelInstance {
 
     val process = createElement(id = "process", elementClass = Process::class.java)
 

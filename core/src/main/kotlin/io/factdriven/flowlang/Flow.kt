@@ -6,8 +6,8 @@ package io.factdriven.flowlang
 
 typealias Message = Any
 typealias Messages = List<Message>
-typealias Listeners = List<Listener<Message>>
-typealias Instance = Any
+typealias Listeners = List<FlowListener<Message>>
+typealias FlowInstance = Any
 
 /**
  * Reconstruct the past flow instance state based on a given history of messages.
@@ -15,7 +15,7 @@ typealias Instance = Any
  * @param flow definition
  * @return instance summarizing the state of a specific flow
  */
-fun <I: Instance> past(history: Messages, flow: Definition<I>): I {
+fun <I: FlowInstance> past(history: Messages, flow: FlowDefinition<I>): I {
     TODO()
 }
 
@@ -26,7 +26,7 @@ fun <I: Instance> past(history: Messages, flow: Definition<I>): I {
  * @param trigger message coming in and influencing the flow instance
  * @return new messages produced
  */
-fun <I: Instance> present(history: Messages, flow: Definition<I>, trigger: Message): Messages {
+fun <I: FlowInstance> present(history: Messages, flow: FlowDefinition<I>, trigger: Message): Messages {
     TODO()
 }
 
@@ -37,6 +37,6 @@ fun <I: Instance> present(history: Messages, flow: Definition<I>, trigger: Messa
  * @param trigger message coming in and influencing the flow instance
  * @return new message listeners produced
  */
-fun <I: Instance> future(history: Messages, flow: Definition<I>, trigger: Message): Listeners {
+fun <I: FlowInstance> future(history: Messages, flow: FlowDefinition<I>, trigger: Message): Listeners {
     TODO()
 }

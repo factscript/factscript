@@ -1,3 +1,5 @@
+package io.factdriven.flowlang.example.paymentretrieval
+
 import io.factdriven.flowlang.execute
 
 /**
@@ -9,7 +11,10 @@ val flow1 = execute<PaymentRetrieval> {
     }
     execute service {
         create intent {
-            ChargeCreditCard(reference = status.paymentId, payment = status.uncovered)
+            ChargeCreditCard(
+                reference = status.paymentId,
+                payment = status.uncovered
+            )
         }
         on message type(CreditCardCharged::class) having { "reference" to status.paymentId } success {}
     }
