@@ -18,7 +18,7 @@ class Definition<I: Instance> {
 
     val select: Selection<I> get() = TODO()
 
-    val produce: Action<I, Any> get() = TODO()
+    val create: Action<I, Any> get() = TODO()
 
     infix fun <M: Message> type(type: KClass<M>): () -> Listener<M> {
         TODO()

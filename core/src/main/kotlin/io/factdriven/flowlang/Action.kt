@@ -7,11 +7,15 @@ open class Action<S: Instance, M: Any> {
 
     infix fun mitigation(definition: Definition<S>.() -> Unit): Definition<S> = TODO()
 
-    infix fun intention(id: (M) -> Any) {
+    infix fun intent(id: (M) -> Any) {
         TODO()
     }
 
-    infix fun milestone(id: (M) -> Any) {
+    infix fun acceptance(id: (M) -> Any) {
+        TODO()
+    }
+
+    infix fun progress(id: (M) -> Any) {
         TODO()
     }
 
@@ -19,7 +23,7 @@ open class Action<S: Instance, M: Any> {
         TODO()
     }
 
-    infix fun retry(id: (M) -> Any) {
+    infix fun fix(id: (M) -> Any) {
         TODO()
     }
 

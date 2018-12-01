@@ -6,8 +6,8 @@ import io.factdriven.flowlang.execute
 val flow0 = execute<PaymentRetrieval> {
     on message type(RetrievePayment::class)
     execute service {
-        produce intention { ChargeCreditCard() }
+        create intent { ChargeCreditCard() }
         on message type(CreditCardCharged::class) success {}
     }
-    produce success { PaymentRetrieved() }
+    create success { PaymentRetrieved() }
 }
