@@ -1,6 +1,7 @@
 package io.factdriven.flowlang.transformation
 
 import io.factdriven.flowlang.FlowDefinition
+import io.factdriven.flowlang.FlowExecution
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
