@@ -15,7 +15,7 @@ typealias FlowInstance = Any
  * @param flow definition
  * @return instance summarizing the state of a specific flow
  */
-fun <I: FlowInstance> past(history: Messages, flow: FlowDefinition<I>): I {
+fun <I: FlowInstance> past(history: Messages, flow: FlowExecution<I>): I {
     TODO()
 }
 
@@ -26,7 +26,7 @@ fun <I: FlowInstance> past(history: Messages, flow: FlowDefinition<I>): I {
  * @param trigger message coming in and influencing the flow instance
  * @return new messages produced
  */
-fun <I: FlowInstance> present(history: Messages, flow: FlowDefinition<I>, trigger: Message): Messages {
+fun <I: FlowInstance> present(history: Messages, flow: FlowExecution<I>, trigger: Message): Messages {
     TODO()
 }
 
@@ -37,6 +37,6 @@ fun <I: FlowInstance> present(history: Messages, flow: FlowDefinition<I>, trigge
  * @param trigger message coming in and influencing the flow instance
  * @return new message listeners produced
  */
-fun <I: FlowInstance> future(history: Messages, flow: FlowDefinition<I>, trigger: Message): Listeners {
+fun <I: FlowInstance> future(history: Messages, flow: FlowExecution<I>, trigger: Message): Listeners {
     TODO()
 }

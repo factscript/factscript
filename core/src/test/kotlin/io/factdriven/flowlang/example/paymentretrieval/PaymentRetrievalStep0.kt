@@ -20,19 +20,18 @@ class PaymentRetrievalStep0Test {
     fun on() {
         val flow = execute <PaymentRetrieval> {
             on
-        }
-        val node = flow.nodes.get(0)
-        assertEquals(FlowTrigger::class, node::class)
+        } as FlowDefinition<PaymentRetrieval>
+        assertEquals(0, flow.nodes.size)
     }
 
     @Test()
     fun onMessageType() {
         val flow = execute <PaymentRetrieval> {
             on message type(RetrievePayment::class)
-        }
-        val node = flow.nodes.get(0) as FlowTrigger<*>
-        assertEquals(FlowReactionToMessage::class, node.reaction::class)
-        val listener = (node.reaction as FlowReactionToMessage).listener
+        } as FlowDefinition<PaymentRetrieval>
+        val node = flow.nodes.get(0) as FlowReaction<*, *>
+        assertEquals(FlowReaction::class, node::class)
+        val listener = (node as FlowReaction).listener
         assertEquals(RetrievePayment::class, listener.type)
     }
 
@@ -40,7 +39,7 @@ class PaymentRetrievalStep0Test {
     fun create() {
         val flow = execute <PaymentRetrieval> {
             create
-        }
+        } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0)
         assertEquals(FlowAction::class, node::class)
     }
@@ -49,7 +48,7 @@ class PaymentRetrievalStep0Test {
     fun createSuccessWithoutAction() {
         val flow = execute <PaymentRetrieval> {
             create success {}
-        }
+        } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowAction<*, *>
         assertEquals(Unit::class, node.action.invoke()::class)
     }
@@ -58,7 +57,7 @@ class PaymentRetrievalStep0Test {
     fun createSuccessWithAction() {
         val flow = execute <PaymentRetrieval> {
             create success { PaymentRetrieved() }
-        }
+        } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowAction<*, *>
         assertEquals(FlowActionType.success, node.actionType)
         assertEquals(PaymentRetrieved::class, node.action.invoke()::class)
@@ -68,9 +67,9 @@ class PaymentRetrievalStep0Test {
     fun executeService() {
         val flow = execute <PaymentRetrieval> {
             execute service {}
-        }
-        val node = flow.nodes.get(0)
-        assertEquals(FlowExecution::class, node::class)
+        } as FlowDefinition<PaymentRetrieval>
+        val node = flow.nodes.get(0) as FlowDefinition<*>
+        assertEquals(FlowDefinitionType.service, node.type)
     }
 
     @Test()
@@ -79,9 +78,9 @@ class PaymentRetrievalStep0Test {
             execute service {
                 create intent { ChargeCreditCard() }
             }
-        }
-        val parentNode = flow.nodes.get(0) as FlowExecution<*>
-        val node = parentNode.definition.nodes.get(0)
+        } as FlowDefinition<PaymentRetrieval>
+        val parentNode = flow.nodes.get(0) as FlowDefinition<*>
+        val node = parentNode.nodes.get(0)
         assertEquals(FlowAction::class, node::class)
         val action = node as FlowAction<*, *>
         assertEquals(FlowActionType.intent, action.actionType)
@@ -94,10 +93,10 @@ class PaymentRetrievalStep0Test {
             execute service {
                 on message type(CreditCardCharged::class) success {}
             }
-        }
-        val parentNode = flow.nodes.get(0) as FlowExecution<*>
-        val node = parentNode.definition.nodes.get(0) as FlowTrigger<*>
-        val reaction = node.reaction as FlowReactionToMessage
+        } as FlowDefinition<PaymentRetrieval>
+        val parentNode = flow.nodes.get(0) as FlowDefinition<*>
+        val node = parentNode.nodes.get(0) as FlowReaction<*, *>
+        val reaction = node as FlowReaction
         assertEquals(CreditCardCharged::class, reaction.listener.type)
         assertEquals(FlowActionType.success, reaction.actionType)
     }
@@ -112,10 +111,10 @@ class PaymentRetrievalStep0Test {
                 on message type(CreditCardCharged::class)
             }
             create success { PaymentRetrieved() }
-        }
+        } as FlowDefinition<PaymentRetrieval>
         assertEquals(3, flow.nodes.size)
-        val service = flow.nodes[1] as FlowExecution<*>
-        assertEquals(2, service.definition.nodes.size)
+        val service = flow.nodes[1] as FlowDefinition<*>
+        assertEquals(2, service.nodes.size)
     }
 
 }
