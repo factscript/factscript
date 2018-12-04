@@ -76,6 +76,8 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
         return node
     }
 
+    fun execute(definition: FlowExecutionImpl<I>.() -> Unit): FlowExecution<I> = TODO()
+
     override val select: Selection<I> get() = TODO()
 
     override val create: FlowActionImpl<I, Any> get() {

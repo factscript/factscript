@@ -24,7 +24,8 @@ val flow6 = execute <PaymentRetrieval> {
         }
     }
     select one {
-        option ("No") { status.uncovered > 0 } execute {
+        topic("Payment covered?")
+        given("No") { status.uncovered > 0 } execute service {
             create intent("Charge credit card") by {
                 ChargeCreditCard(
                     reference = status.paymentId,

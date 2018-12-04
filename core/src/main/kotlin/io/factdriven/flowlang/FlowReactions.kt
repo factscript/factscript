@@ -55,7 +55,6 @@ class FlowReactionImpl<I: Any, M: Message>: FlowNode, FlowReactionMessage<M> {
         return this
     }
 
-
     override infix fun by(reaction: (M) -> Any) {
         this.action = reaction
     }

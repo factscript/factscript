@@ -10,7 +10,7 @@ typealias Listeners = List<FlowListener<Message>>
 typealias FlowInstance = Any
 
 /**
- * Reconstruct the past flow instance state based on a option history of messages.
+ * Reconstruct the past flow instance state based on a given history of messages.
  * @param history of (consumed and produced) messages
  * @param flow definition
  * @return instance summarizing the state of a specific flow
@@ -20,7 +20,7 @@ fun <I: FlowInstance> past(history: Messages, flow: FlowExecutionImpl<I>): I {
 }
 
 /**
- * Produce new messages based on a option history of messages and a trigger by.
+ * Produce new messages based on a given history of messages and a trigger by.
  * @param history of (consumed and produced) messages
  * @param flow definition
  * @param trigger by coming in and influencing the flow instance
@@ -31,7 +31,7 @@ fun <I: FlowInstance> present(history: Messages, flow: FlowExecutionImpl<I>, tri
 }
 
 /**
- * Produce a list of listeners based on a option history of messages and a trigger by.
+ * Produce a list of listeners based on a given history of messages and a trigger by.
  * @param history of (consumed and produced) messages
  * @param flow definition
  * @param trigger by coming in and influencing the flow instance
