@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 
-inline fun <reified I: FlowInstance> execute(name: String = I::class.simpleName ?: "", definition: FlowExecutionImpl<I>.() -> Unit): FlowExecution<I> {
+inline fun <reified I: FlowInstance> execute(name: String = label(I::class), definition: FlowExecutionImpl<I>.() -> Unit): FlowExecution<I> {
     val flowExecution = FlowExecutionImpl<I>().apply(definition)
     flowExecution.name = name
     return flowExecution
@@ -20,7 +20,7 @@ interface FlowNode {
 
 interface FlowActivities<I: FlowInstance> {
 
-    infix fun service(service: FlowExecutionImpl<I>.() -> Unit): FlowActivities<I>
+    infix fun service(service: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I>
     infix fun receive(receive: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I>
 
 }
@@ -56,9 +56,15 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
 
     override val nodes = mutableListOf<FlowNode>()
 
-    override var name = ""
+    override var name: String = ""
+        get() {
+            return when (type) {
+                FlowDefinitionType.service -> nodes[0].name
+                else -> field
+            }
+        }
 
-    override infix fun service(service: FlowExecutionImpl<I>.() -> Unit): FlowActivities<I>  {
+    override infix fun service(service: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I>  {
         type = FlowDefinitionType.service
         this.apply(service)
         return this
@@ -94,27 +100,27 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
         TODO()
     }
 
-    inline fun <reified M: Message> intent(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+    inline fun <reified M: Message> intent(name: String = label(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.intent, name)
     }
 
-    inline fun <reified M: Message> acceptance(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+    inline fun <reified M: Message> acceptance(name: String = label(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.acceptance, name)
     }
 
-    inline fun <reified M: Message> progress(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+    inline fun <reified M: Message> progress(name: String = label(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.progress, name)
     }
 
-    inline fun <reified M: Message> success(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+    inline fun <reified M: Message> success(name: String = label(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.success, name)
     }
 
-    inline fun <reified M: Message> fix(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+    inline fun <reified M: Message> fix(name: String = label(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.fix, name)
     }
 
-    inline fun <reified M: Message> failure(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+    inline fun <reified M: Message> failure(name: String = label(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.failure, name)
     }
 
@@ -122,3 +128,10 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
 
 data class FlowListener<M: Message>(val type: KClass<out M>)
 
+fun label(kClass: KClass<*>): String {
+    val regex = String.format("%s|%s|%s", "(?<=[A-Z])(?=[A-Z][a-z])", "(?<=[^A-Z])(?=[A-Z])", "(?<=[A-Za-z])(?=[^A-Za-z])").toRegex()
+    val className = kClass.simpleName ?: ""
+    val splitted = className.split(regex)
+    val joined = splitted[0] + if (splitted.size > 1) splitted.subList(1, splitted.size).joinToString(separator = "") { " " + it.substring(0, 1).toLowerCase() + it.substring(1) } else ""
+    return joined
+}

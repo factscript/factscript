@@ -15,10 +15,10 @@ class TransformationTest {
     @Test
     fun test() {
         val flow = execute <PaymentRetrieval> {
-            on message type(RetrievePayment::class)
+            on message type(RetrievePayment::class) create acceptance()
             execute service {
                 create intent("Charge credit card") by { ChargeCreditCard() }
-                on message type(CreditCardCharged::class)
+                on message type(CreditCardCharged::class) create success()
             }
             create success("Payment retrieved") by { PaymentRetrieved() }
         }

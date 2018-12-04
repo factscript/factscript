@@ -14,7 +14,7 @@ class FlowNodeTranslationTest {
         val flow = execute <PaymentRetrieval> {
         }
         val gFlow = translate(flow)
-        assertEquals("PaymentRetrieval", gFlow.label)
+        assertEquals("Payment retrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(0,0), gFlow.dimension)
@@ -23,38 +23,59 @@ class FlowNodeTranslationTest {
     @Test
     fun translateFlowReaction() {
         val flow = execute <PaymentRetrieval> {
-            on message type(RetrievePayment::class)
+            on message type(RetrievePayment::class) create acceptance()
         }
         val gFlow = translate(flow)
-        assertEquals("PaymentRetrieval", gFlow.label)
+        assertEquals("Payment retrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(72,72), gFlow.dimension)
+        val gElement = (gFlow as GraphicalFlowNodeSequence).children[0]
+        assertEquals("Retrieve payment", gElement.label)
     }
 
     @Test
     fun translateFlowService() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute <PaymentRetrieval> ("Custom payment retrieval")  {
             execute service {
+                create intent("Charge credit card") by {}
             }
         }
         val gFlow = translate(flow)
-        assertEquals("PaymentRetrieval", gFlow.label)
+        assertEquals("Custom payment retrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(136,116), gFlow.dimension)
+        val gElement = (gFlow as GraphicalFlowNodeSequence).children[0]
+        assertEquals("Charge credit card", gElement.label)
     }
 
     @Test
     fun translateFlowAction() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute <PaymentRetrieval> ("Custom payment retrieval")  {
             create success("Payment retrieved") by {}
         }
         val gFlow = translate(flow)
-        assertEquals("PaymentRetrieval", gFlow.label)
+        assertEquals("Custom payment retrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(72,72), gFlow.dimension)
+        val gElement = (gFlow as GraphicalFlowNodeSequence).children[0]
+        assertEquals("Payment retrieved", gElement.label)
+    }
+
+    @Test
+    fun translateFlow() {
+        val flow = execute <PaymentRetrieval> {
+            on message type(RetrievePayment::class) create acceptance()
+            execute service {
+                create intent("Charge credit card") by { ChargeCreditCard() }
+                on message type(CreditCardCharged::class) create success()
+            }
+            create success("Payment retrieved") by { PaymentRetrieved() }
+        }
+        val gFlow = translate(flow) as GraphicalFlowNodeSequence
+        assertEquals(3, gFlow.children.size)
     }
 
 }
