@@ -14,7 +14,7 @@ class FlowNodeTranslationTest {
         val flow = execute <PaymentRetrieval> {
         }
         val gFlow = translate(flow)
-        assertEquals("Payment retrieval", gFlow.label)
+        assertEquals("PaymentRetrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(0,0), gFlow.dimension)
@@ -26,12 +26,12 @@ class FlowNodeTranslationTest {
             on message type(RetrievePayment::class) create acceptance()
         }
         val gFlow = translate(flow)
-        assertEquals("Payment retrieval", gFlow.label)
+        assertEquals("PaymentRetrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(72,72), gFlow.dimension)
         val gElement = (gFlow as GraphicalElementSequence).children[0]
-        assertEquals("Retrieve payment", gElement.label)
+        assertEquals("RetrievePayment", gElement.label)
     }
 
     @Test

@@ -38,7 +38,7 @@ class GraphicalElementSequence(label: String = ""): AbstractGraphicalElement(lab
         val symbols = children.map { it.rendered() }.flatten()
         var previous = children[0]
         val sequenceFlows = children.subList(1, children.size).map {
-            val sequenceFlow = RenderedSequenceFlow("", previous.rightConnector, it.leftConnector)
+            val sequenceFlow = RenderedSequenceFlow("", previous.rightConnector, it.leftConnector, previous as Rendered, it as Rendered)
             previous = it
             sequenceFlow
         }
@@ -74,7 +74,7 @@ interface RenderedSymbol: Rendered {
 
 }
 
-class RenderedSequenceFlow(label: String, val from: Position, val to: Position): Rendered
+data class RenderedSequenceFlow(val label: String, val from: Position, val to: Position, val source: Rendered, val target: Rendered): Rendered
 
 abstract class RenderedTask(label: String): AbstractGraphicalElement(label), RenderedSymbol {
 
@@ -102,5 +102,5 @@ abstract class RenderedEvent(label: String): AbstractGraphicalElement(label), Re
 
 }
 
-class RenderedNoneStartEvent(label: String): RenderedEvent(label)
-class RenderedNoneEndEvent(label: String): RenderedEvent(label)
+class RenderedStartEvent(label: String): RenderedEvent(label)
+class RenderedEndEvent(label: String): RenderedEvent(label)

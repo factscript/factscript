@@ -17,7 +17,7 @@ class GraphicalFlowNodeTest {
     @Test
     fun graphicalNoneStartEvent() {
 
-        val graphicalNode = RenderedNoneStartEvent("Retrieve payment")
+        val graphicalNode = RenderedStartEvent("Retrieve payment")
 
         assertEquals(Position(0,0), graphicalNode.position)
         assertEquals(eventDimension, graphicalNode.dimension)
@@ -37,7 +37,7 @@ class GraphicalFlowNodeTest {
     @Test
     fun graphicalNoneEndEvent() {
 
-        val graphicalNode = RenderedNoneEndEvent("Payment retrieved")
+        val graphicalNode = RenderedEndEvent("Payment retrieved")
 
         assertEquals(Position(0,0), graphicalNode.position)
         assertEquals(eventDimension, graphicalNode.dimension)
@@ -49,11 +49,11 @@ class GraphicalFlowNodeTest {
 
         val sequence = GraphicalElementSequence()
 
-        val startEvent = RenderedNoneStartEvent("Retrieve payment")
+        val startEvent = RenderedStartEvent("Retrieve payment")
         sequence.add(startEvent)
         val serviceTask = RenderedServiceTask("Charge credit card")
         sequence.add(serviceTask)
-        val endEvent = RenderedNoneEndEvent("Payment retrieved")
+        val endEvent = RenderedEndEvent("Payment retrieved")
         sequence.add(endEvent)
 
         assertEquals(Position(0,0), sequence.position)

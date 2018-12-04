@@ -1,6 +1,6 @@
 package io.factdriven.flowlang.example.paymentretrieval
 
-import io.factdriven.flowlang.label
+import io.factdriven.flowlang.name
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ class LabelingTest {
     @Test
     fun testLabeling() {
         val test = RetrievePayment::class
-        assertEquals("Retrieve payment", label(test))
+        assertEquals("Retrieve payment", name(test))
     }
 
 }

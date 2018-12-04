@@ -26,7 +26,7 @@ class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
 
 }
 
-data class FlowReactionAction<M: Message>(val type: FlowActionType = FlowActionType.success, val name: String = "")
+data class FlowReactionAction<M: Message>(val type: FlowActionType = FlowActionType.success, val id: String = "")
 
 interface FlowReactionMessage<M: Message> {
 
@@ -36,7 +36,7 @@ interface FlowReactionMessage<M: Message> {
 
 class FlowReactionImpl<I: Any, M: Message>: FlowNode, FlowReactionMessage<M> {
 
-    override var name = ""
+    override var id = ""
     lateinit var listener: FlowListener<M>
     var actionType: FlowActionType = FlowActionType.success
     var action: ((M) -> Any)? = null
@@ -51,7 +51,7 @@ class FlowReactionImpl<I: Any, M: Message>: FlowNode, FlowReactionMessage<M> {
 
     infix fun create(action: FlowReactionAction<M>): FlowReactionMessage<M> {
         this.actionType = action.type
-        this.name = action.name
+        this.id = action.id
         return this
     }
 

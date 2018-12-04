@@ -6,15 +6,15 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 
-inline fun <reified I: FlowInstance> execute(name: String = label(I::class), definition: FlowExecutionImpl<I>.() -> Unit): FlowExecution<I> {
+inline fun <reified I: FlowInstance> execute(id: String = id(I::class), definition: FlowExecutionImpl<I>.() -> Unit): FlowExecution<I> {
     val flowExecution = FlowExecutionImpl<I>().apply(definition)
-    flowExecution.name = name
+    flowExecution.id = id
     return flowExecution
 }
 
 interface FlowNode {
 
-    val name: String
+    val id: String
 
 }
 
@@ -56,10 +56,10 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
 
     override val nodes = mutableListOf<FlowNode>()
 
-    override var name: String = ""
+    override var id: String = ""
         get() {
             return when (type) {
-                FlowDefinitionType.service -> nodes[0].name
+                FlowDefinitionType.service -> nodes[0].id
                 else -> field
             }
         }
@@ -100,38 +100,41 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
         TODO()
     }
 
-    inline fun <reified M: Message> intent(name: String = label(M::class)): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.intent, name)
+    inline fun <reified M: Message> intent(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.intent, id)
     }
 
-    inline fun <reified M: Message> acceptance(name: String = label(M::class)): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.acceptance, name)
+    inline fun <reified M: Message> acceptance(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.acceptance, id)
     }
 
-    inline fun <reified M: Message> progress(name: String = label(M::class)): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.progress, name)
+    inline fun <reified M: Message> progress(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.progress, id)
     }
 
-    inline fun <reified M: Message> success(name: String = label(M::class)): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.success, name)
+    inline fun <reified M: Message> success(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.success, id)
     }
 
-    inline fun <reified M: Message> fix(name: String = label(M::class)): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.fix, name)
+    inline fun <reified M: Message> fix(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.fix, id)
     }
 
-    inline fun <reified M: Message> failure(name: String = label(M::class)): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.failure, name)
+    inline fun <reified M: Message> failure(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.failure, id)
     }
 
 }
 
 data class FlowListener<M: Message>(val type: KClass<out M>)
 
-fun label(kClass: KClass<*>): String {
+fun id(kClass: KClass<*>): String {
+    return kClass.simpleName ?: ""
+}
+
+fun name(kClass: KClass<*>): String {
     val regex = String.format("%s|%s|%s", "(?<=[A-Z])(?=[A-Z][a-z])", "(?<=[^A-Z])(?=[A-Z])", "(?<=[A-Za-z])(?=[^A-Za-z])").toRegex()
-    val className = kClass.simpleName ?: ""
-    val splitted = className.split(regex)
-    val joined = splitted[0] + if (splitted.size > 1) splitted.subList(1, splitted.size).joinToString(separator = "") { " " + it.substring(0, 1).toLowerCase() + it.substring(1) } else ""
-    return joined
+    val cName = kClass.simpleName ?: ""
+    val split = cName.split(regex)
+    return split[0] + if (split.size > 1) split.subList(1, split.size).joinToString(separator = "") { " " + it.substring(0, 1).toLowerCase() + it.substring(1) } else ""
 }

@@ -1,6 +1,6 @@
 package io.factdriven.flowlang.transformation
 
-import io.factdriven.flowlang.FlowDefinition
+import io.factdriven.flowlang.FlowExecution
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
@@ -19,37 +19,42 @@ import org.camunda.bpm.model.bpmn.instance.StartEvent
 import org.camunda.bpm.model.bpmn.instance.bpmndi.BpmnDiagram
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds
 import java.io.IOException
-
-
+import java.lang.IllegalArgumentException
 
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-fun transform(flow: FlowDefinition<*>): BpmnModelInstance {
+fun transform(flow: FlowExecution<*>): BpmnModelInstance {
 
-    val process = createElement(id = "process", elementClass = Process::class.java)
+    val rendered = translate(flow).rendered()
 
-    val startEvent = createElement(process, "start", StartEvent::class.java)
-    val task1 = createElement(process, "task1", ServiceTask::class.java)
-    task1.name = "User Task"
-    val endEvent = createElement(process, "end", EndEvent::class.java)
+    val process = createElement(id = flow.id, elementClass = Process::class.java)
 
-    createSequenceFlow(process, startEvent, task1)
-    createSequenceFlow(process, task1, endEvent)
+    val map = mutableMapOf<Rendered, FlowNode>()
+
+    rendered.forEach {
+
+        when(it) {
+            is RenderedStartEvent -> map[it] = createElement(process, it.label, StartEvent::class.java)
+            is RenderedEndEvent -> map[it] = createElement(process, it.label, EndEvent::class.java)
+            is RenderedServiceTask -> map[it] = createElement(process, it.label, ServiceTask::class.java)
+            is RenderedSequenceFlow -> createSequenceFlow(process, map[it.source]!!, map[it.target]!!)
+            else -> throw IllegalArgumentException()
+        }
+
+    }
 
     return process.modelInstance as BpmnModelInstance
 
 }
 
 fun createModelInstance(): BpmnModelInstance {
-
     val modelInstance = Bpmn.createEmptyModel()
     val definitions = modelInstance.newInstance(Definitions::class.java)
     definitions.targetNamespace = "http://camunda.org/examples"
     modelInstance.definitions = definitions
     return modelInstance
-
 }
 
 fun <T : BpmnModelElementInstance> createElement(
@@ -57,15 +62,13 @@ fun <T : BpmnModelElementInstance> createElement(
     id: String,
     elementClass: Class<T>
 ): T {
-
     val element = parentElement.modelInstance.newInstance(elementClass)
     element.setAttributeValue("id", id, true)
     parentElement.addChildElement(element)
     return element
-
 }
 
-fun createSequenceFlow(process: Process, from: FlowNode, to: FlowNode): SequenceFlow {
+fun createSequenceFlow(process: Process, from: FlowNode, to: FlowNode) {
     val identifier = from.id + "-" + to.id
     val sequenceFlow = createElement(process, identifier, SequenceFlow::class.java)
     process.addChildElement(sequenceFlow)
@@ -73,7 +76,6 @@ fun createSequenceFlow(process: Process, from: FlowNode, to: FlowNode): Sequence
     from.outgoing.add(sequenceFlow)
     sequenceFlow.target = to
     to.incoming.add(sequenceFlow)
-    return sequenceFlow
 }
 
 class ProcessGenerator {

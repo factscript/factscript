@@ -16,38 +16,38 @@ interface FlowActionMessage {
 
 open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode, FlowActionMessage {
 
-    override var name = ""
+    override var id = ""
 
     var actionType = FlowActionType.success
     var action: (() -> Any) = {}
 
-    infix fun intent(name: String): FlowActionMessage {
+    infix fun intent(id: String): FlowActionMessage {
         actionType = FlowActionType.intent
-        this.name = name
+        this.id = id
         return this
     }
 
-    infix fun acceptance(name: String): FlowActionMessage {
+    infix fun acceptance(id: String): FlowActionMessage {
         actionType = FlowActionType.acceptance
-        this.name = name
+        this.id = id
         return this
     }
 
-    infix fun progress(name: String): FlowActionMessage {
+    infix fun progress(id: String): FlowActionMessage {
         actionType = FlowActionType.progress
-        this.name = name
+        this.id = id
         return this
     }
 
-    infix fun success(name: String): FlowActionMessage {
+    infix fun success(id: String): FlowActionMessage {
         actionType = FlowActionType.success
-        this.name = name
+        this.id = id
         return this
     }
 
-    infix fun failure(name: String): FlowActionMessage {
+    infix fun failure(id: String): FlowActionMessage {
         actionType = FlowActionType.failure
-        this.name = name
+        this.id = id
         return this
     }
 
