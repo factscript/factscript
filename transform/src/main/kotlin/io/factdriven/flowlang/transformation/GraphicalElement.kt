@@ -6,7 +6,7 @@ package io.factdriven.flowlang.transformation
 interface GraphicalElement {
 
     var parent: GraphicalElementSequence?
-    val label: String
+    val id: String
     val position: Position
     val dimension: Dimension
 
@@ -55,7 +55,7 @@ class GraphicalElementSequence(label: String = ""): AbstractGraphicalElement(lab
 
 }
 
-abstract class AbstractGraphicalElement(override var label: String): GraphicalElement {
+abstract class AbstractGraphicalElement(override var id: String): GraphicalElement {
 
     override var parent: GraphicalElementSequence? = null
 

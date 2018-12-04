@@ -14,7 +14,7 @@ class FlowNodeTranslationTest {
         val flow = execute <PaymentRetrieval> {
         }
         val gFlow = translate(flow)
-        assertEquals("PaymentRetrieval", gFlow.label)
+        assertEquals("PaymentRetrieval", gFlow.id)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(0,0), gFlow.dimension)
@@ -26,12 +26,12 @@ class FlowNodeTranslationTest {
             on message type(RetrievePayment::class) create acceptance()
         }
         val gFlow = translate(flow)
-        assertEquals("PaymentRetrieval", gFlow.label)
+        assertEquals("PaymentRetrieval", gFlow.id)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(72,72), gFlow.dimension)
         val gElement = (gFlow as GraphicalElementSequence).children[0]
-        assertEquals("RetrievePayment", gElement.label)
+        assertEquals("RetrievePayment", gElement.id)
     }
 
     @Test
@@ -42,12 +42,12 @@ class FlowNodeTranslationTest {
             }
         }
         val gFlow = translate(flow)
-        assertEquals("Custom payment retrieval", gFlow.label)
+        assertEquals("Custom payment retrieval", gFlow.id)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(136,116), gFlow.dimension)
         val gElement = (gFlow as GraphicalElementSequence).children[0]
-        assertEquals("Charge credit card", gElement.label)
+        assertEquals("Charge credit card", gElement.id)
     }
 
     @Test
@@ -56,12 +56,12 @@ class FlowNodeTranslationTest {
             create success("Payment retrieved") by {}
         }
         val gFlow = translate(flow)
-        assertEquals("Custom payment retrieval", gFlow.label)
+        assertEquals("Custom payment retrieval", gFlow.id)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(72,72), gFlow.dimension)
         val gElement = (gFlow as GraphicalElementSequence).children[0]
-        assertEquals("Payment retrieved", gElement.label)
+        assertEquals("Payment retrieved", gElement.id)
     }
 
     @Test

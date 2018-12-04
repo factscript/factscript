@@ -131,10 +131,3 @@ data class FlowListener<M: Message>(val type: KClass<out M>)
 fun id(kClass: KClass<*>): String {
     return kClass.simpleName ?: ""
 }
-
-fun name(kClass: KClass<*>): String {
-    val regex = String.format("%s|%s|%s", "(?<=[A-Z])(?=[A-Z][a-z])", "(?<=[^A-Z])(?=[A-Z])", "(?<=[A-Za-z])(?=[^A-Za-z])").toRegex()
-    val cName = kClass.simpleName ?: ""
-    val split = cName.split(regex)
-    return split[0] + if (split.size > 1) split.subList(1, split.size).joinToString(separator = "") { " " + it.substring(0, 1).toLowerCase() + it.substring(1) } else ""
-}
