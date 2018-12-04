@@ -30,7 +30,7 @@ class FlowNodeTranslationTest {
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(72,72), gFlow.dimension)
-        val gElement = (gFlow as GraphicalFlowNodeSequence).children[0]
+        val gElement = (gFlow as GraphicalElementSequence).children[0]
         assertEquals("Retrieve payment", gElement.label)
     }
 
@@ -46,7 +46,7 @@ class FlowNodeTranslationTest {
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(136,116), gFlow.dimension)
-        val gElement = (gFlow as GraphicalFlowNodeSequence).children[0]
+        val gElement = (gFlow as GraphicalElementSequence).children[0]
         assertEquals("Charge credit card", gElement.label)
     }
 
@@ -60,7 +60,7 @@ class FlowNodeTranslationTest {
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(72,72), gFlow.dimension)
-        val gElement = (gFlow as GraphicalFlowNodeSequence).children[0]
+        val gElement = (gFlow as GraphicalElementSequence).children[0]
         assertEquals("Payment retrieved", gElement.label)
     }
 
@@ -74,7 +74,7 @@ class FlowNodeTranslationTest {
             }
             create success("Payment retrieved") by { PaymentRetrieved() }
         }
-        val gFlow = translate(flow) as GraphicalFlowNodeSequence
+        val gFlow = translate(flow) as GraphicalElementSequence
         assertEquals(3, gFlow.children.size)
     }
 

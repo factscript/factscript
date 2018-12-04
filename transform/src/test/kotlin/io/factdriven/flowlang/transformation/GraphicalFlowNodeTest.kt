@@ -1,5 +1,7 @@
 package io.factdriven.flowlang.transformation
 
+import io.factdriven.flowlang.execute
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -15,7 +17,7 @@ class GraphicalFlowNodeTest {
     @Test
     fun graphicalNoneStartEvent() {
 
-        val graphicalNode = GraphicalNoneStartEvent("Retrieve payment")
+        val graphicalNode = RenderedNoneStartEvent("Retrieve payment")
 
         assertEquals(Position(0,0), graphicalNode.position)
         assertEquals(eventDimension, graphicalNode.dimension)
@@ -25,7 +27,7 @@ class GraphicalFlowNodeTest {
     @Test
     fun graphicalServiceTask() {
 
-        val graphicalNode = GraphicalServiceTask("Charge credit card")
+        val graphicalNode = RenderedServiceTask("Charge credit card")
 
         assertEquals(Position(0,0), graphicalNode.position)
         assertEquals(taskDimension, graphicalNode.dimension)
@@ -35,7 +37,7 @@ class GraphicalFlowNodeTest {
     @Test
     fun graphicalNoneEndEvent() {
 
-        val graphicalNode = GraphicalNoneEndEvent("Payment retrieved")
+        val graphicalNode = RenderedNoneEndEvent("Payment retrieved")
 
         assertEquals(Position(0,0), graphicalNode.position)
         assertEquals(eventDimension, graphicalNode.dimension)
@@ -45,13 +47,13 @@ class GraphicalFlowNodeTest {
     @Test
     fun graphicalFlowNodeSequence() {
 
-        val sequence = GraphicalFlowNodeSequence()
+        val sequence = GraphicalElementSequence()
 
-        val startEvent = GraphicalNoneStartEvent("Retrieve payment")
+        val startEvent = RenderedNoneStartEvent("Retrieve payment")
         sequence.add(startEvent)
-        val serviceTask = GraphicalServiceTask("Charge credit card")
+        val serviceTask = RenderedServiceTask("Charge credit card")
         sequence.add(serviceTask)
-        val endEvent = GraphicalNoneEndEvent("Payment retrieved")
+        val endEvent = RenderedNoneEndEvent("Payment retrieved")
         sequence.add(endEvent)
 
         assertEquals(Position(0,0), sequence.position)
@@ -66,5 +68,43 @@ class GraphicalFlowNodeTest {
         assertEquals(Position(eventDimension.x + taskDimension.x, (taskDimension.y - eventDimension.y) / 2), endEvent.position)
 
     }
+
+    @Test
+    fun graphicalSequenceFlows() {
+        val flow = execute <PaymentRetrieval> {
+            on message type(RetrievePayment::class) create acceptance()
+            execute service {
+                create intent("Charge credit card") by { ChargeCreditCard() }
+                on message type(CreditCardCharged::class) create success()
+            }
+            create success("Payment retrieved") by { PaymentRetrieved() }
+        }
+        val gFlow = translate(flow) as GraphicalElementSequence
+        val rendered = gFlow.rendered()
+
+        Assertions.assertEquals(5, rendered.size)
+
+        val element1 = rendered[0] as RenderedEvent
+        val element2 = rendered[1] as RenderedTask
+        val element3 = rendered[2] as RenderedEvent
+        val sequenceFlow1 = rendered[3] as RenderedSequenceFlow
+        val sequenceFlow2 = rendered[4] as RenderedSequenceFlow
+
+        Assertions.assertEquals(Position(18, 40), element1.renderingPosition)
+        Assertions.assertEquals(Dimension(36, 36), element1.renderingDimension)
+
+        Assertions.assertEquals(Position(90, 18), element2.renderingPosition)
+        Assertions.assertEquals(Dimension(100, 80), element2.renderingDimension)
+
+        Assertions.assertEquals(Position(226, 40), element3.renderingPosition)
+        Assertions.assertEquals(Dimension(36, 36), element3.renderingDimension)
+
+        Assertions.assertEquals(Position(54, 58), sequenceFlow1.from)
+        Assertions.assertEquals(Position(90, 58), sequenceFlow1.to)
+        Assertions.assertEquals(Position(190, 58), sequenceFlow2.from)
+        Assertions.assertEquals(Position(226, 58), sequenceFlow2.to)
+
+    }
+
 
 }

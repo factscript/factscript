@@ -6,23 +6,23 @@ import java.lang.IllegalArgumentException
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-fun translate(node: FlowNode): GraphicalFlowNode {
-    val graphicalNode = when(node){
-        is FlowReactionImpl<*, *> -> GraphicalNoneStartEvent(node.name)
+fun translate(node: FlowNode): GraphicalElement {
+    val graphicalNode = when(node) {
+        is FlowReactionImpl<*, *> -> RenderedNoneStartEvent(node.name) as GraphicalElement
         is FlowExecutionImpl<*> -> {
             when (node.type) {
                 FlowDefinitionType.execution -> {
                     val definition = node as FlowDefinition<*>
-                    val sequence = GraphicalFlowNodeSequence(node.name)
+                    val sequence = GraphicalElementSequence(node.name)
                     definition.nodes.forEach {
                         sequence.add(translate(it))
                     }
                     return sequence
                 }
-                else -> GraphicalServiceTask(node.name)
+                else -> RenderedServiceTask(node.name) as GraphicalElement
             }
         }
-        is FlowActionImpl<*, *> -> GraphicalNoneEndEvent(node.name)
+        is FlowActionImpl<*, *> -> RenderedNoneEndEvent(node.name) as GraphicalElement
         else -> throw IllegalArgumentException()
     }
     return graphicalNode
