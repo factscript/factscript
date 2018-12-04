@@ -11,9 +11,10 @@ class FlowNodeTranslationTest {
 
     @Test
     fun translateFlowExecution() {
-        val flow = execute<PaymentRetrieval> {
+        val flow = execute <PaymentRetrieval> {
         }
         val gFlow = translate(flow)
+        assertEquals("PaymentRetrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(0,0), gFlow.dimension)
@@ -21,10 +22,11 @@ class FlowNodeTranslationTest {
 
     @Test
     fun translateFlowReaction() {
-        val flow = execute<PaymentRetrieval> {
+        val flow = execute <PaymentRetrieval> {
             on message type(RetrievePayment::class)
         }
         val gFlow = translate(flow)
+        assertEquals("PaymentRetrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(72,72), gFlow.dimension)
@@ -32,11 +34,12 @@ class FlowNodeTranslationTest {
 
     @Test
     fun translateFlowService() {
-        val flow = execute<PaymentRetrieval> {
+        val flow = execute <PaymentRetrieval> {
             execute service {
             }
         }
         val gFlow = translate(flow)
+        assertEquals("PaymentRetrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(136,116), gFlow.dimension)
@@ -44,10 +47,11 @@ class FlowNodeTranslationTest {
 
     @Test
     fun translateFlowAction() {
-        val flow = execute<PaymentRetrieval> {
+        val flow = execute <PaymentRetrieval> {
             create success("Payment retrieved") by {}
         }
         val gFlow = translate(flow)
+        assertEquals("PaymentRetrieval", gFlow.label)
         assertEquals(null, gFlow.parent)
         assertEquals(Position(0,0), gFlow.position)
         assertEquals(Dimension(72,72), gFlow.dimension)

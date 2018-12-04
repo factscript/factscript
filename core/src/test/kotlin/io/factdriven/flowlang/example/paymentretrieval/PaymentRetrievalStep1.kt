@@ -6,7 +6,7 @@ import io.factdriven.flowlang.execute
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-val flow1 = execute<PaymentRetrieval> {
+val flow1 = execute <PaymentRetrieval> ("Payment retrieval") {
     on message type(RetrievePayment::class) create acceptance("Payment retrieval accepted") by { message ->
         PaymentRetrievalAccepted(paymentId = message.id)
     }

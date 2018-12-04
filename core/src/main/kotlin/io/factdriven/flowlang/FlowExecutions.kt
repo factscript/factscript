@@ -6,7 +6,11 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 
-fun <I: FlowInstance> execute(definition: FlowExecutionImpl<I>.() -> Unit): FlowExecution<I> = FlowExecutionImpl<I>().apply(definition)
+inline fun <reified I: FlowInstance> execute(name: String = I::class.simpleName ?: "", definition: FlowExecutionImpl<I>.() -> Unit): FlowExecution<I> {
+    val flowExecution = FlowExecutionImpl<I>().apply(definition)
+    flowExecution.name = name
+    return flowExecution
+}
 
 interface FlowNode {
 
@@ -52,11 +56,7 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
 
     override val nodes = mutableListOf<FlowNode>()
 
-    private var labeled: String? = null
-
-    override val name: String get() {
-        return labeled ?: ""
-    }
+    override var name = ""
 
     override infix fun service(service: FlowExecutionImpl<I>.() -> Unit): FlowActivities<I>  {
         type = FlowDefinitionType.service
