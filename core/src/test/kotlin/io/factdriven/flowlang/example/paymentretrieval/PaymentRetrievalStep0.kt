@@ -29,9 +29,9 @@ class PaymentRetrievalStep0Test {
         val flow = execute <PaymentRetrieval> {
             on message type(RetrievePayment::class)
         } as FlowDefinition<PaymentRetrieval>
-        val node = flow.nodes.get(0) as FlowReaction<*, *>
-        assertEquals(FlowReaction::class, node::class)
-        val listener = (node as FlowReaction).listener
+        val node = flow.nodes.get(0) as FlowReactionImpl<*, *>
+        assertEquals(FlowReactionImpl::class, node::class)
+        val listener = (node as FlowReactionImpl).listener
         assertEquals(RetrievePayment::class, listener.type)
     }
 
@@ -41,7 +41,7 @@ class PaymentRetrievalStep0Test {
             create
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0)
-        assertEquals(FlowAction::class, node::class)
+        assertEquals(FlowActionImpl::class, node::class)
     }
 
     @Test()
@@ -49,7 +49,7 @@ class PaymentRetrievalStep0Test {
         val flow = execute <PaymentRetrieval> {
             create success {}
         } as FlowDefinition<PaymentRetrieval>
-        val node = flow.nodes.get(0) as FlowAction<*, *>
+        val node = flow.nodes.get(0) as FlowActionImpl<*, *>
         assertEquals(Unit::class, node.action.invoke()::class)
     }
 
@@ -58,7 +58,7 @@ class PaymentRetrievalStep0Test {
         val flow = execute <PaymentRetrieval> {
             create success { PaymentRetrieved() }
         } as FlowDefinition<PaymentRetrieval>
-        val node = flow.nodes.get(0) as FlowAction<*, *>
+        val node = flow.nodes.get(0) as FlowActionImpl<*, *>
         assertEquals(FlowActionType.success, node.actionType)
         assertEquals(PaymentRetrieved::class, node.action.invoke()::class)
     }
@@ -81,8 +81,8 @@ class PaymentRetrievalStep0Test {
         } as FlowDefinition<PaymentRetrieval>
         val parentNode = flow.nodes.get(0) as FlowDefinition<*>
         val node = parentNode.nodes.get(0)
-        assertEquals(FlowAction::class, node::class)
-        val action = node as FlowAction<*, *>
+        assertEquals(FlowActionImpl::class, node::class)
+        val action = node as FlowActionImpl<*, *>
         assertEquals(FlowActionType.intent, action.actionType)
         assertEquals(ChargeCreditCard::class, action.action.invoke()::class)
     }
@@ -95,8 +95,8 @@ class PaymentRetrievalStep0Test {
             }
         } as FlowDefinition<PaymentRetrieval>
         val parentNode = flow.nodes.get(0) as FlowDefinition<*>
-        val node = parentNode.nodes.get(0) as FlowReaction<*, *>
-        val reaction = node as FlowReaction
+        val node = parentNode.nodes.get(0) as FlowReactionImpl<*, *>
+        val reaction = node as FlowReactionImpl
         assertEquals(CreditCardCharged::class, reaction.listener.type)
         assertEquals(FlowActionType.success, reaction.actionType)
     }

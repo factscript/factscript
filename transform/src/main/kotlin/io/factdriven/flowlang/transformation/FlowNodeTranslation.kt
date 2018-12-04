@@ -8,7 +8,7 @@ import java.lang.IllegalArgumentException
  */
 fun translate(node: FlowNode): GraphicalFlowNode {
     val graphicalNode = when(node){
-        is FlowReaction<*, *> -> GraphicalNoneStartEvent(node.label)
+        is FlowReactionImpl<*, *> -> GraphicalNoneStartEvent(node.label)
         is FlowExecutionImpl<*> -> {
             when (node.type) {
                 FlowDefinitionType.execution -> {
@@ -22,7 +22,7 @@ fun translate(node: FlowNode): GraphicalFlowNode {
                 else -> GraphicalServiceTask(node.label)
             }
         }
-        is FlowAction<*, *> -> GraphicalNoneEndEvent(node.label)
+        is FlowActionImpl<*, *> -> GraphicalNoneEndEvent(node.label)
         else -> throw IllegalArgumentException()
     }
     return graphicalNode

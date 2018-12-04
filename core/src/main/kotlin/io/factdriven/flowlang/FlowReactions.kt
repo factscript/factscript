@@ -5,8 +5,8 @@ package io.factdriven.flowlang
  */
 class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
 
-    infix fun <M: Any> message(listener: FlowListener<M>): FlowReaction<I, M> {
-        val reaction = FlowReaction<I, M>()
+    infix fun <M: Any> message(listener: FlowListener<M>): FlowReactionImpl<I, M> {
+        val reaction = FlowReactionImpl<I, M>()
         parent.nodes.add(reaction)
         reaction.listener = listener
         return reaction
@@ -16,11 +16,11 @@ class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    infix fun timeout(timer: () -> String): FlowReaction<I, Any> {
+    infix fun timeout(timer: () -> String): FlowReactionImpl<I, Any> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    infix fun timeout(timer: String): FlowReaction<I, Any> {
+    infix fun timeout(timer: String): FlowReactionImpl<I, Any> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -36,7 +36,7 @@ interface FlowReactionActions {
 
 }
 
-class FlowReaction<I: Any, M: Message>: FlowNode {
+class FlowReactionImpl<I: Any, M: Message>: FlowNode {
 
     lateinit var listener: FlowListener<M>
 
@@ -44,11 +44,11 @@ class FlowReaction<I: Any, M: Message>: FlowNode {
         return listener.type.java.simpleName
     }
 
-    infix fun having(key: () -> Pair<String, Any>): FlowReaction<I, M> {
+    infix fun having(key: () -> Pair<String, Any>): FlowReactionImpl<I, M> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    infix fun supporting(assertion: (M) -> Boolean): FlowReaction<I, M> {
+    infix fun supporting(assertion: (M) -> Boolean): FlowReactionImpl<I, M> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 

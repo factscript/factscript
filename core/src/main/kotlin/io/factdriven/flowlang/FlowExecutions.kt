@@ -1,6 +1,5 @@
 package io.factdriven.flowlang
 
-import java.lang.reflect.ParameterizedType
 import kotlin.reflect.KClass
 
 /**
@@ -28,7 +27,7 @@ interface FlowExecution<I : FlowInstance>: FlowNode {
     val on: FlowReactions<I>
     val execute: FlowActivities<I>
     val select: Selection<I>
-    val create: FlowAction<I, Any>
+    val create: FlowActionImpl<I, Any>
 
 }
 
@@ -79,8 +78,8 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
 
     override val select: Selection<I> get() = TODO()
 
-    override val create: FlowAction<I, Any> get() {
-        val node = FlowAction<I, Any>()
+    override val create: FlowActionImpl<I, Any> get() {
+        val node = FlowActionImpl<I, Any>()
         nodes.add(node)
         return node
     }

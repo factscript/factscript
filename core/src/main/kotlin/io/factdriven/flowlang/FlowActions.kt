@@ -10,7 +10,7 @@ enum class FlowActionType {
     acceptance, progress, success, fix, failure, intent
 }
 
-open class FlowAction<I: FlowInstance, M: Any>: FlowNode {
+open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode {
 
     override val label: String get() {
         return action.invoke().javaClass.simpleName
