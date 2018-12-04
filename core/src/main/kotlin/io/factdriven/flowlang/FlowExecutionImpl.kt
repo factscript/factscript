@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 
-fun <I: FlowInstance> execute(definition: FlowExecution<I>.() -> Unit): FlowNodes<I> = FlowExecution<I>().apply(definition)
+fun <I: FlowInstance> execute(definition: FlowExecutionImpl<I>.() -> Unit): FlowExecution<I> = FlowExecutionImpl<I>().apply(definition)
 
 interface FlowNode {
 
@@ -17,13 +17,13 @@ interface FlowNode {
 
 interface FlowActivities<I: FlowInstance> {
 
-    infix fun service(service: FlowExecution<I>.() -> Unit): FlowActivities<I>
-    infix fun receive(receive: FlowExecution<I>.() -> Unit): FlowExecution<I>
+    infix fun service(service: FlowExecutionImpl<I>.() -> Unit): FlowActivities<I>
+    infix fun receive(receive: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I>
 
 }
 
 
-interface FlowNodes<I : FlowInstance> {
+interface FlowExecution<I : FlowInstance>: FlowNode {
 
     val on: FlowReactions<I>
     val execute: FlowActivities<I>
@@ -45,7 +45,7 @@ enum class FlowDefinitionType {
 
 }
 
-class FlowExecution<I: FlowInstance>: FlowNode, FlowDefinition<I>, FlowNodes<I>, FlowActivities<I> {
+class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, FlowActivities<I> {
 
     lateinit var status: I
 
@@ -56,23 +56,23 @@ class FlowExecution<I: FlowInstance>: FlowNode, FlowDefinition<I>, FlowNodes<I>,
     private var labeled: String? = null
 
     override val label: String get() {
-        return labeled ?: ((this.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0] as Class<I>).simpleName
+        return labeled ?: ""
     }
 
-    override infix fun service(service: FlowExecution<I>.() -> Unit): FlowActivities<I>  {
+    override infix fun service(service: FlowExecutionImpl<I>.() -> Unit): FlowActivities<I>  {
         type = FlowDefinitionType.service
         this.apply(service)
         return this
     }
 
-    override infix fun receive(receive: FlowExecution<I>.() -> Unit): FlowExecution<I> = TODO()
+    override infix fun receive(receive: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I> = TODO()
 
     override val on: FlowReactions<I> get() {
         return FlowReactions(this)
     }
 
     override val execute: FlowActivities<I> get() {
-        val node = FlowExecution<I>()
+        val node = FlowExecutionImpl<I>()
         nodes.add(node)
         return node
     }

@@ -3,7 +3,7 @@ package io.factdriven.flowlang
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class FlowReactions<I: Any>(val parent: FlowExecution<I>) {
+class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
 
     infix fun <M: Any> message(listener: FlowListener<M>): FlowReaction<I, M> {
         val reaction = FlowReaction<I, M>()
@@ -12,7 +12,7 @@ class FlowReactions<I: Any>(val parent: FlowExecution<I>) {
         return reaction
     }
 
-    infix fun compensation(definition: FlowExecution<I>.() -> Unit): FlowExecution<I> {
+    infix fun compensation(definition: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -76,7 +76,7 @@ class FlowReaction<I: Any, M: Message>: FlowNode {
         TODO()
     }
 
-    infix fun mitigation(definition: FlowExecution<I>.() -> Unit): FlowExecution<I> = TODO()
+    infix fun mitigation(definition: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I> = TODO()
 
 }
 

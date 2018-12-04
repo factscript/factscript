@@ -1,8 +1,5 @@
 package io.factdriven.flowlang.transformation
 
-import io.factdriven.flowlang.*
-import java.lang.IllegalArgumentException
-
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
@@ -16,34 +13,13 @@ interface GraphicalFlowNode {
 
 }
 
-data class Position (val x: Int, val y: Int)
-
 const val whitespace = 18
-
-data class Dimension (val x: Int, val y: Int) {
-
-    constructor(netDimension: Dimension): this(netDimension.x + (whitespace * 2), netDimension.y + (whitespace * 2))
-
-}
+data class Position (val x: Int, val y: Int)
+data class Dimension (val x: Int, val y: Int)
 
 class GraphicalFlowNodeSequence(label: String? = null): AbstractGraphicalFlowNode(label) {
 
     private val graphicalNodes = mutableListOf<GraphicalFlowNode>()
-
-    fun add(node: FlowNode) {
-        val graphicalNode = when(node){
-            is FlowReaction<*, *> -> GraphicalNoneStartEvent(node.label)
-            is FlowExecution<*> -> {
-                when (node.type) {
-                    FlowDefinitionType.execution -> GraphicalFlowNodeSequence(node.label)
-                    else -> GraphicalServiceTask(node.label)
-                }
-            }
-            is FlowAction<*, *> -> GraphicalNoneEndEvent(node.label)
-            else -> throw IllegalArgumentException()
-        }
-        add (graphicalNode)
-    }
 
     fun add (node: GraphicalFlowNode) {
         node.parent = this
@@ -51,7 +27,7 @@ class GraphicalFlowNodeSequence(label: String? = null): AbstractGraphicalFlowNod
     }
 
     override val dimension: Dimension get() {
-        return Dimension(graphicalNodes.sumBy { it.dimension.x }, graphicalNodes.maxBy { it.dimension.y }!!.dimension.y)
+        return if (graphicalNodes.isEmpty()) Dimension(0,0) else Dimension(graphicalNodes.sumBy { it.dimension.x }, graphicalNodes.maxBy { it.dimension.y }!!.dimension.y)
     }
 
     fun position(node: AbstractGraphicalFlowNode): Position {
