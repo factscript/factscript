@@ -10,7 +10,7 @@ fun <I: FlowInstance> execute(definition: FlowExecutionImpl<I>.() -> Unit): Flow
 
 interface FlowNode {
 
-    val label: String
+    val name: String
 
 }
 
@@ -54,7 +54,7 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
 
     private var labeled: String? = null
 
-    override val label: String get() {
+    override val name: String get() {
         return labeled ?: ""
     }
 
@@ -84,16 +84,36 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
         return node
     }
 
-    infix fun <M: Message> type(type: KClass<M>): FlowListener<M> {
+    fun <M: Message> type(type: KClass<M>): FlowListener<M> {
         return FlowListener(type)
     }
 
-    infix fun <M: Message> pattern(pattern: M): FlowListener<M> {
+    fun <M: Message> pattern(pattern: M): FlowListener<M> {
         TODO()
     }
 
-    infix fun labeled(label: String) {
-        this.labeled = label
+    inline fun <reified M: Message> intent(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.intent, name)
+    }
+
+    inline fun <reified M: Message> acceptance(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.acceptance, name)
+    }
+
+    inline fun <reified M: Message> progress(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.progress, name)
+    }
+
+    inline fun <reified M: Message> success(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.success, name)
+    }
+
+    inline fun <reified M: Message> fix(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.fix, name)
+    }
+
+    inline fun <reified M: Message> failure(name: String = M::class.simpleName ?: ""): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.failure, name)
     }
 
 }

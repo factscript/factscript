@@ -8,21 +8,21 @@ import java.lang.IllegalArgumentException
  */
 fun translate(node: FlowNode): GraphicalFlowNode {
     val graphicalNode = when(node){
-        is FlowReactionImpl<*, *> -> GraphicalNoneStartEvent(node.label)
+        is FlowReactionImpl<*, *> -> GraphicalNoneStartEvent(node.name)
         is FlowExecutionImpl<*> -> {
             when (node.type) {
                 FlowDefinitionType.execution -> {
                     val definition = node as FlowDefinition<*>
-                    val sequence = GraphicalFlowNodeSequence(node.label)
+                    val sequence = GraphicalFlowNodeSequence(node.name)
                     definition.nodes.forEach {
                         sequence.add(translate(it))
                     }
                     return sequence
                 }
-                else -> GraphicalServiceTask(node.label)
+                else -> GraphicalServiceTask(node.name)
             }
         }
-        is FlowActionImpl<*, *> -> GraphicalNoneEndEvent(node.label)
+        is FlowActionImpl<*, *> -> GraphicalNoneEndEvent(node.name)
         else -> throw IllegalArgumentException()
     }
     return graphicalNode

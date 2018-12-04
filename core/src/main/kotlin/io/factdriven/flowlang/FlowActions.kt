@@ -1,7 +1,5 @@
 package io.factdriven.flowlang
 
-import kotlin.reflect.KProperty
-
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
@@ -10,35 +8,51 @@ enum class FlowActionType {
     acceptance, progress, success, fix, failure, intent
 }
 
-open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode {
+interface FlowActionMessage {
 
-    override val label: String get() {
-        return action.invoke().javaClass.simpleName
-    }
+    infix fun by(action: () -> Any)
 
-    lateinit var actionType: FlowActionType
-    lateinit var action: () -> Any
+}
 
-    infix fun intent(action: () -> Any) {
+open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode, FlowActionMessage {
+
+    override var name = ""
+
+    var actionType = FlowActionType.success
+    var action: (() -> Any) = {}
+
+    infix fun intent(name: String): FlowActionMessage {
         actionType = FlowActionType.intent
-        this.action = action
+        this.name = name
+        return this
     }
 
-    infix fun acceptance(action: () -> Any) {
-        TODO()
+    infix fun acceptance(name: String): FlowActionMessage {
+        actionType = FlowActionType.acceptance
+        this.name = name
+        return this
     }
 
-    infix fun progress(action: () -> Any) {
-        TODO()
+    infix fun progress(name: String): FlowActionMessage {
+        actionType = FlowActionType.progress
+        this.name = name
+        return this
     }
 
-    infix fun success(action: () -> Any) {
+    infix fun success(name: String): FlowActionMessage {
         actionType = FlowActionType.success
-        this.action = action
+        this.name = name
+        return this
     }
 
-    infix fun failure(action: () -> Any) {
-        TODO()
+    infix fun failure(name: String): FlowActionMessage {
+        actionType = FlowActionType.failure
+        this.name = name
+        return this
+    }
+
+    override fun by(action: () -> Any) {
+        this.action = action
     }
 
 }

@@ -17,10 +17,10 @@ class TransformationTest {
         val flow = execute <PaymentRetrieval> {
             on message type(RetrievePayment::class)
             execute service {
-                create intent { ChargeCreditCard() }
+                create intent("Charge credit card") by { ChargeCreditCard() }
                 on message type(CreditCardCharged::class)
             }
-            create success { PaymentRetrieved() }
+            create success("Payment retrieved") by { PaymentRetrieved() }
         }
         val modelInstance = transform(flow as FlowDefinition<*>)
         Bpmn.validateModel(modelInstance);

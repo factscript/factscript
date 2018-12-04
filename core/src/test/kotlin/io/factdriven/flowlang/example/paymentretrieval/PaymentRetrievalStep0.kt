@@ -47,7 +47,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun createSuccessWithoutAction() {
         val flow = execute <PaymentRetrieval> {
-            create success {}
+            create success "Payment retrieved"
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowActionImpl<*, *>
         assertEquals(Unit::class, node.action.invoke()::class)
@@ -56,7 +56,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun createSuccessWithAction() {
         val flow = execute <PaymentRetrieval> {
-            create success { PaymentRetrieved() }
+            create success "Payment retrieved" by { PaymentRetrieved() }
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowActionImpl<*, *>
         assertEquals(FlowActionType.success, node.actionType)
@@ -76,7 +76,7 @@ class PaymentRetrievalStep0Test {
     fun executeServiceCreateIntent() {
         val flow = execute <PaymentRetrieval> {
             execute service {
-                create intent { ChargeCreditCard() }
+                create intent "Charge credit card" by { ChargeCreditCard() }
             }
         } as FlowDefinition<PaymentRetrieval>
         val parentNode = flow.nodes.get(0) as FlowDefinition<*>
@@ -91,7 +91,7 @@ class PaymentRetrievalStep0Test {
     fun executeServiceOnMessage() {
         val flow = execute <PaymentRetrieval> {
             execute service {
-                on message type(CreditCardCharged::class) success {}
+                on message type(CreditCardCharged::class) create success("Credit card charged")
             }
         } as FlowDefinition<PaymentRetrieval>
         val parentNode = flow.nodes.get(0) as FlowDefinition<*>
@@ -107,10 +107,10 @@ class PaymentRetrievalStep0Test {
         val flow = execute <PaymentRetrieval> {
             on message type(RetrievePayment::class)
             execute service {
-                create intent { ChargeCreditCard() }
+                create intent("Charge credit card") by { ChargeCreditCard() }
                 on message type(CreditCardCharged::class)
             }
-            create success { PaymentRetrieved() }
+            create success("Payment retrieved") by { PaymentRetrieved() }
         } as FlowDefinition<PaymentRetrieval>
         assertEquals(3, flow.nodes.size)
         val service = flow.nodes[1] as FlowDefinition<*>

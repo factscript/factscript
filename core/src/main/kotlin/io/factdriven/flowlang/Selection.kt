@@ -12,7 +12,7 @@ class Selection<A: Any> {
 
 class Option<A: Any> {
 
-    fun given(condition: () -> Boolean): Option<A> { TODO() }
+    fun option(name: String = "", condition: () -> Boolean): Option<A> { TODO() }
 
     infix fun execute(definition: FlowExecutionImpl<A>.() -> Unit): FlowExecutionImpl<A> = TODO()
 

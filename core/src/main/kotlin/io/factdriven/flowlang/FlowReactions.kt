@@ -26,23 +26,20 @@ class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
 
 }
 
-interface FlowReactionActions {
+data class FlowReactionAction<M: Message>(val type: FlowActionType = FlowActionType.success, val name: String = "")
 
-    infix fun <M: Message> acceptance(action: (M) -> Any)
-    infix fun <M: Message> progress(action: (M) -> Any)
-    infix fun <M: Message> success(action: (M) -> Any)
-    infix fun <M: Message> rerun(action: (M) -> Any)
-    infix fun <M: Message> failure(action: (M) -> Any)
+interface FlowReactionMessage<M: Message> {
+
+    infix fun by(reaction: (M) -> Any)
 
 }
 
-class FlowReactionImpl<I: Any, M: Message>: FlowNode {
+class FlowReactionImpl<I: Any, M: Message>: FlowNode, FlowReactionMessage<M> {
 
+    override var name = ""
     lateinit var listener: FlowListener<M>
-
-    override val label: String get() {
-        return listener.type.java.simpleName
-    }
+    var actionType: FlowActionType = FlowActionType.success
+    var action: ((M) -> Any)? = null
 
     infix fun having(key: () -> Pair<String, Any>): FlowReactionImpl<I, M> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -52,28 +49,15 @@ class FlowReactionImpl<I: Any, M: Message>: FlowNode {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    var actionType: FlowActionType = FlowActionType.success
-    var action: ((M) -> Any)? = null
-
-    infix fun acceptance(action: (M) -> Any) {
-        TODO()
+    infix fun create(action: FlowReactionAction<M>): FlowReactionMessage<M> {
+        this.actionType = action.type
+        this.name = action.name
+        return this
     }
 
-    infix fun progress(action: (M) -> Any) {
-        TODO()
-    }
 
-    infix fun success(action: (M) -> Any) {
-        actionType = FlowActionType.success
-        this.action = action
-    }
-
-    infix fun rerun(action: (M) -> Any) {
-        TODO()
-    }
-
-    infix fun failure(action: (M) -> Any) {
-        TODO()
+    override infix fun by(reaction: (M) -> Any) {
+        this.action = reaction
     }
 
     infix fun mitigation(definition: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I> = TODO()
