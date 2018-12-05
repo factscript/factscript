@@ -62,6 +62,7 @@ fun transform(container: Container): BpmnModelInstance {
     val process = modelInstance.newInstance(Process::class.java)
     process.setAttributeValue("id", container.id.key, true)
     process.setAttributeValue("name", container.id.label, true)
+    process.isExecutable = true
     definitions.addChildElement(process)
 
     val plane = modelInstance.newInstance(BpmnPlane::class.java)
