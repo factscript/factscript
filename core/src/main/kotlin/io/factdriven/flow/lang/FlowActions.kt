@@ -1,6 +1,8 @@
 package io.factdriven.flow.lang
 
 import io.factdriven.flow.FlowInstance
+import io.factdriven.flow.Message
+import kotlin.reflect.KClass
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -52,6 +54,26 @@ open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode,
         actionType = FlowActionType.failure
         this.id = id
         return this
+    }
+
+    infix fun intent(kClass: KClass<out Message>): FlowActionMessage {
+        return intent(kClass.simpleName!!)
+    }
+
+    infix fun acceptance(kClass: KClass<out Message>): FlowActionMessage {
+        return acceptance(kClass.simpleName!!)
+    }
+
+    infix fun progress(kClass: KClass<out Message>): FlowActionMessage {
+        return progress(kClass.simpleName!!)
+    }
+
+    infix fun success(kClass: KClass<out Message>): FlowActionMessage {
+        return success(kClass.simpleName!!)
+    }
+
+    infix fun failure(kClass: KClass<out Message>): FlowActionMessage {
+        return failure(kClass.simpleName!!)
     }
 
     override fun by(action: () -> Any) {
