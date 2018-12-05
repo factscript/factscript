@@ -9,19 +9,27 @@ fun translate(flowExecution: FlowExecution<*>): Container {
 
     fun translate(node: FlowNode, parent: Container): Element {
         return when(node) {
-            is FlowReactionImpl<*, *> -> BpmnStartEventSymbol(Id(node.id), parent)
+            is FlowReactionImpl<*, *> -> {
+                val element = BpmnStartEventSymbol(Id(node.id), parent)
+                element.message = node.reactionType == FlowReactionType.message
+                element
+            }
             is FlowExecutionImpl<*> -> {
                 when (node.type) {
                     FlowDefinitionType.execution -> {
                         val definition = node as FlowDefinition<*>
                         val sequence = Sequence(Id(node.id), parent)
                         definition.nodes.forEach { translate(it, sequence) }
-                        return sequence
+                        sequence
                     }
                     else -> BpmnServiceTaskSymbol(Id(node.id), parent)
                 }
             }
-            is FlowActionImpl<*, *> -> BpmnEndEventSymbol(Id(node.id), parent)
+            is FlowActionImpl<*, *> -> {
+                val element = BpmnEndEventSymbol(Id(node.id), parent)
+                element.message = node.action != null
+                element
+            }
             else -> throw IllegalArgumentException()
         }
     }

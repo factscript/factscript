@@ -3,11 +3,16 @@ package io.factdriven.flowlang
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+enum class FlowReactionType {
+    message
+}
+
 class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
 
     infix fun <M: Any> message(listener: FlowListener<M>): FlowReactionImpl<I, M> {
         val reaction = FlowReactionImpl<I, M>()
         parent.nodes.add(reaction)
+        reaction.reactionType = FlowReactionType.message
         reaction.listener = listener
         return reaction
     }
@@ -38,6 +43,7 @@ class FlowReactionImpl<I: Any, M: Message>: FlowNode, FlowReactionMessage<M> {
 
     override var id = ""
     lateinit var listener: FlowListener<M>
+    var reactionType: FlowReactionType = FlowReactionType.message
     var actionType: FlowActionType = FlowActionType.success
     var action: ((M) -> Any)? = null
 

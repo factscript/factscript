@@ -42,12 +42,14 @@ class BpmnServiceTaskSymbol(id: Id, parent: Container): BpmnTaskSymbol<ServiceTa
 class BpmnStartEventSymbol(id: Id, parent: Container): BpmnEventSymbol<StartEvent>(id, parent) {
 
     override val elementClass = StartEvent::class
+    var message: Boolean = false
 
 }
 
-class BpmnEndEventSymbol(id: Id, parent: Container): BpmnEventSymbol<StartEvent>(id, parent) {
+class BpmnEndEventSymbol(id: Id, parent: Container): BpmnEventSymbol<EndEvent>(id, parent) {
 
-    override val elementClass = StartEvent::class
+    override val elementClass = EndEvent::class
+    var message: Boolean = false
 
 }
 
@@ -80,6 +82,21 @@ fun transform(container: Container): BpmnModelInstance {
         modelElementInstance.setAttributeValue("id", symbol.id.key, true)
         modelElementInstance.setAttributeValue("name", symbol.id.label, false)
         process.addChildElement(modelElementInstance)
+
+        when (symbol) {
+            is BpmnStartEventSymbol -> {
+                if (symbol.message) {
+                    val messageEventDefinition = modelInstance.newInstance(MessageEventDefinition::class.java)
+                    modelElementInstance.addChildElement(messageEventDefinition)
+                }
+            }
+            is BpmnEndEventSymbol -> {
+                if (symbol.message) {
+                    val messageEventDefinition = modelInstance.newInstance(MessageEventDefinition::class.java)
+                    modelElementInstance.addChildElement(messageEventDefinition)
+                }
+            }
+        }
 
         val bpmnShape = modelInstance.newInstance(BpmnShape::class.java)
         bpmnShape.bpmnElement = modelElementInstance as BaseElement

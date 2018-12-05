@@ -19,7 +19,7 @@ open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode, FlowActionMessage 
     override var id = ""
 
     var actionType = FlowActionType.success
-    var action: (() -> Any) = {}
+    var action: (() -> Any)? = null
 
     infix fun intent(id: String): FlowActionMessage {
         actionType = FlowActionType.intent

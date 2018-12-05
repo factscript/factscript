@@ -50,7 +50,7 @@ class PaymentRetrievalStep0Test {
             create success "Payment retrieved"
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowActionImpl<*, *>
-        assertEquals(Unit::class, node.action.invoke()::class)
+        assertEquals(null, node.action)
     }
 
     @Test()
@@ -60,7 +60,7 @@ class PaymentRetrievalStep0Test {
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowActionImpl<*, *>
         assertEquals(FlowActionType.success, node.actionType)
-        assertEquals(PaymentRetrieved::class, node.action.invoke()::class)
+        assertEquals(PaymentRetrieved::class, node.action!!.invoke()::class)
     }
 
     @Test()
@@ -84,7 +84,7 @@ class PaymentRetrievalStep0Test {
         assertEquals(FlowActionImpl::class, node::class)
         val action = node as FlowActionImpl<*, *>
         assertEquals(FlowActionType.intent, action.actionType)
-        assertEquals(ChargeCreditCard::class, action.action.invoke()::class)
+        assertEquals(ChargeCreditCard::class, action.action!!.invoke()::class)
     }
 
     @Test()
