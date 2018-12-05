@@ -1,7 +1,7 @@
 package io.factdriven.flow.lang
 
 import io.factdriven.flow.FlowInstance
-import io.factdriven.flow.Message
+import io.factdriven.flow.FlowMessage
 import kotlin.reflect.KClass
 
 /**
@@ -56,23 +56,23 @@ open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode,
         return this
     }
 
-    infix fun intent(kClass: KClass<out Message>): FlowActionMessage {
+    infix fun intent(kClass: KClass<out FlowMessage>): FlowActionMessage {
         return intent(kClass.simpleName!!)
     }
 
-    infix fun acceptance(kClass: KClass<out Message>): FlowActionMessage {
+    infix fun acceptance(kClass: KClass<out FlowMessage>): FlowActionMessage {
         return acceptance(kClass.simpleName!!)
     }
 
-    infix fun progress(kClass: KClass<out Message>): FlowActionMessage {
+    infix fun progress(kClass: KClass<out FlowMessage>): FlowActionMessage {
         return progress(kClass.simpleName!!)
     }
 
-    infix fun success(kClass: KClass<out Message>): FlowActionMessage {
+    infix fun success(kClass: KClass<out FlowMessage>): FlowActionMessage {
         return success(kClass.simpleName!!)
     }
 
-    infix fun failure(kClass: KClass<out Message>): FlowActionMessage {
+    infix fun failure(kClass: KClass<out FlowMessage>): FlowActionMessage {
         return failure(kClass.simpleName!!)
     }
 

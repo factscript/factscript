@@ -1,7 +1,7 @@
 package io.factdriven.flow.lang
 
 import io.factdriven.flow.FlowInstance
-import io.factdriven.flow.Message
+import io.factdriven.flow.FlowMessage
 import kotlin.reflect.KClass
 
 /**
@@ -98,41 +98,41 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>,
         return node
     }
 
-    fun <M: Message> type(type: KClass<M>): FlowListener<M> {
-        return FlowListener(type)
+    fun <M: FlowMessage> type(type: KClass<M>): FlowMessagePattern<M> {
+        return FlowMessagePattern(type)
     }
 
-    fun <M: Message> pattern(pattern: M): FlowListener<M> {
+    fun <M: FlowMessage> pattern(pattern: M): FlowMessagePattern<M> {
         TODO()
     }
 
-    inline fun <reified M: Message> intent(id: String = id(M::class)): FlowReactionAction<M> {
+    inline fun <reified M: FlowMessage> intent(id: String = id(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.intent, id)
     }
 
-    inline fun <reified M: Message> acceptance(id: String = id(M::class)): FlowReactionAction<M> {
+    inline fun <reified M: FlowMessage> acceptance(id: String = id(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.acceptance, id)
     }
 
-    inline fun <reified M: Message> progress(id: String = id(M::class)): FlowReactionAction<M> {
+    inline fun <reified M: FlowMessage> progress(id: String = id(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.progress, id)
     }
 
-    inline fun <reified M: Message> success(id: String = id(M::class)): FlowReactionAction<M> {
+    inline fun <reified M: FlowMessage> success(id: String = id(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.success, id)
     }
 
-    inline fun <reified M: Message> fix(id: String = id(M::class)): FlowReactionAction<M> {
+    inline fun <reified M: FlowMessage> fix(id: String = id(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.fix, id)
     }
 
-    inline fun <reified M: Message> failure(id: String = id(M::class)): FlowReactionAction<M> {
+    inline fun <reified M: FlowMessage> failure(id: String = id(M::class)): FlowReactionAction<M> {
         return FlowReactionAction(FlowActionType.failure, id)
     }
 
 }
 
-data class FlowListener<M: Message>(val type: KClass<out M>)
+data class FlowMessagePattern<M: FlowMessage>(val type: KClass<out M>)
 
 fun id(kClass: KClass<*>): String {
     return kClass.simpleName ?: ""

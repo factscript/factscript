@@ -1,6 +1,6 @@
 package io.factdriven.flow.lang
 
-import io.factdriven.flow.Message
+import io.factdriven.flow.FlowMessage
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -11,7 +11,7 @@ enum class FlowReactionType {
 
 class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
 
-    infix fun <M: Any> message(listener: FlowListener<M>): FlowReactionImpl<I, M> {
+    infix fun <M: Any> message(listener: FlowMessagePattern<M>): FlowReactionImpl<I, M> {
         val reaction = FlowReactionImpl<I, M>()
         parent.nodes.add(reaction)
         reaction.reactionType = FlowReactionType.message
@@ -33,19 +33,19 @@ class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
 
 }
 
-data class FlowReactionAction<M: Message>(val type: FlowActionType = FlowActionType.success, val id: String = "")
+data class FlowReactionAction<M: FlowMessage>(val type: FlowActionType = FlowActionType.success, val id: String = "")
 
-interface FlowReactionMessage<M: Message> {
+interface FlowReactionMessage<M: FlowMessage> {
 
     infix fun by(reaction: (M) -> Any)
 
 }
 
-class FlowReactionImpl<I: Any, M: Message>: FlowNode,
+class FlowReactionImpl<I: Any, M: FlowMessage>: FlowNode,
     FlowReactionMessage<M> {
 
     override var id = ""
-    lateinit var listener: FlowListener<M>
+    lateinit var listener: FlowMessagePattern<M>
     var reactionType: FlowReactionType = FlowReactionType.message
     var actionType: FlowActionType = FlowActionType.success
     var action: ((M) -> Any)? = null
