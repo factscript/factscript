@@ -56,7 +56,7 @@ fun transform(container: Container): BpmnModelInstance {
     val modelInstance = Bpmn.createEmptyModel()
 
     val definitions = modelInstance.newInstance(Definitions::class.java)
-    definitions.targetNamespace = "http://camunda.org/examples"
+    definitions.targetNamespace = "https://factdriven.io/tests"
     modelInstance.definitions = definitions
 
     val process = modelInstance.newInstance(Process::class.java)
