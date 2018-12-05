@@ -1,4 +1,6 @@
-package io.factdriven.flowlang
+package io.factdriven.flow.lang
+
+import io.factdriven.flow.Message
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -39,7 +41,8 @@ interface FlowReactionMessage<M: Message> {
 
 }
 
-class FlowReactionImpl<I: Any, M: Message>: FlowNode, FlowReactionMessage<M> {
+class FlowReactionImpl<I: Any, M: Message>: FlowNode,
+    FlowReactionMessage<M> {
 
     override var id = ""
     lateinit var listener: FlowListener<M>

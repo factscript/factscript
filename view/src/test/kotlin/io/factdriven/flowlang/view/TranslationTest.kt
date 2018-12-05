@@ -1,6 +1,6 @@
-package io.factdriven.flowlang.transformation
+package io.factdriven.flowlang.view
 
-import io.factdriven.flowlang.execute
+import io.factdriven.flow.lang.execute
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ class TranslationTest {
     @Test
     fun translateFlowExecution() {
 
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
         }
 
         val element = translate(flow)
@@ -28,7 +28,7 @@ class TranslationTest {
     @Test
     fun translateFlowReaction() {
 
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             on message type(RetrievePayment::class) create acceptance()
         }
 
@@ -45,9 +45,9 @@ class TranslationTest {
     @Test
     fun translateFlowService() {
 
-        val flow = execute <PaymentRetrieval> ("CustomPaymentRetrieval") {
+        val flow = execute<PaymentRetrieval>("CustomPaymentRetrieval") {
             execute service {
-                create intent("ChargeCreditCard")
+                create intent ("ChargeCreditCard")
             }
         }
 
@@ -64,8 +64,8 @@ class TranslationTest {
     @Test
     fun translateFlowAction() {
 
-        val flow = execute <PaymentRetrieval> ("CustomPaymentRetrieval")  {
-            create success("PaymentRetrieved")
+        val flow = execute<PaymentRetrieval>("CustomPaymentRetrieval") {
+            create success ("PaymentRetrieved")
         }
 
         val element = translate(flow)

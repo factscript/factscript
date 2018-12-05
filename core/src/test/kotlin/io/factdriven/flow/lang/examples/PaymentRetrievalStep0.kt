@@ -1,6 +1,6 @@
-package io.factdriven.flowlang.example.paymentretrieval
+package io.factdriven.flow.lang.examples
 
-import io.factdriven.flowlang.*
+import io.factdriven.flow.lang.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -11,14 +11,14 @@ class PaymentRetrievalStep0Test {
 
     @Test()
     fun execute() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
         }
         assertNotNull(flow)
     }
 
     @Test()
     fun on() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             on
         } as FlowDefinition<PaymentRetrieval>
         assertEquals(0, flow.nodes.size)
@@ -26,7 +26,7 @@ class PaymentRetrievalStep0Test {
 
     @Test()
     fun onMessageType() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             on message type(RetrievePayment::class)
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowReactionImpl<*, *>
@@ -37,7 +37,7 @@ class PaymentRetrievalStep0Test {
 
     @Test()
     fun create() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             create
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0)
@@ -46,7 +46,7 @@ class PaymentRetrievalStep0Test {
 
     @Test()
     fun createSuccessWithoutAction() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             create success "Payment retrieved"
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowActionImpl<*, *>
@@ -55,7 +55,7 @@ class PaymentRetrievalStep0Test {
 
     @Test()
     fun createSuccessWithAction() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             create success "Payment retrieved" by { PaymentRetrieved() }
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowActionImpl<*, *>
@@ -65,7 +65,7 @@ class PaymentRetrievalStep0Test {
 
     @Test()
     fun executeService() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             execute service {}
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowDefinition<*>
@@ -74,7 +74,7 @@ class PaymentRetrievalStep0Test {
 
     @Test()
     fun executeServiceCreateIntent() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             execute service {
                 create intent "Charge credit card" by { ChargeCreditCard() }
             }
@@ -89,7 +89,7 @@ class PaymentRetrievalStep0Test {
 
     @Test()
     fun executeServiceOnMessage() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             execute service {
                 on message type(CreditCardCharged::class) create success("Credit card charged")
             }
@@ -104,13 +104,13 @@ class PaymentRetrievalStep0Test {
 
     @Test()
     fun flow() {
-        val flow = execute <PaymentRetrieval> {
+        val flow = execute<PaymentRetrieval> {
             on message type(RetrievePayment::class)
             execute service {
-                create intent("Charge credit card") by { ChargeCreditCard() }
+                create intent ("Charge credit card") by { ChargeCreditCard() }
                 on message type(CreditCardCharged::class)
             }
-            create success("Payment retrieved") by { PaymentRetrieved() }
+            create success ("Payment retrieved") by { PaymentRetrieved() }
         } as FlowDefinition<PaymentRetrieval>
         assertEquals(3, flow.nodes.size)
         val service = flow.nodes[1] as FlowDefinition<*>

@@ -1,6 +1,6 @@
-package io.factdriven.flowlang.transformation
+package io.factdriven.flowlang.view
 
-import io.factdriven.flowlang.*
+import io.factdriven.flow.lang.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

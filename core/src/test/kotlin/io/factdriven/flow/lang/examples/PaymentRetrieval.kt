@@ -1,4 +1,4 @@
-package io.factdriven.flowlang.example.paymentretrieval
+package io.factdriven.flow.lang.examples
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

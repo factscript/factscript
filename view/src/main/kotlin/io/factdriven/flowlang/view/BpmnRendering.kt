@@ -1,4 +1,4 @@
-package io.factdriven.flowlang.transformation
+package io.factdriven.flowlang.view
 
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance

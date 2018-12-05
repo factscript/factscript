@@ -1,4 +1,4 @@
-package io.factdriven.flowlang.transformation
+package io.factdriven.flowlang.view
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

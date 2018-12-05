@@ -1,4 +1,4 @@
-package io.factdriven.flowlang.transformation
+package io.factdriven.flowlang.view
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

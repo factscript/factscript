@@ -1,5 +1,7 @@
-package io.factdriven.flowlang
+package io.factdriven.flow.lang
 
+import io.factdriven.flow.FlowInstance
+import io.factdriven.flow.Message
 import kotlin.reflect.KClass
 
 /**
@@ -48,7 +50,8 @@ enum class FlowDefinitionType {
 
 }
 
-class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, FlowActivities<I> {
+class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>,
+    FlowExecution<I>, FlowActivities<I> {
 
     lateinit var status: I
 
@@ -64,7 +67,7 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
             }
         }
 
-    override infix fun service(service: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I>  {
+    override infix fun service(service: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I> {
         type = FlowDefinitionType.service
         this.apply(service)
         return this
@@ -72,11 +75,13 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
 
     override infix fun receive(receive: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I> = TODO()
 
-    override val on: FlowReactions<I> get() {
+    override val on: FlowReactions<I>
+        get() {
         return FlowReactions(this)
     }
 
-    override val execute: FlowActivities<I> get() {
+    override val execute: FlowActivities<I>
+        get() {
         val node = FlowExecutionImpl<I>()
         nodes.add(node)
         return node
@@ -86,7 +91,8 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>, FlowExecution<I>, F
 
     override val select: Selection<I> get() = TODO()
 
-    override val create: FlowActionImpl<I, Any> get() {
+    override val create: FlowActionImpl<I, Any>
+        get() {
         val node = FlowActionImpl<I, Any>()
         nodes.add(node)
         return node

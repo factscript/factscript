@@ -1,4 +1,6 @@
-package io.factdriven.flowlang
+package io.factdriven.flow.lang
+
+import io.factdriven.flow.FlowInstance
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -14,7 +16,8 @@ interface FlowActionMessage {
 
 }
 
-open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode, FlowActionMessage {
+open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode,
+    FlowActionMessage {
 
     override var id = ""
 

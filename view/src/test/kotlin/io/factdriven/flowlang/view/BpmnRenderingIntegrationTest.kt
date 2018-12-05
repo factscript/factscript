@@ -1,7 +1,7 @@
-package io.factdriven.flowlang.transformation
+package io.factdriven.flowlang.view
 
-import io.factdriven.flowlang.FlowExecution
-import io.factdriven.flowlang.execute
+import io.factdriven.flow.lang.FlowExecution
+import io.factdriven.flow.lang.execute
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -17,10 +17,10 @@ class BpmnRenderingIntegrationTest {
             execute <PaymentRetrieval> {
                 on message type(RetrievePayment::class) create acceptance()
                 execute service {
-                    create intent("ChargeCreditCard") by { ChargeCreditCard() }
+                    create intent ("ChargeCreditCard") by { ChargeCreditCard() }
                     on message type(CreditCardCharged::class) create success()
                 }
-                create success("PaymentRetrieved") by { PaymentRetrieved() }
+                create success ("PaymentRetrieved") by { PaymentRetrieved() }
             }
         )
     }
