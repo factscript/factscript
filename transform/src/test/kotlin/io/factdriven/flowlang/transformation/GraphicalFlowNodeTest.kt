@@ -57,15 +57,15 @@ class GraphicalFlowNodeTest {
         sequence.add(endEvent)
 
         assertEquals(Position(0,0), sequence.position)
-        assertEquals(Dimension(eventDimension.x * 2 + taskDimension.x, taskDimension.y), sequence.dimension)
+        assertEquals(Dimension(eventDimension.width * 2 + taskDimension.width, taskDimension.height), sequence.dimension)
 
         assertEquals(eventDimension, startEvent.dimension)
         assertEquals(taskDimension, serviceTask.dimension)
         assertEquals(eventDimension, endEvent.dimension)
 
-        assertEquals(Position(0,(taskDimension.y - eventDimension.y) / 2), startEvent.position)
-        assertEquals(Position(eventDimension.x, 0), serviceTask.position)
-        assertEquals(Position(eventDimension.x + taskDimension.x, (taskDimension.y - eventDimension.y) / 2), endEvent.position)
+        assertEquals(Position(0,(taskDimension.height - eventDimension.height) / 2), startEvent.position)
+        assertEquals(Position(eventDimension.width, 0), serviceTask.position)
+        assertEquals(Position(eventDimension.width + taskDimension.width, (taskDimension.height - eventDimension.height) / 2), endEvent.position)
 
     }
 
