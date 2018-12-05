@@ -13,7 +13,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 
-val zero = Position(100,60)
+val zero = Position(173 - margin, 80 - margin)
 
 abstract class BpmnSymbol<M: FlowNode>(id: Id, parent: Container): Symbol(id, parent) {
 

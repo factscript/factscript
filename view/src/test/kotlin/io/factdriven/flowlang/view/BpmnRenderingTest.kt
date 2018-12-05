@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
  */
 class BpmnRenderingTest {
 
-    private val margin = 18
     private val eventDimension = Dimension(36 + 2 * margin, 36 + 2* margin)
     private val taskDimension = Dimension(100 + 2* margin, 80 + 2* margin)
 
