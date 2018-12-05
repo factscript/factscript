@@ -1,7 +1,5 @@
 package io.factdriven.flowlang.transformation
 
-import java.lang.IllegalStateException
-
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
@@ -101,7 +99,7 @@ abstract class Symbol(override val id: Id, override val parent: Container): Grap
         outgoing.add(connector)
         target.incoming.add(connector)
     }
-    
+
     fun waypoint(connector: Connector): Position {
         // TODO select based on relative position
         return if (connector.source.equals(this)) rightCenter else leftCenter
@@ -120,7 +118,7 @@ abstract class Symbol(override val id: Id, override val parent: Container): Grap
 data class Connector(val source: Symbol, val target: Symbol): Graphical, Identified {
 
     override val id: Id = Id(source.id.key + "-" + target.id.key)
-    
+
     val waypoints: List<Position> get() {
         val from = source.waypoint(this)
         val to = target.waypoint(this)
@@ -147,101 +145,3 @@ data class Id (val key: String) {
     }.invoke()
 
 }
-
-interface GraphicalElement {
-
-    var parent: GraphicalElementSequence?
-    val id: String
-    val position: Position
-    val dimension: Dimension
-
-    val leftConnector: Position
-    val rightConnector: Position
-
-    fun rendered(): List<Rendered>
-
-}
-
-class GraphicalElementSequence(label: String = ""): AbstractGraphicalElement(label) {
-
-    val children = mutableListOf<GraphicalElement>()
-
-    fun add (node: GraphicalElement) {
-        node.parent = this
-        children.add(node)
-    }
-
-    override val dimension: Dimension get() {
-        return if (children.isEmpty()) Dimension(0,0) else Dimension(children.sumBy { it.dimension.width }, children.maxBy { it.dimension.height }!!.dimension.height)
-    }
-
-    override fun rendered(): List<Rendered> {
-        val symbols = children.map { it.rendered() }.flatten()
-        var previous = children[0]
-        val sequenceFlows = children.subList(1, children.size).map {
-            val sequenceFlow = RenderedSequenceFlow("", previous.rightConnector, it.leftConnector, previous as Rendered, it as Rendered)
-            previous = it
-            sequenceFlow
-        }
-        return symbols + sequenceFlows
-    }
-
-    fun position(node: AbstractGraphicalElement): Position {
-        val graphicalNodesBefore = children.subList(0, children.indexOf(node))
-        return Position(position.x + graphicalNodesBefore.sumBy { it.dimension.width }, position.y + (dimension.height - node.dimension.height) / 2)
-    }
-
-    override val leftConnector get() = children.first().leftConnector
-    override val rightConnector get() = children.last().rightConnector
-
-}
-
-abstract class AbstractGraphicalElement(override var id: String): GraphicalElement {
-
-    override var parent: GraphicalElementSequence? = null
-
-    override val position: Position get() {
-        return parent?.position(this) ?: Position(0, 0)
-    }
-
-}
-
-interface Rendered
-
-interface RenderedSymbol: Rendered {
-
-    val renderingPosition: Position
-    val renderingDimension: Dimension
-
-}
-
-data class RenderedSequenceFlow(val label: String, val from: Position, val to: Position, val source: Rendered, val target: Rendered): Rendered
-
-abstract class RenderedTask(label: String): AbstractGraphicalElement(label), RenderedSymbol {
-
-    override val renderingDimension get() = Dimension(100,80)
-    override val renderingPosition get() = Position(position.x + margin, position.y + margin)
-    override val dimension get() = Dimension(renderingDimension.width + 2 * margin, renderingDimension.height + 2 * margin)
-    override fun rendered() = listOf(this)
-
-    override val leftConnector get() = Position(position.x + margin, position.y + dimension.height / 2)
-    override val rightConnector get() = Position(position.x + dimension.width - margin, position.y + dimension.height / 2)
-
-}
-
-class RenderedServiceTask(label: String): RenderedTask(label)
-
-abstract class RenderedEvent(label: String): AbstractGraphicalElement(label), RenderedSymbol {
-
-    override val renderingDimension get() = Dimension(36,36)
-    override val renderingPosition get() = Position(position.x + margin, position.y + margin)
-    override val dimension get() = Dimension(renderingDimension.width + 2 * margin, renderingDimension.height + 2 * margin)
-    override fun rendered() = listOf(this)
-
-    override val leftConnector get() = Position(position.x + margin, position.y + dimension.height / 2)
-    override val rightConnector get() = Position(position.x + dimension.width - margin, position.y + dimension.height / 2)
-
-}
-
-class RenderedStartEvent(label: String): RenderedEvent(label)
-class RenderedEndEvent(label: String): RenderedEvent(label)
