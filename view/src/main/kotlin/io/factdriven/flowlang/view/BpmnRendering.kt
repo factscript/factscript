@@ -23,25 +23,21 @@ abstract class BpmnSymbol(id: Id, parent: Container): Symbol(id, parent) {
 
 }
 
-class BpmnTaskSymbol(id: Id, parent: Container): BpmnSymbol(id, parent)  {
+class BpmnTaskSymbol(id: Id, parent: Container, val type: BpmnTaskType): BpmnSymbol(id, parent)  {
 
     override val inner = Dimension(100,80)
-    override val elementClass = ServiceTask::class
+    override val elementClass: KClass<out FlowNode> get() {
+        return when (type) {
+            BpmnTaskType.service -> ServiceTask::class
+            BpmnTaskType.send -> SendTask::class
+            BpmnTaskType.receive -> ReceiveTask::class
+        }
+    }
 
-    val label: String = {
+}
 
-        val regex = String.format("%s|%s|%s",
-            "(?<=[A-Z])(?=[A-Z][a-z])",
-            "(?<=[^A-Z])(?=[A-Z])",
-            "(?<=[A-Za-z])(?=[^A-Za-z])"
-        ).toRegex()
-
-        val split = id.key.split(regex)
-
-        (split[0] + if (split.size > 1) split.subList(1, split.size).joinToString(separator = "") { " " + it.substring(0, 1).toLowerCase() + it.substring(1) } else "").trim()
-
-    }.invoke()
-
+enum class BpmnTaskType {
+    service, send, receive
 }
 
 enum class BpmnEventType {

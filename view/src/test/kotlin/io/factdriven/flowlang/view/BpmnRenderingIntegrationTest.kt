@@ -24,7 +24,6 @@ class BpmnRenderingIntegrationTest {
                 create progress ("PaymentCovered") by { PaymentRetrieved() }
                 execute service {
                     create intent ("NotifyCustomer")
-                    on message type(CreditCardCharged::class) create success()
                 }
                 on message type(CustomerNotified::class) create progress()
                 create success ("PaymentRetrieved") by { PaymentRetrieved() }

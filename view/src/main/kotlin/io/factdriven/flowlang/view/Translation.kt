@@ -20,7 +20,14 @@ fun translate(flowExecution: FlowExecution<*>): Container {
                         definition.nodes.forEach { translate(it, sequence) }
                         sequence
                     }
-                    else -> BpmnTaskSymbol(Id(node.id), parent)
+                    else -> {
+                        val children = (node as FlowDefinition<*>).nodes
+                        val type = if (children.isEmpty()) BpmnTaskType.service
+                            else if (children.first() is FlowReactionImpl<*,*>) BpmnTaskType.receive
+                            else if (children.size == 1) BpmnTaskType.send
+                            else BpmnTaskType.service
+                        BpmnTaskSymbol(Id(node.id), parent, type)
+                    }
                 }
             }
             is FlowActionImpl<*, *> -> {

@@ -26,7 +26,7 @@ class BpmnRenderingTest {
     fun bpmnServiceTaskSymbol() {
 
         val container = Sequence(Id("PaymentRetrieval"))
-        val symbol = BpmnTaskSymbol(Id("ChargeCreditCard"), container)
+        val symbol = BpmnTaskSymbol(Id("ChargeCreditCard"), container, BpmnTaskType.service)
 
         assertEquals(Position(0,0), symbol.position)
         assertEquals(taskDimension, symbol.dimension)
@@ -50,7 +50,7 @@ class BpmnRenderingTest {
         val container = Sequence(Id("PaymentRetrieval"))
 
         val startEvent = BpmnEventSymbol(Id("RetrievePayment"), container, BpmnEventType.message, BpmnEventCharacteristic.catching)
-        val serviceTask = BpmnTaskSymbol(Id("ChargeCreditCard"), container)
+        val serviceTask = BpmnTaskSymbol(Id("ChargeCreditCard"), container, BpmnTaskType.service)
         val endEvent = BpmnEventSymbol(Id("PaymentRetrieved"), container, BpmnEventType.message, BpmnEventCharacteristic.throwing)
 
         assertEquals(Position(0,0), container.position)
