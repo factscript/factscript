@@ -15,18 +15,19 @@ class BpmnRenderingIntegrationTest {
     fun testPaymentRetrievalVersion1() {
         render(
             execute <PaymentRetrieval> {
-                on message type(RetrievePayment::class) create acceptance()
-                create progress ("PaymentRetrievalAccepted")
+                on message type(RetrievePayment::class)
                 execute service {
-                    create intent ("ChargeCard") by { ChargeCreditCard() }
+                    create intent ("ChargeCreditCard") by { ChargeCreditCard() }
                     on message type(CreditCardCharged::class) create success()
                 }
-                create progress ("PaymentCovered") by { PaymentRetrieved() }
+                create progress ("PaymentCovered")
                 execute service {
-                    create intent ("NotifyCustomer")
+                    create intent ("NotifyCustomer") by { NotifyCustomer() }
                 }
-                on message type(CustomerNotified::class) create progress()
-                create success ("PaymentRetrieved") by { PaymentRetrieved() }
+                execute service {
+                    on message type(CustomerNotified::class)
+                }
+                create success ("PaymentRetrieved")
             }
         )
     }
@@ -54,7 +55,7 @@ data class PaymentRetrieval(val init: RetrievePayment) {
 }
 
 class RetrievePayment(val id: String, val accountId: String, val payment: Float)
-class NotifyCustomer(val id: String, val accountId: String, val payment: Float)
+class NotifyCustomer(val id: String? = null, val accountId: String? = null, val payment: Float? = null)
 class CustomerNotified(val id: String, val accountId: String, val payment: Float)
 class PaymentRetrievalAccepted(val paymentId: String? = null)
 class PaymentRetrieved(val paymentId: String? = null)

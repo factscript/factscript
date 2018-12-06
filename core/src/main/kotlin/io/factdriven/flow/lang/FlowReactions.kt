@@ -12,7 +12,7 @@ enum class FlowReactionType {
 class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
 
     infix fun <M: Any> message(listener: FlowMessagePattern<M>): FlowReactionImpl<I, M> {
-        val reaction = FlowReactionImpl<I, M>()
+        val reaction = FlowReactionImpl<I, M>(listener.type.simpleName!!)
         parent.nodes.add(reaction)
         reaction.reactionType = FlowReactionType.message
         reaction.listener = listener
@@ -41,13 +41,12 @@ interface FlowReactionMessage<M: FlowMessage> {
 
 }
 
-class FlowReactionImpl<I: Any, M: FlowMessage>: FlowNode,
+class FlowReactionImpl<I: Any, M: FlowMessage>(override var id: String): FlowNode,
     FlowReactionMessage<M> {
 
-    override var id = ""
     lateinit var listener: FlowMessagePattern<M>
     var reactionType: FlowReactionType = FlowReactionType.message
-    var actionType: FlowActionType = FlowActionType.success
+    var actionType: FlowActionType = FlowActionType.progress
     var action: ((M) -> Any)? = null
 
     infix fun having(key: () -> Pair<String, Any>): FlowReactionImpl<I, M> {
