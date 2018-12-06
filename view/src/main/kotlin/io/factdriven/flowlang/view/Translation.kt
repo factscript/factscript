@@ -31,7 +31,7 @@ fun translate(flowExecution: FlowExecution<*>): Container {
                 }
             }
             is FlowActionImpl<*, *> -> {
-                BpmnEventSymbol(Id(node.id), parent, BpmnEventType.message, BpmnEventCharacteristic.throwing)
+                BpmnEventSymbol(Id(node.id), parent, if (node.action != null) BpmnEventType.message else BpmnEventType.none, BpmnEventCharacteristic.throwing)
             }
             else -> throw IllegalArgumentException()
         }

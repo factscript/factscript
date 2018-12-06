@@ -41,7 +41,7 @@ enum class BpmnTaskType {
 }
 
 enum class BpmnEventType {
-    message
+    none, message
 }
 
 enum class BpmnEventCharacteristic {
