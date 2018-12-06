@@ -15,7 +15,7 @@ class BpmnRenderingTest {
     fun bpmnStartEventSymbol() {
 
         val container = Sequence(Id("PaymentRetrieval"))
-        val symbol = BpmnStartEventSymbol(Id("RetrievePayment"), container)
+        val symbol = BpmnEventSymbol(Id("RetrievePayment"), container, BpmnEventType.message, BpmnEventCharacteristic.catching)
 
         assertEquals(Position(0,0), symbol.position)
         assertEquals(eventDimension, symbol.dimension)
@@ -26,7 +26,7 @@ class BpmnRenderingTest {
     fun bpmnServiceTaskSymbol() {
 
         val container = Sequence(Id("PaymentRetrieval"))
-        val symbol = BpmnServiceTaskSymbol(Id("ChargeCreditCard"), container)
+        val symbol = BpmnTaskSymbol(Id("ChargeCreditCard"), container)
 
         assertEquals(Position(0,0), symbol.position)
         assertEquals(taskDimension, symbol.dimension)
@@ -37,7 +37,7 @@ class BpmnRenderingTest {
     fun bpmnEndEventSymbol() {
 
         val container = Sequence(Id("PaymentRetrieval"))
-        val symbol = BpmnEndEventSymbol(Id("PaymentRetrieved"), container)
+        val symbol = BpmnEventSymbol(Id("PaymentRetrieved"), container, BpmnEventType.message, BpmnEventCharacteristic.throwing)
 
         assertEquals(Position(0,0), symbol.position)
         assertEquals(eventDimension, symbol.dimension)
@@ -49,9 +49,9 @@ class BpmnRenderingTest {
 
         val container = Sequence(Id("PaymentRetrieval"))
 
-        val startEvent = BpmnStartEventSymbol(Id("RetrievePayment"), container)
-        val serviceTask = BpmnServiceTaskSymbol(Id("ChargeCreditCard"), container)
-        val endEvent = BpmnEndEventSymbol(Id("PaymentRetrieved"), container)
+        val startEvent = BpmnEventSymbol(Id("RetrievePayment"), container, BpmnEventType.message, BpmnEventCharacteristic.catching)
+        val serviceTask = BpmnTaskSymbol(Id("ChargeCreditCard"), container)
+        val endEvent = BpmnEventSymbol(Id("PaymentRetrieved"), container, BpmnEventType.message, BpmnEventCharacteristic.throwing)
 
         assertEquals(Position(0,0), container.position)
         assertEquals(Dimension(eventDimension.width * 2 + taskDimension.width, taskDimension.height), container.dimension)

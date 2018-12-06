@@ -25,6 +25,28 @@ interface Element: Identified {
     val position: Position get() = parent?.position(this) ?: Position.zero
     val center: Position get() = Position(position.x + (dimension.width / 2), position.y + (dimension.height / 2))
 
+    val separator get() = " "
+
+    fun label(): String {
+
+        val regex = String.format(
+            "%s|%s|%s",
+            "(?<=[A-Z])(?=[A-Z][a-z])",
+            "(?<=[^A-Z])(?=[A-Z])",
+            "(?<=[A-Za-z])(?=[^A-Za-z])"
+        ).toRegex()
+
+        val split = id.key.split(regex)
+
+        return (split[0] + if (split.size > 1) split.subList(1, split.size).joinToString(separator = "") {
+            separator + it.substring(
+                0,
+                1
+            ).toLowerCase() + it.substring(1)
+        } else "").trim()
+
+    }
+
 }
 
 abstract class Container(override val id: Id, override val parent: Container? = null): Element {
@@ -128,20 +150,4 @@ data class Connector(val source: Symbol, val target: Symbol): Graphical, Identif
 
 }
 
-data class Id (val key: String) {
-
-    val label: String = {
-
-        val regex = String.format("%s|%s|%s",
-            "(?<=[A-Z])(?=[A-Z][a-z])",
-            "(?<=[^A-Z])(?=[A-Z])",
-            "(?<=[A-Za-z])(?=[^A-Za-z])"
-        ).toRegex()
-
-        val split = key.split(regex)
-
-        (split[0] + if (split.size > 1) split.subList(1, split.size).joinToString(separator = "") { " " + it.substring(0, 1).toLowerCase() + it.substring(1) } else "").trim()
-
-    }.invoke()
-
-}
+data class Id (val key: String)

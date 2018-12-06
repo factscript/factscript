@@ -18,7 +18,7 @@ class TranslationTest {
         val element = translate(flow)
 
         assertEquals("PaymentRetrieval", element.id.key)
-        assertEquals("Payment retrieval", element.id.label)
+        assertEquals("Payment retrieval", element.label())
         assertEquals(null, element.parent)
         assertEquals(Position(0, 0), element.position)
         assertEquals(Dimension(0, 0), element.dimension)
