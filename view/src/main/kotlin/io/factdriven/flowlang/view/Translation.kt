@@ -10,13 +10,13 @@ fun translate(flowExecution: FlowExecution<*>): Container {
     fun translate(node: FlowNode, parent: Container): Element {
         return when(node) {
             is FlowReactionImpl<*, *> -> {
-                BpmnEventSymbol(Id(node.id), parent, BpmnEventType.message, BpmnEventCharacteristic.catching)
+                BpmnEventSymbol(node.id, parent, BpmnEventType.message, BpmnEventCharacteristic.catching)
             }
             is FlowExecutionImpl<*> -> {
                 when (node.type) {
                     FlowDefinitionType.execution -> {
                         val definition = node as FlowDefinition<*>
-                        val sequence = Sequence(Id(node.id), parent)
+                        val sequence = Sequence(node.id, parent)
                         definition.nodes.forEach { translate(it, sequence) }
                         sequence
                     }
@@ -26,19 +26,19 @@ fun translate(flowExecution: FlowExecution<*>): Container {
                             else if (children.first() is FlowReactionImpl<*,*>) BpmnTaskType.receive
                             else if (children.size == 1) BpmnTaskType.send
                             else BpmnTaskType.service
-                        BpmnTaskSymbol(Id(node.id), parent, type)
+                        BpmnTaskSymbol(node.id, parent, type)
                     }
                 }
             }
             is FlowActionImpl<*, *> -> {
-                BpmnEventSymbol(Id(node.id), parent, if (node.action != null) BpmnEventType.message else BpmnEventType.none, BpmnEventCharacteristic.throwing)
+                BpmnEventSymbol(node.id, parent, if (node.action != null) BpmnEventType.message else BpmnEventType.none, BpmnEventCharacteristic.throwing)
             }
             else -> throw IllegalArgumentException()
         }
     }
 
     val definition = flowExecution as FlowDefinition<*>
-    val sequence = Sequence(Id(flowExecution.id))
+    val sequence = Sequence(flowExecution.id)
     definition.nodes.forEach { translate(it, sequence) }
     return sequence
 

@@ -14,8 +14,8 @@ class BpmnRenderingTest {
     @Test
     fun bpmnStartEventSymbol() {
 
-        val container = Sequence(Id("PaymentRetrieval"))
-        val symbol = BpmnEventSymbol(Id("RetrievePayment"), container, BpmnEventType.message, BpmnEventCharacteristic.catching)
+        val container = Sequence("PaymentRetrieval")
+        val symbol = BpmnEventSymbol("RetrievePayment", container, BpmnEventType.message, BpmnEventCharacteristic.catching)
 
         assertEquals(Position(0,0), symbol.position)
         assertEquals(eventDimension, symbol.dimension)
@@ -25,8 +25,8 @@ class BpmnRenderingTest {
     @Test
     fun bpmnServiceTaskSymbol() {
 
-        val container = Sequence(Id("PaymentRetrieval"))
-        val symbol = BpmnTaskSymbol(Id("ChargeCreditCard"), container, BpmnTaskType.service)
+        val container = Sequence("PaymentRetrieval")
+        val symbol = BpmnTaskSymbol("ChargeCreditCard", container, BpmnTaskType.service)
 
         assertEquals(Position(0,0), symbol.position)
         assertEquals(taskDimension, symbol.dimension)
@@ -36,8 +36,8 @@ class BpmnRenderingTest {
     @Test
     fun bpmnEndEventSymbol() {
 
-        val container = Sequence(Id("PaymentRetrieval"))
-        val symbol = BpmnEventSymbol(Id("PaymentRetrieved"), container, BpmnEventType.message, BpmnEventCharacteristic.throwing)
+        val container = Sequence("PaymentRetrieval")
+        val symbol = BpmnEventSymbol("PaymentRetrieved", container, BpmnEventType.message, BpmnEventCharacteristic.throwing)
 
         assertEquals(Position(0,0), symbol.position)
         assertEquals(eventDimension, symbol.dimension)
@@ -47,11 +47,11 @@ class BpmnRenderingTest {
     @Test
     fun sequence() {
 
-        val container = Sequence(Id("PaymentRetrieval"))
+        val container = Sequence("PaymentRetrieval")
 
-        val startEvent = BpmnEventSymbol(Id("RetrievePayment"), container, BpmnEventType.message, BpmnEventCharacteristic.catching)
-        val serviceTask = BpmnTaskSymbol(Id("ChargeCreditCard"), container, BpmnTaskType.service)
-        val endEvent = BpmnEventSymbol(Id("PaymentRetrieved"), container, BpmnEventType.message, BpmnEventCharacteristic.throwing)
+        val startEvent = BpmnEventSymbol("RetrievePayment", container, BpmnEventType.message, BpmnEventCharacteristic.catching)
+        val serviceTask = BpmnTaskSymbol("ChargeCreditCard", container, BpmnTaskType.service)
+        val endEvent = BpmnEventSymbol("PaymentRetrieved", container, BpmnEventType.message, BpmnEventCharacteristic.throwing)
 
         assertEquals(Position(0,0), container.position)
         assertEquals(Dimension(eventDimension.width * 2 + taskDimension.width, taskDimension.height), container.dimension)

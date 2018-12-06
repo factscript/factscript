@@ -2,6 +2,7 @@ package io.factdriven.flowlang.view
 
 import io.factdriven.flow.lang.execute
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 /**
@@ -17,8 +18,8 @@ class TranslationTest {
 
         val element = translate(flow)
 
-        assertEquals("PaymentRetrieval", element.id.key)
-        assertEquals("Payment retrieval", element.label())
+        assertNotNull(element.id)
+        assertEquals("PaymentRetrieval", element.name)
         assertEquals(null, element.parent)
         assertEquals(Position(0, 0), element.position)
         assertEquals(Dimension(0, 0), element.dimension)
@@ -34,11 +35,12 @@ class TranslationTest {
 
         val element = translate(flow)
 
-        assertEquals("PaymentRetrieval", element.id.key)
+        assertNotNull(element.id)
+        assertEquals("PaymentRetrieval", element.name)
         assertEquals(null, element.parent)
         assertEquals(Position(0, 0), element.position)
         assertEquals(Dimension(72, 72), element.dimension)
-        assertEquals("RetrievePayment", element.children[0].id.key)
+        assertEquals(1, element.children.size)
 
     }
 
@@ -53,11 +55,12 @@ class TranslationTest {
 
         val element = translate(flow)
 
-        assertEquals("CustomPaymentRetrieval", element.id.key)
+        assertNotNull(element.id)
+        assertEquals("CustomPaymentRetrieval", element.name)
         assertEquals(null, element.parent)
         assertEquals(Position(0, 0), element.position)
         assertEquals(Dimension(136, 116), element.dimension)
-        assertEquals("ChargeCreditCard", element.children[0].id.key)
+        assertEquals(1, element.children.size)
 
     }
 
@@ -70,11 +73,12 @@ class TranslationTest {
 
         val element = translate(flow)
 
-        assertEquals("CustomPaymentRetrieval", element.id.key)
+        assertNotNull(element.id)
+        assertEquals("CustomPaymentRetrieval", element.name)
         assertEquals(null, element.parent)
         assertEquals(Position(0, 0), element.position)
         assertEquals(Dimension(72, 72), element.dimension)
-        assertEquals("PaymentRetrieved", element.children[0].id.key)
+        assertEquals(1, element.children.size)
 
     }
 

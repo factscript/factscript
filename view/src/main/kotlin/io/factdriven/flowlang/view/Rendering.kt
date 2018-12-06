@@ -1,5 +1,7 @@
 package io.factdriven.flowlang.view
 
+import java.util.*
+
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
@@ -18,39 +20,18 @@ data class Dimension (val width: Int, val height: Int)
 
 const val margin = 18
 
-interface Element: Identified {
+interface Element: Named, Identified {
 
     val parent: Container?
     val dimension: Dimension
     val position: Position get() = parent?.position(this) ?: Position.zero
     val center: Position get() = Position(position.x + (dimension.width / 2), position.y + (dimension.height / 2))
 
-    val separator get() = " "
-
-    fun label(): String {
-
-        val regex = String.format(
-            "%s|%s|%s",
-            "(?<=[A-Z])(?=[A-Z][a-z])",
-            "(?<=[^A-Z])(?=[A-Z])",
-            "(?<=[A-Za-z])(?=[^A-Za-z])"
-        ).toRegex()
-
-        val split = id.key.split(regex)
-
-        return (split[0] + if (split.size > 1) split.subList(1, split.size).joinToString(separator = "") {
-            separator + it.substring(
-                0,
-                1
-            ).toLowerCase() + it.substring(1)
-        } else "").trim()
-
-    }
-
 }
 
-abstract class Container(override val id: Id, override val parent: Container? = null): Element {
-     
+abstract class Container(override val name: String, override val parent: Container? = null): Element {
+
+    override val id = this::class.simpleName!! + "-" + UUID.randomUUID().toString()
     val children = mutableListOf<Element>()
 
     override val dimension: Dimension get() = if (children.isEmpty()) Dimension(0,0) else Dimension(children.sumBy { it.dimension.width }, children.maxBy { it.dimension.height }!!.dimension.height)
@@ -71,7 +52,7 @@ abstract class Container(override val id: Id, override val parent: Container? = 
 
 }
 
-class Sequence(id: Id, parent: Container? = null): Container(id, parent) {
+class Sequence(name: String, parent: Container? = null): Container(name, parent) {
 
     override fun position(child: Element): Position {
         val predecessors = children.subList(0, children.indexOf(child))
@@ -89,14 +70,21 @@ class Sequence(id: Id, parent: Container? = null): Container(id, parent) {
 
 interface Identified {
 
-    val id: Id
+    val id: String
+
+}
+
+interface Named {
+
+    val name: String
 
 }
 
 interface Graphical
 
-abstract class Symbol(override val id: Id, override val parent: Container): Graphical, Element {
+abstract class Symbol(override val name: String, override val parent: Container): Graphical, Element {
 
+    override val id = this::class.simpleName!! + "-" + UUID.randomUUID().toString()
     val outgoing = mutableListOf<Connector>()
     val incoming = mutableListOf<Connector>()
 
@@ -139,7 +127,7 @@ abstract class Symbol(override val id: Id, override val parent: Container): Grap
 
 data class Connector(val source: Symbol, val target: Symbol): Graphical, Identified {
 
-    override val id: Id = Id(source.id.key + "-" + target.id.key)
+    override val id = source.id + "-" + target.id
 
     val waypoints: List<Position> get() {
         val from = source.waypoint(this)
@@ -149,5 +137,3 @@ data class Connector(val source: Symbol, val target: Symbol): Graphical, Identif
     }
 
 }
-
-data class Id (val key: String)

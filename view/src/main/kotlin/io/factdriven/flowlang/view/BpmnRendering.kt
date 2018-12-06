@@ -1,9 +1,7 @@
 package io.factdriven.flowlang.view
 
-import io.factdriven.flow.lang.FlowReactionType
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
-import org.camunda.bpm.model.bpmn.impl.instance.Outgoing
 import org.camunda.bpm.model.bpmn.instance.*
 import org.camunda.bpm.model.bpmn.instance.bpmndi.*
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds
@@ -17,15 +15,16 @@ import kotlin.reflect.KClass
 
 val zero = Position(173 - margin, 80 - margin)
 
-abstract class BpmnSymbol(id: Id, parent: Container): Symbol(id, parent) {
+abstract class BpmnSymbol(name: String, parent: Container): Symbol(name, parent) {
 
     abstract val elementClass: KClass<out FlowNode>
 
 }
 
-class BpmnTaskSymbol(id: Id, parent: Container, val type: BpmnTaskType): BpmnSymbol(id, parent)  {
+class BpmnTaskSymbol(name: String, parent: Container, val type: BpmnTaskType): BpmnSymbol(name, parent)  {
 
     override val inner = Dimension(100,80)
+
     override val elementClass: KClass<out FlowNode> get() {
         return when (type) {
             BpmnTaskType.service -> ServiceTask::class
@@ -52,10 +51,13 @@ enum class BpmnEventPosition {
     start, intermediate, end
 }
 
-class BpmnEventSymbol(id: Id, parent: Container, val type: BpmnEventType, val characteristic: BpmnEventCharacteristic): BpmnSymbol(id, parent) {
+class BpmnEventSymbol(name: String, parent: Container, val type: BpmnEventType, val characteristic: BpmnEventCharacteristic): BpmnSymbol(name, parent) {
 
     override val inner = Dimension(36,36)
-    override val separator = "\n"
+
+    override val name: String = name
+        get() = field.replace(" ", "\n")
+
     override val elementClass: KClass<out FlowNode> get() {
         return when (characteristic) {
             BpmnEventCharacteristic.throwing -> {
@@ -96,8 +98,8 @@ fun transform(container: Container): BpmnModelInstance {
     modelInstance.definitions = definitions
 
     val process = modelInstance.newInstance(Process::class.java)
-    process.setAttributeValue("id", container.id.key, true)
-    process.setAttributeValue("name", container.label(), true)
+    process.setAttributeValue("id", container.id, true)
+    process.setAttributeValue("name", container.name, true)
     process.isExecutable = true
     definitions.addChildElement(process)
 
@@ -113,8 +115,8 @@ fun transform(container: Container): BpmnModelInstance {
     fun createBpmnModelElementInstance(symbol: BpmnSymbol): FlowNode {
 
         val modelElementInstance = modelInstance.newInstance(symbol.elementClass.java)
-        modelElementInstance.setAttributeValue("id", symbol.id.key, true)
-        modelElementInstance.setAttributeValue("name", symbol.label(), false)
+        modelElementInstance.setAttributeValue("id", symbol.id, true)
+        modelElementInstance.setAttributeValue("name", symbol.name, false)
         process.addChildElement(modelElementInstance)
 
         if (symbol is BpmnEventSymbol) {
@@ -154,7 +156,7 @@ fun transform(container: Container): BpmnModelInstance {
     fun createSequenceFlow(connector: Connector) {
 
         val sequenceFlow = modelInstance.newInstance(SequenceFlow::class.java)
-        sequenceFlow.setAttributeValue("id", connector.id.key, true)
+        sequenceFlow.setAttributeValue("id", connector.id, true)
         process.addChildElement(sequenceFlow)
 
         sequenceFlow.source = map[connector.source]
