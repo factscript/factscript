@@ -56,6 +56,7 @@ open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode,
         return this
     }
 
+    /*
     infix fun intent(kClass: KClass<out FlowMessage>): FlowActionMessage {
         return intent(kClass.simpleName!!)
     }
@@ -75,6 +76,7 @@ open class FlowActionImpl<I: FlowInstance, M: Any>: FlowNode,
     infix fun failure(kClass: KClass<out FlowMessage>): FlowActionMessage {
         return failure(kClass.simpleName!!)
     }
+    */
 
     override fun by(action: () -> Any) {
         this.action = action

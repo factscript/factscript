@@ -47,7 +47,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun createSuccessWithoutAction() {
         val flow = execute<PaymentRetrieval> {
-            create success(PaymentRetrieved::class)
+            create success("PaymentRetrieved")
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowActionImpl<*, *>
         assertEquals(null, node.action)
@@ -56,7 +56,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun createSuccessWithAction() {
         val flow = execute<PaymentRetrieval> {
-            create success(PaymentRetrieved::class) by { PaymentRetrieved() }
+            create success("PaymentRetrieved") by { PaymentRetrieved() }
         } as FlowDefinition<PaymentRetrieval>
         val node = flow.nodes.get(0) as FlowActionImpl<*, *>
         assertEquals(FlowActionType.success, node.actionType)
@@ -76,7 +76,7 @@ class PaymentRetrievalStep0Test {
     fun executeServiceCreateIntent() {
         val flow = execute<PaymentRetrieval> {
             execute service {
-                create intent(ChargeCreditCard::class) by { ChargeCreditCard() }
+                create intent("ChargeCreditCard") by { ChargeCreditCard() }
             }
         } as FlowDefinition<PaymentRetrieval>
         val parentNode = flow.nodes.get(0) as FlowDefinition<*>
@@ -107,10 +107,10 @@ class PaymentRetrievalStep0Test {
         val flow = execute<PaymentRetrieval> {
             on message type(RetrievePayment::class)
             execute service {
-                create intent(ChargeCreditCard::class) by { ChargeCreditCard() }
+                create intent("ChargeCreditCard") by { ChargeCreditCard() }
                 on message type(CreditCardCharged::class)
             }
-            create success (PaymentRetrieved::class) by { PaymentRetrieved() }
+            create success ("PaymentRetrieved") by { PaymentRetrieved() }
         } as FlowDefinition<PaymentRetrieval>
         assertEquals(3, flow.nodes.size)
         val service = flow.nodes[1] as FlowDefinition<*>

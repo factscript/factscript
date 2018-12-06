@@ -107,53 +107,58 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition<I>,
     }
 
 
-    inline fun <reified M: FlowMessage> intent(kClass: KClass<*> = M::class): FlowReactionAction<M> {
-        return intent(id(kClass))
+    inline fun <reified M: FlowMessage> intent(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.intent, id)
     }
 
-    inline fun <reified M: FlowMessage> intent(id: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.intent, id)
+    inline fun <reified M: FlowMessage> acceptance(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.acceptance, id)
+    }
+
+    inline fun <reified M: FlowMessage> progress(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.progress, id)
+    }
+
+    inline fun <reified M: FlowMessage> success(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.success, id)
+    }
+
+    inline fun <reified M: FlowMessage> fix(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.fix, id)
+    }
+
+    inline fun <reified M: FlowMessage> failure(id: String = id(M::class)): FlowReactionAction<M> {
+        return FlowReactionAction(FlowActionType.failure, id)
+    }
+
+    /*
+
+    inline fun <reified M: FlowMessage> intent(kClass: KClass<*> = M::class): FlowReactionAction<M> {
+        return intent(id(kClass))
     }
 
     inline fun <reified M: FlowMessage> acceptance(kClass: KClass<*> = M::class): FlowReactionAction<M> {
         return acceptance(id(kClass))
     }
 
-    inline fun <reified M: FlowMessage> acceptance(id: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.acceptance, id)
-    }
-
     inline fun <reified M: FlowMessage> progress(kClass: KClass<*> = M::class): FlowReactionAction<M> {
         return progress(id(kClass))
-    }
-
-    inline fun <reified M: FlowMessage> progress(id: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.progress, id)
     }
 
     inline fun <reified M: FlowMessage> success(kClass: KClass<*> = M::class): FlowReactionAction<M> {
         return success(id(kClass))
     }
 
-    inline fun <reified M: FlowMessage> success(id: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.success, id)
-    }
-
     inline fun <reified M: FlowMessage> fix(kClass: KClass<*> = M::class): FlowReactionAction<M> {
         return fix(id(kClass))
-    }
-
-    inline fun <reified M: FlowMessage> fix(id: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.fix, id)
     }
 
     inline fun <reified M: FlowMessage> failure(kClass: KClass<*> = M::class): FlowReactionAction<M> {
         return failure(id(kClass))
     }
 
-    inline fun <reified M: FlowMessage> failure(id: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.failure, id)
-    }
+    */
+
 }
 
 data class FlowMessagePattern<M: FlowMessage>(val type: KClass<out M>)
