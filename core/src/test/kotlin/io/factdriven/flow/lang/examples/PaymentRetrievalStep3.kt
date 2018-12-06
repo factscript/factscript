@@ -1,6 +1,6 @@
 package io.factdriven.flow.lang.examples
 
-import io.factdriven.flow.lang.execute
+import io.factdriven.flow.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -27,10 +27,10 @@ val flow3 = execute<PaymentRetrieval> {
                     payment = status.uncovered
                 )
             }
-            on message type(CreditCardCharged::class) having { "reference" to status.paymentId } create success()
-            on message type(CreditCardExpired::class) having { "reference" to status.paymentId } mitigation {
-                execute receive {
-                    on message type(CreditCardDetailsUpdated::class) having { "reference" to status.accountId } create fix()
+            on message type(CreditCardCharged::class) having { "reference" to status.paymentId } create success("")
+            on message type(CreditCardExpired::class) having { "reference" to status.paymentId } execute mitigation {
+                execute service {
+                    on message type(CreditCardDetailsUpdated::class) having { "reference" to status.accountId } create fix("")
                 }
             }
         }

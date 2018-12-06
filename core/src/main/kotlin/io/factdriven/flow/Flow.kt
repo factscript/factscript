@@ -1,6 +1,8 @@
 package io.factdriven.flow
 
+import io.factdriven.flow.lang.FlowExecutionDefinition
 import io.factdriven.flow.lang.FlowExecution
+import io.factdriven.flow.lang.FlowExecutionImpl
 import io.factdriven.flow.lang.FlowMessagePattern
 
 /**
@@ -12,7 +14,16 @@ typealias FlowMessages = List<FlowMessage>
 typealias FlowMessagePatterns = List<FlowMessagePattern<out FlowMessage>>
 typealias FlowInstance = Any
 typealias FlowInstanceId = String
+typealias FlowDefinitionId = String
 typealias FlowInstanceIds = List<FlowInstanceId>
+
+inline fun <reified I: FlowInstance> execute(name: FlowDefinitionId = I::class.simpleName!!, definition: FlowExecution<I>.() -> Unit): FlowExecutionDefinition {
+
+    val flowExecution = FlowExecutionImpl<I>().apply(definition)
+    flowExecution.name = name
+    return flowExecution
+
+}
 
 /**
  * Reconstruct the past flow instance state based on a given history of messages.

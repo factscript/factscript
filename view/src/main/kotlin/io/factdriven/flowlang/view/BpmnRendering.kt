@@ -98,7 +98,7 @@ fun transform(container: Container): BpmnModelInstance {
     modelInstance.definitions = definitions
 
     val process = modelInstance.newInstance(Process::class.java)
-    process.setAttributeValue("id", container.id, true)
+    process.setAttributeValue("name", container.id, true)
     process.setAttributeValue("name", container.name, true)
     process.isExecutable = true
     definitions.addChildElement(process)
@@ -115,7 +115,7 @@ fun transform(container: Container): BpmnModelInstance {
     fun createBpmnModelElementInstance(symbol: BpmnSymbol): FlowNode {
 
         val modelElementInstance = modelInstance.newInstance(symbol.elementClass.java)
-        modelElementInstance.setAttributeValue("id", symbol.id, true)
+        modelElementInstance.setAttributeValue("name", symbol.id, true)
         modelElementInstance.setAttributeValue("name", symbol.name, false)
         process.addChildElement(modelElementInstance)
 

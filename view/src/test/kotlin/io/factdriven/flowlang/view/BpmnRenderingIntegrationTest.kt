@@ -1,7 +1,7 @@
 package io.factdriven.flowlang.view
 
-import io.factdriven.flow.lang.FlowExecution
-import io.factdriven.flow.lang.execute
+import io.factdriven.flow.execute
+import io.factdriven.flow.lang.FlowExecutionDefinition
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -15,16 +15,16 @@ class BpmnRenderingIntegrationTest {
     fun testPaymentRetrievalVersion1() {
         render(
             execute <PaymentRetrieval> {
-                on message type(RetrievePayment::class) create acceptance ("Payment retrieval requested") by {
+                on message type(RetrievePayment::class) create acceptance ("Payment retrieval accepted") by {
                     PaymentRetrievalAccepted(paymentId = it.id)
                 }
                 execute service {
                     create intent ("Charge credit card") by { ChargeCreditCard() }
-                    on message type(CreditCardCharged::class)
+                    on message type(CreditCardCharged::class) create success("Credit card charged")
                 }
                 create progress ("Payment covered")
                 execute service {
-                    create intent ("Notify customer") by { NotifyCustomer() }
+                    create intent ("Order customer notification") by { NotifyCustomer() }
                 }
                 execute service {
                     on message type(CustomerNotified::class) create success("Customer notification confirmed")
@@ -34,7 +34,7 @@ class BpmnRenderingIntegrationTest {
         )
     }
 
-    fun render(flow: FlowExecution<*>) {
+    fun render(flow: FlowExecutionDefinition) {
         val container = translate(flow)
         val bpmnModelInstance = transform(container)
         Bpmn.validateModel(bpmnModelInstance);

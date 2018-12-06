@@ -1,6 +1,6 @@
 package io.factdriven.flow.lang.examples
 
-import io.factdriven.flow.lang.execute
+import io.factdriven.flow.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

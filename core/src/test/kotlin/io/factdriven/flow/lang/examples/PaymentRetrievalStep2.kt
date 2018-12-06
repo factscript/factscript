@@ -1,6 +1,6 @@
 package io.factdriven.flow.lang.examples
 
-import io.factdriven.flow.lang.execute
+import io.factdriven.flow.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -27,7 +27,7 @@ val flow2 = execute<PaymentRetrieval> {
                     payment = status.uncovered
                 )
             }
-            on message type(CreditCardCharged::class) having { "reference" to status.paymentId } create success()
+            on message type(CreditCardCharged::class) having { "reference" to status.paymentId } create success("Credit card charged")
         }
     }
     create success ("Payment retrieved") by {

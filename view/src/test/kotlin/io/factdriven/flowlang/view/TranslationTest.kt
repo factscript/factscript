@@ -1,6 +1,6 @@
 package io.factdriven.flowlang.view
 
-import io.factdriven.flow.lang.execute
+import io.factdriven.flow.execute
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -30,7 +30,7 @@ class TranslationTest {
     fun translateFlowReaction() {
 
         val flow = execute<PaymentRetrieval> {
-            on message type(RetrievePayment::class) create acceptance()
+            on message type(RetrievePayment::class) create acceptance("")
         }
 
         val element = translate(flow)

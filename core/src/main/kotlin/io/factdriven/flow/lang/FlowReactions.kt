@@ -1,73 +1,104 @@
 package io.factdriven.flow.lang
 
+import io.factdriven.flow.FlowInstance
 import io.factdriven.flow.FlowMessage
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 enum class FlowReactionType {
+
     message
+
 }
 
-class FlowReactions<I: Any>(val parent: FlowExecutionImpl<I>) {
+class FlowReactions<I: FlowInstance>(val parent: FlowExecutionDefinition) {
 
-    infix fun <M: Any> message(listener: FlowMessagePattern<M>): FlowReactionImpl<I, M> {
-        val reaction = FlowReactionImpl<I, M>(listener.type.simpleName!!)
-        parent.nodes.add(reaction)
-        reaction.reactionType = FlowReactionType.message
-        reaction.listener = listener
+    infix fun <M: Any> message(listener: FlowMessagePattern<M>): FlowMessageReaction<I, M> {
+
+        val reaction = FlowMessageReactionImpl<I, M>(listener)
+        parent.elements.add(reaction)
         return reaction
+
     }
 
-    infix fun compensation(definition: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    infix fun compensation(execution: FlowExecution<I>): FlowExecution<I> {
+        TODO()
     }
 
-    infix fun timeout(timer: () -> String): FlowReactionImpl<I, Any> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    infix fun timeout(timer: String): FlowReaction<I, Any> {
+        TODO()
     }
 
-    infix fun timeout(timer: String): FlowReactionImpl<I, Any> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    infix fun timeout(timer: () -> String): FlowReaction<I, Any> {
+        TODO()
     }
 
 }
 
-data class FlowReactionAction<M: FlowMessage>(val type: FlowActionType = FlowActionType.success, val id: String = "")
+interface FlowReaction<I: FlowInstance, A: Any> {
 
-interface FlowReactionMessage<M: FlowMessage> {
-
-    infix fun by(reaction: (M) -> Any)
+    infix fun create(action: FlowReactionAction<A>): ClassifiedFlowReaction<I, A>
+    infix fun execute(execution: FlowExecution<I>): FlowExecution<I>
 
 }
 
-class FlowReactionImpl<I: Any, M: FlowMessage>(override var id: String): FlowNode,
-    FlowReactionMessage<M> {
+interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I, M> {
 
-    lateinit var listener: FlowMessagePattern<M>
-    var reactionType: FlowReactionType = FlowReactionType.message
-    var actionType: FlowActionType = FlowActionType.progress
-    var action: ((M) -> Any)? = null
+    infix fun having(key: () -> Pair<String, Any>): FlowMessageReaction<I, M>
+    infix fun supporting(assertion: (M) -> Boolean): FlowMessageReaction<I, M>
 
-    infix fun having(key: () -> Pair<String, Any>): FlowReactionImpl<I, M> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+}
 
-    infix fun supporting(assertion: (M) -> Boolean): FlowReactionImpl<I, M> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+interface ClassifiedFlowReaction<I: FlowInstance, A: Any> {
 
-    infix fun create(action: FlowReactionAction<M>): FlowReactionMessage<M> {
+    infix fun by(reaction: (A) -> FlowMessage)
+
+}
+
+abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: String): FlowReactionDefinition, FlowReaction<I, A>, ClassifiedFlowReaction<I, A> {
+
+    // Flow Reaction Definition
+
+    override var actionType = FlowActionType.progress
+    override var reactionType = FlowReactionType.message
+    override var function: ((Any) -> FlowMessage)? = null
+
+    // Flow Action as Reaction Factory
+
+    override infix fun create(action: FlowReactionAction<A>): ClassifiedFlowReaction<I, A> {
         this.actionType = action.type
-        this.id = action.id
+        this.name = action.id
         return this
     }
 
-    override infix fun by(reaction: (M) -> Any) {
-        this.action = reaction
+    // Flow Execution as Reaction Factory
+
+    override infix fun execute(execution: FlowExecution<I>): FlowExecution<I> {
+        TODO()
     }
 
-    infix fun mitigation(definition: FlowExecutionImpl<I>.() -> Unit): FlowExecutionImpl<I> = TODO()
+    override fun by(reaction: (A) -> FlowMessage) {
+        @Suppress("UNCHECKED_CAST")
+        this.function = reaction as (Any) -> FlowMessage
+    }
 
 }
 
+class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val messagePattern: FlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(messagePattern.type.simpleName!!), FlowMessageReaction<I, M> {
+
+    init {
+        reactionType = FlowReactionType.message
+    }
+
+    // Message Patterns Refiner
+
+    override infix fun having(key: () -> Pair<String, Any>): FlowMessageReactionImpl<I, M> {
+        TODO()
+    }
+
+    override infix fun supporting(assertion: (M) -> Boolean): FlowMessageReactionImpl<I, M> {
+        TODO()
+    }
+
+}
