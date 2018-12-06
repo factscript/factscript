@@ -39,6 +39,10 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
 
     fun execute(definition: FlowExecution<I>.() -> Unit): FlowExecution<I>
 
+    fun asDefinition(): FlowExecutionDefinition {
+        return this as FlowExecutionDefinition
+    }
+
 }
 
 interface FlowActivities<I: FlowInstance> {
@@ -55,6 +59,7 @@ class FlowExecutionImpl<I: FlowInstance>: FlowExecutionDefinition, FlowExecution
     override lateinit var status: I
     override var executionType = FlowExecutionType.execution
     override val elements = mutableListOf<FlowElement>()
+    override lateinit var instanceType: KClass<out FlowInstance>
 
     override var name: String = ""
         get() {

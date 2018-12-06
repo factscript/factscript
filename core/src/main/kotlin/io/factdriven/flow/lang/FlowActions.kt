@@ -32,6 +32,10 @@ interface FlowAction<I: FlowInstance> : ClassifiedFlowAction {
     infix fun success(id: String): ClassifiedFlowAction
     infix fun failure(id: String): ClassifiedFlowAction
 
+    fun asDefinition(): FlowActionDefinition {
+        return this as FlowActionDefinition
+    }
+
 }
 
 open class FlowActionImpl<I: FlowInstance>: ClassifiedFlowAction, FlowAction<I>, FlowActionDefinition {

@@ -1,6 +1,8 @@
 package io.factdriven.flow.lang
 
+import io.factdriven.flow.FlowInstance
 import io.factdriven.flow.FlowMessage
+import kotlin.reflect.KClass
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -16,6 +18,7 @@ interface FlowExecutionDefinition: FlowElement {
 
     val executionType: FlowExecutionType
     val elements: MutableList<FlowElement>
+    val instanceType: KClass<out FlowInstance>
 
 }
 

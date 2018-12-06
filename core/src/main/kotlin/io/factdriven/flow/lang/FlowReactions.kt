@@ -41,6 +41,10 @@ interface FlowReaction<I: FlowInstance, A: Any> {
     infix fun create(action: FlowReactionAction<A>): ClassifiedFlowReaction<I, A>
     infix fun execute(execution: FlowExecution<I>): FlowExecution<I>
 
+    fun asDefinition(): FlowReactionDefinition {
+        return this as FlowReactionDefinition
+    }
+
 }
 
 interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I, M> {

@@ -4,12 +4,17 @@ package io.factdriven.flow.lang.examples
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 
-data class PaymentRetrieval(val init: RetrievePayment) {
+class PaymentRetrieval(init: RetrievePayment) {
 
     val paymentId = init.id
     val accountId = init.accountId
     var uncovered = init.payment
     var covered = 0F
+
+    fun apply(message: PaymentRetrieved) {
+        covered = uncovered
+        uncovered = 0F
+    }
 
 }
 
