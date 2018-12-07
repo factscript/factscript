@@ -1,12 +1,25 @@
 package io.factdriven.flow.lang
 
-import io.factdriven.flow.FlowInstance
-import io.factdriven.flow.FlowMessage
 import kotlin.reflect.KClass
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+typealias FlowInstance = Any
+typealias FlowInstanceId = String
+typealias FlowDefinitionId = String
+
+typealias FlowMessage = Any
+typealias FlowMessages = List<FlowMessage>
+
+interface FlowMessagePattern {
+
+    val type: KClass<*>
+
+}
+
+typealias FlowMessagePatterns = List<FlowMessagePattern>
+typealias FlowInstanceIds = List<FlowInstanceId>
 
 interface FlowElement {
 
@@ -39,6 +52,6 @@ interface FlowReactionDefinition: FlowElement {
 
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
-    val messagePattern: FlowMessagePattern<*>
+    val messagePattern: DefaultFlowMessagePattern<*>
 
 }

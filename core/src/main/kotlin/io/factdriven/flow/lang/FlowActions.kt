@@ -1,12 +1,9 @@
 package io.factdriven.flow.lang
 
-import io.factdriven.flow.FlowInstance
-import io.factdriven.flow.FlowMessage
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-
 enum class FlowActionType {
 
     acceptance,

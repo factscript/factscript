@@ -15,8 +15,8 @@ repositories {
 dependencies {
     compile project(':core')
 
-    // https://mvnrepository.com/artifact/org.camunda.bpm.model/camunda-bpmn-model
-    compile group: 'org.camunda.bpm', name: 'camunda-bpm-engine', version: '7.9.0'
+    // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-engine
+    compile group: 'org.camunda.bpm', name: 'camunda-engine', version: '7.10.0'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testCompile("org.junit.jupiter:junit-jupiter-api:5.3.2")

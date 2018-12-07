@@ -1,7 +1,5 @@
 package io.factdriven.flow.lang
 
-import io.factdriven.flow.FlowInstance
-import io.factdriven.flow.FlowMessage
 import kotlin.reflect.KClass
 
 /**
@@ -27,8 +25,8 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
 
     var status: I
 
-    fun <M: FlowMessage> type(type: KClass<M>): FlowMessagePattern<M>
-    fun <M: FlowMessage> pattern(pattern: M): FlowMessagePattern<M>
+    fun <M: FlowMessage> type(type: KClass<M>): DefaultFlowMessagePattern<M>
+    fun <M: FlowMessage> pattern(pattern: M): DefaultFlowMessagePattern<M>
 
     fun <M: FlowMessage> intent(name: String): FlowReactionAction<M>
     fun <M: FlowMessage> acceptance(name: String): FlowReactionAction<M>
@@ -110,11 +108,11 @@ class FlowExecutionImpl<I: FlowInstance>: FlowExecutionDefinition, FlowExecution
 
     // Message Pattern Factories
 
-    override fun <M: FlowMessage> type(type: KClass<M>): FlowMessagePattern<M> {
-        return FlowMessagePattern(type)
+    override fun <M: FlowMessage> type(type: KClass<M>): DefaultFlowMessagePattern<M> {
+        return DefaultFlowMessagePattern(type)
     }
 
-    override fun <M: FlowMessage> pattern(pattern: M): FlowMessagePattern<M> {
+    override fun <M: FlowMessage> pattern(pattern: M): DefaultFlowMessagePattern<M> {
         TODO()
     }
 
@@ -146,5 +144,5 @@ class FlowExecutionImpl<I: FlowInstance>: FlowExecutionDefinition, FlowExecution
 
 }
 
-data class FlowMessagePattern<M: FlowMessage>(val type: KClass<out M>)
+data class DefaultFlowMessagePattern<M: FlowMessage>(override val type: KClass<out M>) : FlowMessagePattern
 data class FlowReactionAction<M: FlowMessage>(val type: FlowActionType = FlowActionType.success, val id: String = "")

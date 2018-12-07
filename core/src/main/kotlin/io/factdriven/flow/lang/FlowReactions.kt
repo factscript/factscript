@@ -1,8 +1,5 @@
 package io.factdriven.flow.lang
 
-import io.factdriven.flow.FlowInstance
-import io.factdriven.flow.FlowMessage
-
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
@@ -14,7 +11,7 @@ enum class FlowReactionType {
 
 class FlowReactions<I: FlowInstance>(val parent: FlowExecutionDefinition) {
 
-    infix fun <M: Any> message(listener: FlowMessagePattern<M>): FlowMessageReaction<I, M> {
+    infix fun <M: Any> message(listener: DefaultFlowMessagePattern<M>): FlowMessageReaction<I, M> {
 
         val reaction = FlowMessageReactionImpl<I, M>(listener)
         parent.elements.add(reaction)
@@ -89,7 +86,7 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
 }
 
-class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val messagePattern: FlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(messagePattern.type.simpleName!!), FlowMessageReaction<I, M> {
+class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val messagePattern: DefaultFlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(messagePattern.type.simpleName!!), FlowMessageReaction<I, M> {
 
     init {
         reactionType = FlowReactionType.message
