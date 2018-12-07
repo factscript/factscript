@@ -13,7 +13,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun execute() {
 
-        val flow = execute <PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
         }
 
         assertNotNull(flow)
@@ -23,7 +23,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun on() {
 
-        val flow = execute <PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
             on
         }
 
@@ -33,14 +33,13 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun onMessageType() {
 
-        val flow = execute <PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
             on message type(RetrievePayment::class)
         }
 
-        val node = flow.elements.get(0)
+        val node = flow.elements[0]
         val pattern = (node as FlowMessageReactionDefinition).messagePattern
 
-        assertTrue(node is FlowReactionDefinition)
         assertEquals(RetrievePayment::class, pattern.type)
 
     }
@@ -48,7 +47,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun create() {
 
-        val flow = execute<PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
             create
         }
 
@@ -61,7 +60,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun createSuccessWithoutAction() {
 
-        val flow = execute<PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
             create success("PaymentRetrieved")
         }
 
@@ -73,7 +72,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun createSuccessWithAction() {
 
-        val flow = execute<PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
             create success("PaymentRetrieved") by { PaymentRetrieved() }
         }
 
@@ -87,7 +86,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun executeService() {
 
-        val flow = execute<PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
             execute service {}
         }
 
@@ -100,7 +99,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun executeServiceCreateIntent() {
 
-        val flow = execute<PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
             execute service {
                 create intent("ChargeCreditCard") by { ChargeCreditCard() }
             }
@@ -117,7 +116,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun executeServiceOnMessage() {
 
-        val flow = execute<PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
             execute service {
                 on message type(CreditCardCharged::class) create success("Credit card charged")
             }
@@ -134,7 +133,7 @@ class PaymentRetrievalStep0Test {
     @Test()
     fun flow() {
 
-        val flow = execute<PaymentRetrieval> {
+        val flow = define <PaymentRetrieval> {
             on message type(RetrievePayment::class)
             execute service {
                 create intent("ChargeCreditCard") by { ChargeCreditCard() }

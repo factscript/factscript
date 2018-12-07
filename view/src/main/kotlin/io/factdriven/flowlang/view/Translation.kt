@@ -5,6 +5,10 @@ import io.factdriven.flow.lang.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+fun translate(execution: FlowExecution<*>): Container {
+    return translate(execution.asDefinition())
+}
+
 fun translate(definition: FlowDefinition): Container {
 
     fun translate(element: FlowElement, parent: Container): Element {

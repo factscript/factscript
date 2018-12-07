@@ -13,7 +13,7 @@ class TranslationTest {
     @Test
     fun translateFlowExecution() {
 
-        val flow = execute<PaymentRetrieval> {
+        val flow = execute <PaymentRetrieval> {
         }
 
         val element = translate(flow)
@@ -29,7 +29,7 @@ class TranslationTest {
     @Test
     fun translateFlowReaction() {
 
-        val flow = execute<PaymentRetrieval> {
+        val flow = execute <PaymentRetrieval> {
             on message type(RetrievePayment::class) create acceptance("")
         }
 
@@ -47,7 +47,7 @@ class TranslationTest {
     @Test
     fun translateFlowService() {
 
-        val flow = execute<PaymentRetrieval>("CustomPaymentRetrieval") {
+        val flow = execute <PaymentRetrieval>("CustomPaymentRetrieval") {
             execute service {
                 create intent ("ChargeCreditCard")
             }
@@ -67,7 +67,7 @@ class TranslationTest {
     @Test
     fun translateFlowAction() {
 
-        val flow = execute<PaymentRetrieval>("CustomPaymentRetrieval") {
+        val flow = execute <PaymentRetrieval>("CustomPaymentRetrieval") {
             create success ("PaymentRetrieved")
         }
 
