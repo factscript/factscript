@@ -136,7 +136,9 @@ class PaymentRetrievalStep0Test {
             on message type(RetrievePayment::class)
             execute service {
                 create intent("ChargeCreditCard") by { ChargeCreditCard() }
-                on message type(CreditCardCharged::class) having ("reference") match { paymentId }
+                on message type(CreditCardCharged::class) having("reference") match { paymentId } create success("") by {
+
+                }
             }
             create success ("PaymentRetrieved") by { PaymentRetrieved() }
         }

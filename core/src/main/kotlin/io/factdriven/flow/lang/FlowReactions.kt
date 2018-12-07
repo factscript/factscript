@@ -50,7 +50,7 @@ interface FlowReaction<I: FlowInstance, A: Any> {
 interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I, M> {
 
     infix fun having(property: String): MatchableFlowMessageReaction<I, M>
-    infix fun supporting(assertion: FlowInstance.(M) -> Boolean): FlowMessageReaction<I, M>
+    infix fun supporting(assertion: I.(M) -> Boolean): FlowMessageReaction<I, M>
 
     override fun asDefinition(): FlowMessageReactionDefinition {
         return this as FlowMessageReactionDefinition
@@ -125,7 +125,7 @@ class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val type
         return this
     }
 
-    override infix fun supporting(assertion: FlowInstance.(M) -> Boolean): FlowMessageReactionImpl<I, M> {
+    override infix fun supporting(assertion: I.(M) -> Boolean): FlowMessageReaction<I, M> {
         TODO()
     }
 
