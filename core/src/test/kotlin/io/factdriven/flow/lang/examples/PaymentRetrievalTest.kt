@@ -1,5 +1,8 @@
 package io.factdriven.flow.lang.examples
 
+import io.factdriven.flow.lang.PaymentRetrieval
+import io.factdriven.flow.lang.PaymentRetrieved
+import io.factdriven.flow.lang.RetrievePayment
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
