@@ -46,8 +46,14 @@ interface FlowReaction<I: FlowInstance, A: Any> {
 
 interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I, M> {
 
-    infix fun having(key: () -> Pair<String, Any>): FlowMessageReaction<I, M>
+    infix fun having(key: String): FlowMessageReactionMatch<I, M>
     infix fun supporting(assertion: (M) -> Boolean): FlowMessageReaction<I, M>
+
+}
+
+interface FlowMessageReactionMatch<I: FlowInstance, M: FlowMessage> {
+
+    infix fun match(match: () -> Any): FlowMessageReaction<I, M>
 
 }
 
@@ -86,7 +92,7 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
 }
 
-class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val messagePattern: FlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(messagePattern.type.simpleName!!), FlowMessageReaction<I, M> {
+class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val messagePattern: FlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(messagePattern.type.simpleName!!), FlowMessageReaction<I, M>, FlowMessageReactionMatch<I, M> {
 
     init {
         reactionType = FlowReactionType.message
@@ -94,7 +100,11 @@ class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val mess
 
     // Message Patterns Refiner
 
-    override infix fun having(key: () -> Pair<String, Any>): FlowMessageReactionImpl<I, M> {
+    override fun having(key: String): FlowMessageReactionMatch<I, M> {
+        TODO()
+    }
+
+    override fun match(match: () -> Any): FlowMessageReaction<I, M> {
         TODO()
     }
 

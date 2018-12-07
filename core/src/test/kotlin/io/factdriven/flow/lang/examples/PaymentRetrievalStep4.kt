@@ -28,10 +28,10 @@ val flow4 = execute<PaymentRetrieval> {
                     payment = status.uncovered
                 )
             }
-            on message type(CreditCardCharged::class) having { "reference" to status.paymentId } create success ("")
-            on message type(CreditCardExpired::class) having { "reference" to status.paymentId } execute mitigation {
+            on message type(CreditCardCharged::class) having "reference" match { status.paymentId } create success ("")
+            on message type(CreditCardExpired::class) having "reference" match { status.paymentId } execute mitigation {
                 execute service {
-                    on message type(CreditCardDetailsUpdated::class) having { "reference" to status.accountId } create fix("")
+                    on message type(CreditCardDetailsUpdated::class) having "reference" match { status.accountId } create fix("")
                     on timeout "P14D" create failure("") by {
                         PaymentFailed(status.paymentId)
                     }

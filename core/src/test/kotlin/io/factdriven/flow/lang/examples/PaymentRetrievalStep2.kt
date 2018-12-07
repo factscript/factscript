@@ -28,7 +28,7 @@ val flow2 = execute<PaymentRetrieval> {
                     payment = status.uncovered
                 )
             }
-            on message type(CreditCardCharged::class) having { "reference" to status.paymentId } create success("Credit card charged")
+            on message type(CreditCardCharged::class) having "reference" match { status.paymentId } create success("Credit card charged")
         }
     }
     create success ("Payment retrieved") by {
