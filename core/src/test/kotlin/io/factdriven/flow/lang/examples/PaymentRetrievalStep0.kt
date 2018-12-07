@@ -91,7 +91,7 @@ class PaymentRetrievalStep0Test {
             execute service {}
         }
 
-        val node = flow.elements.get(0) as FlowExecutionDefinition
+        val node = flow.elements.get(0) as FlowDefinition
 
         assertEquals(FlowExecutionType.service, node.executionType)
 
@@ -106,7 +106,7 @@ class PaymentRetrievalStep0Test {
             }
         }
 
-        val parentNode = flow.elements.get(0) as FlowExecutionDefinition
+        val parentNode = flow.elements.get(0) as FlowDefinition
         val node = parentNode.elements.get(0)
         val action = node as FlowActionDefinition
 
@@ -123,7 +123,7 @@ class PaymentRetrievalStep0Test {
             }
         }
 
-        val parentNode = flow.elements.get(0) as FlowExecutionDefinition
+        val parentNode = flow.elements.get(0) as FlowDefinition
         val node = parentNode.elements.get(0) as FlowMessageReactionDefinition
 
         assertEquals(CreditCardCharged::class, node.messagePattern.type)
@@ -143,7 +143,7 @@ class PaymentRetrievalStep0Test {
             create success ("PaymentRetrieved") by { PaymentRetrieved() }
         }
 
-        val service = flow.elements[1] as FlowExecutionDefinition
+        val service = flow.elements[1] as FlowDefinition
 
         assertEquals(3, flow.elements.size)
         assertEquals(2, service.elements.size)

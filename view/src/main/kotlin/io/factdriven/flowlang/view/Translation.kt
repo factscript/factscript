@@ -5,14 +5,14 @@ import io.factdriven.flow.lang.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-fun translate(definition: FlowExecutionDefinition): Container {
+fun translate(definition: FlowDefinition): Container {
 
     fun translate(element: FlowElement, parent: Container): Element {
         return when(element) {
             is FlowReactionDefinition -> {
                 BpmnEventSymbol(element.name, parent, BpmnEventType.message, BpmnEventCharacteristic.catching)
             }
-            is FlowExecutionDefinition -> {
+            is FlowDefinition -> {
                 when (element.executionType) {
                     FlowExecutionType.execution -> {
                         val sequence = Sequence(element.name, parent)

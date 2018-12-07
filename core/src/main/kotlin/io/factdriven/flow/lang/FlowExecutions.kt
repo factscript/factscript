@@ -25,8 +25,8 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
 
     var status: I
 
-    fun <M: FlowMessage> type(type: KClass<M>): DefaultFlowMessagePattern<M>
-    fun <M: FlowMessage> pattern(pattern: M): DefaultFlowMessagePattern<M>
+    fun <M: FlowMessage> type(type: KClass<M>): FlowMessagePattern<M>
+    fun <M: FlowMessage> pattern(pattern: M): FlowMessagePattern<M>
 
     fun <M: FlowMessage> intent(name: String): FlowReactionAction<M>
     fun <M: FlowMessage> acceptance(name: String): FlowReactionAction<M>
@@ -37,8 +37,8 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
 
     fun execute(definition: FlowExecution<I>.() -> Unit): FlowExecution<I>
 
-    fun asDefinition(): FlowExecutionDefinition {
-        return this as FlowExecutionDefinition
+    fun asDefinition(): FlowDefinition {
+        return this as FlowDefinition
     }
 
 }
@@ -50,7 +50,7 @@ interface FlowActivities<I: FlowInstance> {
 
 }
 
-class FlowExecutionImpl<I: FlowInstance>: FlowExecutionDefinition, FlowExecution<I>, FlowActivities<I> {
+class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, FlowActivities<I> {
 
     // Flow Definition
 
@@ -108,11 +108,11 @@ class FlowExecutionImpl<I: FlowInstance>: FlowExecutionDefinition, FlowExecution
 
     // Message Pattern Factories
 
-    override fun <M: FlowMessage> type(type: KClass<M>): DefaultFlowMessagePattern<M> {
+    override fun <M: FlowMessage> type(type: KClass<M>): FlowMessagePattern<M> {
         return DefaultFlowMessagePattern(type)
     }
 
-    override fun <M: FlowMessage> pattern(pattern: M): DefaultFlowMessagePattern<M> {
+    override fun <M: FlowMessage> pattern(pattern: M): FlowMessagePattern<M> {
         TODO()
     }
 
@@ -144,5 +144,4 @@ class FlowExecutionImpl<I: FlowInstance>: FlowExecutionDefinition, FlowExecution
 
 }
 
-data class DefaultFlowMessagePattern<M: FlowMessage>(override val type: KClass<out M>) : FlowMessagePattern
 data class FlowReactionAction<M: FlowMessage>(val type: FlowActionType = FlowActionType.success, val id: String = "")

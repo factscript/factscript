@@ -9,11 +9,11 @@ enum class FlowReactionType {
 
 }
 
-class FlowReactions<I: FlowInstance>(val parent: FlowExecutionDefinition) {
+class FlowReactions<I: FlowInstance>(val parent: FlowDefinition) {
 
-    infix fun <M: Any> message(listener: DefaultFlowMessagePattern<M>): FlowMessageReaction<I, M> {
+    infix fun <M: Any> message(pattern: FlowMessagePattern<M>): FlowMessageReaction<I, M> {
 
-        val reaction = FlowMessageReactionImpl<I, M>(listener)
+        val reaction = FlowMessageReactionImpl<I, M>(pattern)
         parent.elements.add(reaction)
         return reaction
 
@@ -86,7 +86,7 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
 }
 
-class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val messagePattern: DefaultFlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(messagePattern.type.simpleName!!), FlowMessageReaction<I, M> {
+class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val messagePattern: FlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(messagePattern.type.simpleName!!), FlowMessageReaction<I, M> {
 
     init {
         reactionType = FlowReactionType.message

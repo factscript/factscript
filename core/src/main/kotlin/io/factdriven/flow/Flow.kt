@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-inline fun <reified I: FlowInstance> execute(name: FlowDefinitionId = I::class.simpleName!!, type: KClass<I> = I::class, definition: FlowExecution<I>.() -> Unit): FlowExecutionDefinition {
+inline fun <reified I: FlowInstance> execute(name: FlowDefinitionId = I::class.simpleName!!, type: KClass<I> = I::class, definition: FlowExecution<I>.() -> Unit): FlowDefinition {
 
     val flowExecution = FlowExecutionImpl<I>().apply(definition)
     flowExecution.name = name

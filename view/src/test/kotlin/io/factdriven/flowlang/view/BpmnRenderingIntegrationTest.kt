@@ -1,7 +1,7 @@
 package io.factdriven.flowlang.view
 
 import io.factdriven.flow.execute
-import io.factdriven.flow.lang.FlowExecutionDefinition
+import io.factdriven.flow.lang.FlowDefinition
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -34,7 +34,7 @@ class BpmnRenderingIntegrationTest {
         )
     }
 
-    fun render(flow: FlowExecutionDefinition) {
+    fun render(flow: FlowDefinition) {
         val container = translate(flow)
         val bpmnModelInstance = transform(container)
         Bpmn.validateModel(bpmnModelInstance);

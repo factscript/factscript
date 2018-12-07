@@ -9,16 +9,6 @@ typealias FlowInstance = Any
 typealias FlowInstanceId = String
 typealias FlowDefinitionId = String
 
-typealias FlowMessage = Any
-typealias FlowMessages = List<FlowMessage>
-
-interface FlowMessagePattern {
-
-    val type: KClass<*>
-
-}
-
-typealias FlowMessagePatterns = List<FlowMessagePattern>
 typealias FlowInstanceIds = List<FlowInstanceId>
 
 interface FlowElement {
@@ -27,7 +17,7 @@ interface FlowElement {
 
 }
 
-interface FlowExecutionDefinition: FlowElement {
+interface FlowDefinition: FlowElement {
 
     val executionType: FlowExecutionType
     val elements: MutableList<FlowElement>
@@ -52,6 +42,6 @@ interface FlowReactionDefinition: FlowElement {
 
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
-    val messagePattern: DefaultFlowMessagePattern<*>
+    val messagePattern: FlowMessagePattern<out FlowMessage>
 
 }
