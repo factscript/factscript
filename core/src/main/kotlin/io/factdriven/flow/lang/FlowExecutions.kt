@@ -23,7 +23,7 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
     val execute: FlowActivities<I>
     val select: FlowSelections<I>
 
-    fun <M: FlowMessage> type(type: KClass<M>): FlowMessagePattern<M>
+    fun <M: FlowMessage> type(type: KClass<M>): TypedFlowMessageReaction<M>
 
     fun <M: FlowMessage> intent(name: String): FlowReactionAction<M>
     fun <M: FlowMessage> acceptance(name: String): FlowReactionAction<M>
@@ -73,12 +73,6 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, Flow
         return elements.filter { it is FlowReaction<*, *> } as List<FlowReaction<I, *>>
     }
 
-    val patterns: Set<FlowMessagePattern<*>> get() {
-        @Suppress("UNCHECKED_CAST")
-        val reactions =  reactions.filter{ it is FlowMessageReaction<*, *> } as List<FlowMessageReaction<I, *>>
-        return reactions.map { it.asDefinition().pattern }.toSet()
-    }
-
     // Basic Flow Execution<
     override val on: FlowReactions<I>
         get() {
@@ -119,8 +113,8 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, Flow
 
     // Message Pattern Factories
 
-    override fun <M: FlowMessage> type(type: KClass<M>): FlowMessagePattern<M> {
-        return DefaultFlowMessagePattern(type)
+    override fun <M: FlowMessage> type(type: KClass<M>): TypedFlowMessageReaction<M> {
+        return FlowMessageReactionImpl<I, M>(type)
     }
 
     // Action as Reaction Factories

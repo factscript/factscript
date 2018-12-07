@@ -1,5 +1,7 @@
 package io.factdriven.flow.lang
 
+import kotlin.reflect.KClass
+
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
@@ -11,10 +13,10 @@ enum class FlowReactionType {
 
 class FlowReactions<I: FlowInstance>(val parent: FlowDefinition) {
 
-    infix fun <M: Any> message(pattern: FlowMessagePattern<M>): FlowMessageReaction<I, M> {
+    infix fun <M: Any> message(reaction: TypedFlowMessageReaction<M>): FlowMessageReaction<I, M> {
 
-        val reaction = FlowMessageReactionImpl<I, M>(pattern)
-        parent.elements.add(reaction)
+        val r = reaction as FlowMessageReaction<I, M>
+        parent.elements.add(reaction as FlowElement)
         return reaction
 
     }
@@ -35,7 +37,7 @@ class FlowReactions<I: FlowInstance>(val parent: FlowDefinition) {
 
 interface FlowReaction<I: FlowInstance, A: Any> {
 
-    infix fun create(action: FlowReactionAction<A>): ClassifiedFlowReaction<I, A>
+    infix fun create(action: FlowReactionAction<A>): ActionableFlowReaction<I, A>
     infix fun execute(execution: FlowExecution<I>): FlowExecution<I>
 
     fun asDefinition(): FlowReactionDefinition {
@@ -46,7 +48,7 @@ interface FlowReaction<I: FlowInstance, A: Any> {
 
 interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I, M> {
 
-    infix fun having(key: String): FlowMessageReactionMatch<I, M>
+    infix fun having(key: String): MatchableFlowMessageReaction<I, M>
     infix fun supporting(assertion: (M) -> Boolean): FlowMessageReaction<I, M>
 
     override fun asDefinition(): FlowMessageReactionDefinition {
@@ -55,19 +57,21 @@ interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I,
 
 }
 
-interface FlowMessageReactionMatch<I: FlowInstance, M: FlowMessage> {
+interface TypedFlowMessageReaction<M: FlowMessage>
+
+interface MatchableFlowMessageReaction<I: FlowInstance, M: FlowMessage> {
 
     infix fun match(match: I.() -> Any?): FlowMessageReaction<I, M>
 
 }
 
-interface ClassifiedFlowReaction<I: FlowInstance, A: Any> {
+interface ActionableFlowReaction<I: FlowInstance, A: Any> {
 
     infix fun by(reaction: I.(A) -> FlowMessage)
 
 }
 
-abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: String): FlowReactionDefinition, FlowReaction<I, A>, ClassifiedFlowReaction<I, A> {
+abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: String): FlowReactionDefinition, FlowReaction<I, A>, ActionableFlowReaction<I, A> {
 
     // Flow Reaction Definition
 
@@ -77,7 +81,7 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
     // Flow Action as Reaction Factory
 
-    override infix fun create(action: FlowReactionAction<A>): ClassifiedFlowReaction<I, A> {
+    override infix fun create(action: FlowReactionAction<A>): ActionableFlowReaction<I, A> {
         this.actionType = action.type
         this.name = action.id
         return this
@@ -96,7 +100,7 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
 }
 
-class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val pattern: FlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(pattern.type.simpleName!!), FlowMessageReaction<I, M>, FlowMessageReactionMatch<I, M> {
+class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val type: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(type.simpleName!!), FlowMessageReaction<I, M>, TypedFlowMessageReaction<M>, MatchableFlowMessageReaction<I, M> {
 
     init {
         reactionType = FlowReactionType.Message
@@ -104,7 +108,7 @@ class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val patt
 
     // Message Patterns Refiner
 
-    override fun having(key: String): FlowMessageReactionMatch<I, M> {
+    override fun having(key: String): MatchableFlowMessageReaction<I, M> {
         TODO()
     }
 

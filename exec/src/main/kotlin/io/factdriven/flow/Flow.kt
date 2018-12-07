@@ -30,31 +30,31 @@ fun <I: FlowInstance> present(history: FlowMessages, flow: FlowExecution<I>, tri
 }
 
 /**
- * Produce a list of future matching patterns matching in the future based on a given history of messages and a trigger.
+ * Produce a list of future matching patternBuilders matching in the future based on a given history of messages and a trigger.
  * @param history of (consumed and produced) messages
  * @param flow definition
  * @param trigger coming in and influencing the flow instance
- * @return future matching patterns
+ * @return future matching patternBuilders
  */
-fun <I: FlowInstance> future(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessage): FlowMessagePatterns {
+fun <I: FlowInstance> future(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessage): FlowMessagePatternBuilders {
     TODO()
 }
 
 /**
- * Produce a list of potential patterns for an incoming message.
+ * Produce a list of potential patternBuilders for an incoming message.
  * @param flow definition
  * @param trigger coming in and potentially influencing many flow instances
- * @return matching patterns
+ * @return matching patternBuilders
  */
-fun <I: FlowInstance> potential(flow: FlowExecution<I>, trigger: FlowMessage): FlowMessagePatterns {
+fun <I: FlowInstance> potential(flow: FlowExecution<I>, trigger: FlowMessage): FlowMessagePatternBuilders {
     TODO()
 }
 
 /**
- * Determine a list of flow instances currently matching to given patterns.
- * @param patterns
+ * Determine a list of flow instances currently matching to given patternBuilders.
+ * @param patternBuilders
  * @return matching flow instances
  */
-fun <I: FlowInstance> determine(patterns: FlowMessagePatterns): FlowInstanceIds {
+fun <I: FlowInstance> determine(patternBuilders: FlowMessagePatternBuilders): FlowInstanceIds {
     TODO()
 }

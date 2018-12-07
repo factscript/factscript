@@ -9,7 +9,7 @@ import kotlin.reflect.full.memberProperties
 typealias FlowMessage = Any
 typealias FlowMessages = List<FlowMessage>
 
-interface FlowMessagePattern<M: FlowMessage> {
+interface FlowMessagePatternBuilder<M: FlowMessage> {
 
     val type: KClass<out M>
 
@@ -17,9 +17,10 @@ interface FlowMessagePattern<M: FlowMessage> {
 
 }
 
-typealias FlowMessagePatterns = List<FlowMessagePattern<out FlowMessage>>
+typealias FlowMessagePatternBuilders = List<FlowMessagePatternBuilder<out FlowMessage>>
 
-data class DefaultFlowMessagePattern<M: FlowMessage>(override val type: KClass<M>) : FlowMessagePattern<M> {
+/*
+data class FlowMessagePatternBuilderImpl<M: FlowMessage>(override val type: KClass<M>) : FlowMessagePatternBuilder<M> {
 
     internal val keys = mutableMapOf<String, Any>()
 
@@ -35,3 +36,4 @@ data class DefaultFlowMessagePattern<M: FlowMessage>(override val type: KClass<M
     }
 
 }
+*/

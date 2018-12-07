@@ -42,6 +42,6 @@ interface FlowReactionDefinition: FlowElement {
 
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
-    val pattern: FlowMessagePattern<out FlowMessage>
+    val type: KClass<out FlowMessage>
 
 }
