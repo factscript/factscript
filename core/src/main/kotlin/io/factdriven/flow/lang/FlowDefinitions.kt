@@ -28,7 +28,7 @@ interface FlowDefinition: FlowElement {
 interface FlowActionDefinition: FlowElement {
 
     val actionType: FlowActionType
-    val function: (() -> FlowMessage)?
+    val function: (FlowInstance.() -> FlowMessage)?
 
 }
 
@@ -36,7 +36,7 @@ interface FlowReactionDefinition: FlowElement {
 
     var reactionType: FlowReactionType
     var actionType: FlowActionType
-    var function: ((Any) -> FlowMessage)?
+    var function: (FlowInstance.(Any) -> FlowMessage)?
 
 }
 

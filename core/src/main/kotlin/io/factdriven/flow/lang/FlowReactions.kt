@@ -5,7 +5,7 @@ package io.factdriven.flow.lang
  */
 enum class FlowReactionType {
 
-    message
+    Message
 
 }
 
@@ -53,13 +53,13 @@ interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I,
 
 interface FlowMessageReactionMatch<I: FlowInstance, M: FlowMessage> {
 
-    infix fun match(match: () -> Any): FlowMessageReaction<I, M>
+    infix fun match(match: I.() -> Any?): FlowMessageReaction<I, M>
 
 }
 
 interface ClassifiedFlowReaction<I: FlowInstance, A: Any> {
 
-    infix fun by(reaction: (A) -> FlowMessage)
+    infix fun by(reaction: I.(A) -> FlowMessage)
 
 }
 
@@ -67,9 +67,9 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
     // Flow Reaction Definition
 
-    override var actionType = FlowActionType.progress
-    override var reactionType = FlowReactionType.message
-    override var function: ((Any) -> FlowMessage)? = null
+    override var actionType = FlowActionType.Progress
+    override var reactionType = FlowReactionType.Message
+    override var function: (FlowInstance.(Any) -> FlowMessage)? = null
 
     // Flow Action as Reaction Factory
 
@@ -85,9 +85,9 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
         TODO()
     }
 
-    override fun by(reaction: (A) -> FlowMessage) {
+    override fun by(reaction: I.(A) -> FlowMessage) {
         @Suppress("UNCHECKED_CAST")
-        this.function = reaction as (Any) -> FlowMessage
+        this.function = reaction as FlowInstance.(Any) -> FlowMessage
     }
 
 }
@@ -95,7 +95,7 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val messagePattern: FlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(messagePattern.type.simpleName!!), FlowMessageReaction<I, M>, FlowMessageReactionMatch<I, M> {
 
     init {
-        reactionType = FlowReactionType.message
+        reactionType = FlowReactionType.Message
     }
 
     // Message Patterns Refiner
@@ -104,7 +104,7 @@ class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val mess
         TODO()
     }
 
-    override fun match(match: () -> Any): FlowMessageReaction<I, M> {
+    override fun match(match: I.() -> Any?): FlowMessageReaction<I, M> {
         TODO()
     }
 

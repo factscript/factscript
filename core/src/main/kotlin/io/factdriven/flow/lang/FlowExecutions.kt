@@ -23,10 +23,7 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
     val execute: FlowActivities<I>
     val select: FlowSelections<I>
 
-    var status: I
-
     fun <M: FlowMessage> type(type: KClass<M>): FlowMessagePattern<M>
-    fun <M: FlowMessage> pattern(pattern: M): FlowMessagePattern<M>
 
     fun <M: FlowMessage> intent(name: String): FlowReactionAction<M>
     fun <M: FlowMessage> acceptance(name: String): FlowReactionAction<M>
@@ -54,7 +51,6 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, Flow
 
     // Flow Definition
 
-    override lateinit var status: I
     override var executionType = FlowExecutionType.execution
     override val elements = mutableListOf<FlowElement>()
     override lateinit var instanceType: KClass<out FlowInstance>
@@ -112,36 +108,32 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, Flow
         return DefaultFlowMessagePattern(type)
     }
 
-    override fun <M: FlowMessage> pattern(pattern: M): FlowMessagePattern<M> {
-        TODO()
-    }
-
     // Action as Reaction Factories
 
     override fun <M: FlowMessage> intent(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.intent, this.name)
+        return FlowReactionAction(FlowActionType.Intent, this.name)
     }
 
     override fun <M: FlowMessage> acceptance(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.acceptance, name)
+        return FlowReactionAction(FlowActionType.Acceptance, name)
     }
 
     override fun <M: FlowMessage> progress(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.progress, name)
+        return FlowReactionAction(FlowActionType.Progress, name)
     }
 
     override fun <M: FlowMessage> success(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.success, name)
+        return FlowReactionAction(FlowActionType.Success, name)
     }
 
     override fun <M: FlowMessage> fix(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.fix, name)
+        return FlowReactionAction(FlowActionType.Fix, name)
     }
 
     override fun <M: FlowMessage> failure(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.failure, name)
+        return FlowReactionAction(FlowActionType.Failure, name)
     }
 
 }
 
-data class FlowReactionAction<M: FlowMessage>(val type: FlowActionType = FlowActionType.success, val id: String = "")
+data class FlowReactionAction<M: FlowMessage>(val type: FlowActionType = FlowActionType.Success, val id: String = "")

@@ -6,28 +6,28 @@ package io.factdriven.flow.lang
  */
 enum class FlowActionType {
 
-    acceptance,
-    progress,
-    success,
-    fix,
-    failure,
-    intent
+    Acceptance,
+    Progress,
+    Success,
+    Fix,
+    Failure,
+    Intent
 
 }
 
-interface ClassifiedFlowAction {
+interface ClassifiedFlowAction<I: FlowInstance> {
 
-    infix fun by(action: () -> Any)
+    infix fun by(message: I.() -> Any)
 
 }
 
-interface FlowAction<I: FlowInstance> : ClassifiedFlowAction {
+interface FlowAction<I: FlowInstance> : ClassifiedFlowAction<I> {
 
-    infix fun intent(id: String): ClassifiedFlowAction
-    infix fun acceptance(id: String): ClassifiedFlowAction
-    infix fun progress(id: String): ClassifiedFlowAction
-    infix fun success(id: String): ClassifiedFlowAction
-    infix fun failure(id: String): ClassifiedFlowAction
+    infix fun intent(id: String): ClassifiedFlowAction<I>
+    infix fun acceptance(id: String): ClassifiedFlowAction<I>
+    infix fun progress(id: String): ClassifiedFlowAction<I>
+    infix fun success(id: String): ClassifiedFlowAction<I>
+    infix fun failure(id: String): ClassifiedFlowAction<I>
 
     fun asDefinition(): FlowActionDefinition {
         return this as FlowActionDefinition
@@ -35,48 +35,49 @@ interface FlowAction<I: FlowInstance> : ClassifiedFlowAction {
 
 }
 
-open class FlowActionImpl<I: FlowInstance>: ClassifiedFlowAction, FlowAction<I>, FlowActionDefinition {
+open class FlowActionImpl<I: FlowInstance>: ClassifiedFlowAction<I>, FlowAction<I>, FlowActionDefinition {
 
     // Flow Action Definition
 
     override var name = ""
-    override var actionType = FlowActionType.success
-    override var function: (() -> FlowMessage)? = null
+    override var actionType = FlowActionType.Success
+    override var function: (FlowInstance.() -> FlowMessage)? = null
 
     // Flow Action Factories
 
-    override infix fun intent(name: String): ClassifiedFlowAction {
-        this.actionType = FlowActionType.intent
+    override infix fun intent(name: String): ClassifiedFlowAction<I> {
+        this.actionType = FlowActionType.Intent
         this.name = name
         return this
     }
 
-    override infix fun acceptance(id: String): ClassifiedFlowAction {
-        this.actionType = FlowActionType.acceptance
+    override infix fun acceptance(id: String): ClassifiedFlowAction<I> {
+        this.actionType = FlowActionType.Acceptance
         this.name = id
         return this
     }
 
-    override infix fun progress(id: String): ClassifiedFlowAction {
-        this.actionType = FlowActionType.progress
+    override infix fun progress(id: String): ClassifiedFlowAction<I> {
+        this.actionType = FlowActionType.Progress
         this.name = id
         return this
     }
 
-    override infix fun success(id: String): ClassifiedFlowAction {
-        this.actionType = FlowActionType.success
+    override infix fun success(id: String): ClassifiedFlowAction<I> {
+        this.actionType = FlowActionType.Success
         this.name = id
         return this
     }
 
-    override infix fun failure(id: String): ClassifiedFlowAction {
-        this.actionType = FlowActionType.failure
+    override infix fun failure(id: String): ClassifiedFlowAction<I> {
+        this.actionType = FlowActionType.Failure
         this.name = id
         return this
     }
 
-    override fun by(message: () -> FlowMessage) {
-        this.function = message
+    override fun by(message: I.() -> FlowMessage) {
+        @Suppress("UNCHECKED_CAST")
+        this.function = message as FlowInstance.() -> FlowMessage
     }
 
 }

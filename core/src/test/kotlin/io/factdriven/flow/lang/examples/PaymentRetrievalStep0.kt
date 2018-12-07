@@ -79,8 +79,8 @@ class PaymentRetrievalStep0Test {
 
         val node = flow.elements.get(0) as FlowActionDefinition
 
-        assertEquals(FlowActionType.success, node.actionType)
-        assertEquals(PaymentRetrieved::class, node.function!!.invoke()::class)
+        assertEquals(FlowActionType.Success, node.actionType)
+        assertEquals(PaymentRetrieved::class, node.function!!.invoke(PaymentRetrieval(RetrievePayment()))::class)
 
     }
 
@@ -110,8 +110,8 @@ class PaymentRetrievalStep0Test {
         val node = parentNode.elements.get(0)
         val action = node as FlowActionDefinition
 
-        assertEquals(FlowActionType.intent, action.actionType)
-        assertEquals(ChargeCreditCard::class, action.function!!.invoke()::class)
+        assertEquals(FlowActionType.Intent, action.actionType)
+        assertEquals(ChargeCreditCard::class, action.function!!.invoke(PaymentRetrieval(RetrievePayment()))::class)
     }
 
     @Test()
@@ -127,7 +127,7 @@ class PaymentRetrievalStep0Test {
         val node = parentNode.elements.get(0) as FlowMessageReactionDefinition
 
         assertEquals(CreditCardCharged::class, node.messagePattern.type)
-        assertEquals(FlowActionType.success, node.actionType)
+        assertEquals(FlowActionType.Success, node.actionType)
     }
 
 

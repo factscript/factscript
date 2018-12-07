@@ -6,13 +6,13 @@ package io.factdriven.flow.lang
 
 class PaymentRetrieval(init: RetrievePayment) {
 
-    val paymentId = init.id!!
-    val accountId = init.accountId!!
-    var uncovered = init.payment!!
+    val paymentId = init.id
+    val accountId = init.accountId
+    var uncovered = init.payment
     var covered = 0F
 
     fun apply(message: PaymentRetrieved) {
-        covered = uncovered
+        covered = uncovered!!
         uncovered = 0F
     }
 
