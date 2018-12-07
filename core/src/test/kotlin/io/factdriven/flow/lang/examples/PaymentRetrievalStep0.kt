@@ -38,7 +38,7 @@ class PaymentRetrievalStep0Test {
         }
 
         val node = flow.elements[0]
-        val pattern = (node as FlowMessageReactionDefinition).messagePattern
+        val pattern = (node as FlowMessageReactionDefinition).pattern
 
         assertEquals(RetrievePayment::class, pattern.type)
 
@@ -125,7 +125,7 @@ class PaymentRetrievalStep0Test {
         val parentNode = flow.elements.get(0) as FlowDefinition
         val node = parentNode.elements.get(0) as FlowMessageReactionDefinition
 
-        assertEquals(CreditCardCharged::class, node.messagePattern.type)
+        assertEquals(CreditCardCharged::class, node.pattern.type)
         assertEquals(FlowActionType.Success, node.actionType)
     }
 

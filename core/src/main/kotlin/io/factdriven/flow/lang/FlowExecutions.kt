@@ -63,8 +63,23 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, Flow
             }
         }
 
-    // Basic Flow Execution
+    val actions: List<FlowAction<I>> get() {
+        @Suppress("UNCHECKED_CAST")
+        return elements.filter { it is FlowAction<*> } as List<FlowAction<I>>
+    }
 
+    val reactions: List<FlowReaction<I, *>> get() {
+        @Suppress("UNCHECKED_CAST")
+        return elements.filter { it is FlowReaction<*, *> } as List<FlowReaction<I, *>>
+    }
+
+    val patterns: Set<FlowMessagePattern<*>> get() {
+        @Suppress("UNCHECKED_CAST")
+        val reactions =  reactions.filter{ it is FlowMessageReaction<*, *> } as List<FlowMessageReaction<I, *>>
+        return reactions.map { it.asDefinition().pattern }.toSet()
+    }
+
+    // Basic Flow Execution<
     override val on: FlowReactions<I>
         get() {
             return FlowReactions(this)

@@ -42,6 +42,6 @@ interface FlowReactionDefinition: FlowElement {
 
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
-    val messagePattern: FlowMessagePattern<out FlowMessage>
+    val pattern: FlowMessagePattern<out FlowMessage>
 
 }

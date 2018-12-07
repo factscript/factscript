@@ -49,6 +49,10 @@ interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I,
     infix fun having(key: String): FlowMessageReactionMatch<I, M>
     infix fun supporting(assertion: (M) -> Boolean): FlowMessageReaction<I, M>
 
+    override fun asDefinition(): FlowMessageReactionDefinition {
+        return this as FlowMessageReactionDefinition
+    }
+
 }
 
 interface FlowMessageReactionMatch<I: FlowInstance, M: FlowMessage> {
@@ -92,7 +96,7 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
 }
 
-class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val messagePattern: FlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(messagePattern.type.simpleName!!), FlowMessageReaction<I, M>, FlowMessageReactionMatch<I, M> {
+class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val pattern: FlowMessagePattern<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(pattern.type.simpleName!!), FlowMessageReaction<I, M>, FlowMessageReactionMatch<I, M> {
 
     init {
         reactionType = FlowReactionType.Message
