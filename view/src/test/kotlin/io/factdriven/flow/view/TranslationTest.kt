@@ -1,4 +1,4 @@
-package io.factdriven.flowlang.view
+package io.factdriven.flow.view
 
 import io.factdriven.flow.execute
 import org.junit.jupiter.api.Assertions.assertEquals

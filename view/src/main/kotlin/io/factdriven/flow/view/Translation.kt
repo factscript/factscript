@@ -1,4 +1,4 @@
-package io.factdriven.flowlang.view
+package io.factdriven.flow.view
 
 import io.factdriven.flow.lang.*
 
@@ -14,7 +14,12 @@ fun translate(definition: FlowDefinition): Container {
     fun translate(element: FlowElement, parent: Container): Element {
         return when(element) {
             is FlowReactionDefinition -> {
-                BpmnEventSymbol(element.name, parent, BpmnEventType.message, BpmnEventCharacteristic.catching)
+                BpmnEventSymbol(
+                    element.name,
+                    parent,
+                    BpmnEventType.message,
+                    BpmnEventCharacteristic.catching
+                )
             }
             is FlowDefinition -> {
                 when (element.executionType) {
@@ -33,7 +38,12 @@ fun translate(definition: FlowDefinition): Container {
                 }
             }
             is FlowActionDefinition -> {
-                BpmnEventSymbol(element.name, parent, if (element.function != null) BpmnEventType.message else BpmnEventType.none, BpmnEventCharacteristic.throwing)
+                BpmnEventSymbol(
+                    element.name,
+                    parent,
+                    if (element.function != null) BpmnEventType.message else BpmnEventType.none,
+                    BpmnEventCharacteristic.throwing
+                )
             }
             else -> throw IllegalArgumentException()
         }

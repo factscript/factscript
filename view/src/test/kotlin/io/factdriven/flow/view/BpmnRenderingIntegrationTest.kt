@@ -1,7 +1,6 @@
-package io.factdriven.flowlang.view
+package io.factdriven.flow.view
 
 import io.factdriven.flow.execute
-import io.factdriven.flow.lang.FlowDefinition
 import io.factdriven.flow.lang.FlowExecution
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.junit.jupiter.api.Test

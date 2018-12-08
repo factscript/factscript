@@ -1,4 +1,4 @@
-package io.factdriven.flowlang.view
+package io.factdriven.flow.view
 
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
@@ -23,7 +23,7 @@ abstract class BpmnSymbol(name: String, parent: Container): Symbol(name, parent)
 
 class BpmnTaskSymbol(name: String, parent: Container, val type: BpmnTaskType): BpmnSymbol(name, parent)  {
 
-    override val inner = Dimension(100,80)
+    override val inner = Dimension(100, 80)
 
     override val elementClass: KClass<out FlowNode> get() {
         return when (type) {
@@ -53,7 +53,7 @@ enum class BpmnEventPosition {
 
 class BpmnEventSymbol(name: String, parent: Container, val type: BpmnEventType, val characteristic: BpmnEventCharacteristic): BpmnSymbol(name, parent) {
 
-    override val inner = Dimension(36,36)
+    override val inner = Dimension(36, 36)
 
     override val name: String = name
         get() = field.replace(" ", "\n")
@@ -98,8 +98,8 @@ fun transform(container: Container): BpmnModelInstance {
     modelInstance.definitions = definitions
 
     val process = modelInstance.newInstance(Process::class.java)
-    process.setAttributeValue("name", container.id, true)
-    process.setAttributeValue("name", container.name, true)
+    process.setAttributeValue("id", container.name, true)
+    process.setAttributeValue("name", container.name, false)
     process.isExecutable = true
     definitions.addChildElement(process)
 
@@ -110,20 +110,27 @@ fun transform(container: Container): BpmnModelInstance {
     diagram.bpmnPlane = plane
     definitions.addChildElement(diagram)
 
-    val map = mutableMapOf<Symbol, FlowNode>()
+    val flowNodes = mutableMapOf<Symbol, FlowNode>()
 
     fun createBpmnModelElementInstance(symbol: BpmnSymbol): FlowNode {
 
         val modelElementInstance = modelInstance.newInstance(symbol.elementClass.java)
-        modelElementInstance.setAttributeValue("name", symbol.id, true)
         modelElementInstance.setAttributeValue("name", symbol.name, false)
         process.addChildElement(modelElementInstance)
 
         if (symbol is BpmnEventSymbol) {
             when (symbol.type) {
                 BpmnEventType.message -> {
+
+                    // TODO just one message per message type - not per message event symbol
+                    val message = modelInstance.newInstance(Message::class.java)
+                    message.setAttributeValue("name", symbol.id)
+                    definitions.addChildElement(message)
+
                     val messageEventDefinition = modelInstance.newInstance(MessageEventDefinition::class.java)
+                    messageEventDefinition.setAttributeValue("messageRef", message.id)
                     modelElementInstance.addChildElement(messageEventDefinition)
+
                 }
             }
         }
@@ -156,13 +163,12 @@ fun transform(container: Container): BpmnModelInstance {
     fun createSequenceFlow(connector: Connector) {
 
         val sequenceFlow = modelInstance.newInstance(SequenceFlow::class.java)
-        sequenceFlow.setAttributeValue("id", connector.id, true)
         process.addChildElement(sequenceFlow)
 
-        sequenceFlow.source = map[connector.source]
+        sequenceFlow.source = flowNodes[connector.source]
         sequenceFlow.source.outgoing.add(sequenceFlow)
 
-        sequenceFlow.target = map[connector.target]
+        sequenceFlow.target = flowNodes[connector.target]
         sequenceFlow.target.incoming.add(sequenceFlow)
 
         val bpmnEdge = modelInstance.newInstance(BpmnEdge::class.java)
@@ -179,7 +185,7 @@ fun transform(container: Container): BpmnModelInstance {
 
     }
 
-    container.symbols.forEach { map[it] = createBpmnModelElementInstance(it as BpmnSymbol) }
+    container.symbols.forEach { flowNodes[it] = createBpmnModelElementInstance(it as BpmnSymbol) }
     container.connectors.forEach { createSequenceFlow(it) }
 
     return process.modelInstance as BpmnModelInstance

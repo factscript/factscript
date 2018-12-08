@@ -1,4 +1,4 @@
-package io.factdriven.flowlang.view
+package io.factdriven.flow.view
 
 import java.util.*
 
@@ -10,7 +10,7 @@ data class Position (val x: Int, val y: Int) {
     
     companion object {
         
-        val zero = Position(0,0)
+        val zero = Position(0, 0)
         
     }
     
@@ -25,16 +25,28 @@ interface Element: Named, Identified {
     val parent: Container?
     val dimension: Dimension
     val position: Position get() = parent?.position(this) ?: Position.zero
-    val center: Position get() = Position(position.x + (dimension.width / 2), position.y + (dimension.height / 2))
+    val center: Position
+        get() = Position(
+            position.x + (dimension.width / 2),
+            position.y + (dimension.height / 2)
+        )
 
 }
 
-abstract class Container(override val name: String, override val parent: Container? = null): Element {
+abstract class Container(override val name: String, override val parent: Container? = null):
+    Element {
 
     override val id = this::class.simpleName!! + "-" + UUID.randomUUID().toString()
     val children = mutableListOf<Element>()
 
-    override val dimension: Dimension get() = if (children.isEmpty()) Dimension(0,0) else Dimension(children.sumBy { it.dimension.width }, children.maxBy { it.dimension.height }!!.dimension.height)
+    override val dimension: Dimension
+        get() = if (children.isEmpty()) Dimension(
+            0,
+            0
+        ) else Dimension(
+            children.sumBy { it.dimension.width },
+            children.maxBy { it.dimension.height }!!.dimension.height
+        )
 
     val symbols: Set<Symbol> get() = children.map { when (it) {
         is Symbol -> listOf(it)
@@ -56,7 +68,10 @@ class Sequence(name: String, parent: Container? = null): Container(name, parent)
 
     override fun position(child: Element): Position {
         val predecessors = children.subList(0, children.indexOf(child))
-        return Position(position.x + predecessors.sumBy { it.dimension.width }, position.y + (dimension.height - child.dimension.height) / 2)
+        return Position(
+            position.x + predecessors.sumBy { it.dimension.width },
+            position.y + (dimension.height - child.dimension.height) / 2
+        )
     }
 
     override fun add(child: Element) {
@@ -82,7 +97,8 @@ interface Named {
 
 interface Graphical
 
-abstract class Symbol(override val name: String, override val parent: Container): Graphical, Element {
+abstract class Symbol(override val name: String, override val parent: Container): Graphical,
+    Element {
 
     override val id = this::class.simpleName!! + "-" + UUID.randomUUID().toString()
     val outgoing = mutableListOf<Connector>()
@@ -92,17 +108,53 @@ abstract class Symbol(override val name: String, override val parent: Container)
         parent.add(this)
     }
 
-    override val dimension: Dimension get() = Dimension(inner.width + 2 * margin, inner.height + 2 * margin)
+    override val dimension: Dimension
+        get() = Dimension(
+            inner.width + 2 * margin,
+            inner.height + 2 * margin
+        )
 
     abstract val inner: Dimension
-    val topLeft: Position get() = Position(center.x - (inner.width / 2), center.y - (inner.height / 2))
-    val topRight: Position get() = Position(center.x + (inner.width / 2), center.y - (inner.height / 2))
-    val bottomLeft: Position get() = Position(center.x - (inner.width / 2), center.y + (inner.height / 2))
-    val bottomRight: Position get() = Position(center.x + (inner.width / 2), center.y + (inner.height / 2))
-    val topCenter: Position get() = Position(center.x, center.y - (inner.height / 2))
-    val bottomCenter: Position get() = Position(center.x, center.y + (inner.height / 2))
-    val leftCenter: Position get() = Position(center.x - (inner.width / 2), center.y)
-    val rightCenter: Position get() = Position(center.x + (inner.width / 2), center.y)
+    val topLeft: Position
+        get() = Position(
+            center.x - (inner.width / 2),
+            center.y - (inner.height / 2)
+        )
+    val topRight: Position
+        get() = Position(
+            center.x + (inner.width / 2),
+            center.y - (inner.height / 2)
+        )
+    val bottomLeft: Position
+        get() = Position(
+            center.x - (inner.width / 2),
+            center.y + (inner.height / 2)
+        )
+    val bottomRight: Position
+        get() = Position(
+            center.x + (inner.width / 2),
+            center.y + (inner.height / 2)
+        )
+    val topCenter: Position
+        get() = Position(
+            center.x,
+            center.y - (inner.height / 2)
+        )
+    val bottomCenter: Position
+        get() = Position(
+            center.x,
+            center.y + (inner.height / 2)
+        )
+    val leftCenter: Position
+        get() = Position(
+            center.x - (inner.width / 2),
+            center.y
+        )
+    val rightCenter: Position
+        get() = Position(
+            center.x + (inner.width / 2),
+            center.y
+        )
 
     fun connect(target: Symbol) {
         val connector = Connector(this, target)
@@ -125,7 +177,8 @@ abstract class Symbol(override val name: String, override val parent: Container)
 
 }
 
-data class Connector(val source: Symbol, val target: Symbol): Graphical, Identified {
+data class Connector(val source: Symbol, val target: Symbol): Graphical,
+    Identified {
 
     override val id = source.id + "-" + target.id
 

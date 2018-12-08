@@ -13,10 +13,12 @@ repositories {
 }
 
 dependencies {
-    compile project(':core')
+    compile project(':view')
 
     // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-engine
     compile group: 'org.camunda.bpm', name: 'camunda-engine', version: '7.10.0'
+    // https://mvnrepository.com/artifact/com.h2database/h2
+    testCompile group: 'com.h2database', name: 'h2', version: '1.4.197'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     testCompile("org.junit.jupiter:junit-jupiter-api:5.3.2")
