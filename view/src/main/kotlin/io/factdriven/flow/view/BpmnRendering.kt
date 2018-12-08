@@ -118,19 +118,43 @@ fun transform(container: Container): BpmnModelInstance {
         modelElementInstance.setAttributeValue("name", symbol.name, false)
         process.addChildElement(modelElementInstance)
 
-        if (symbol is BpmnEventSymbol) {
-            when (symbol.type) {
-                BpmnEventType.message -> {
+        when (symbol) {
+            is BpmnEventSymbol -> {
+                when (symbol.type) {
+                    BpmnEventType.message -> {
 
-                    // TODO just one message per message type - not per message event symbol
-                    val message = modelInstance.newInstance(Message::class.java)
-                    message.setAttributeValue("name", symbol.id)
-                    definitions.addChildElement(message)
+                        val messageEventDefinition = modelInstance.newInstance(MessageEventDefinition::class.java)
+                        modelElementInstance.addChildElement(messageEventDefinition)
 
-                    val messageEventDefinition = modelInstance.newInstance(MessageEventDefinition::class.java)
-                    messageEventDefinition.setAttributeValue("messageRef", message.id)
-                    modelElementInstance.addChildElement(messageEventDefinition)
+                        if (symbol.characteristic == BpmnEventCharacteristic.catching) {
+                            // TODO just one message per hash of expected message pattern
+                            val message = modelInstance.newInstance(Message::class.java)
+                            message.setAttributeValue("name", symbol.id) // TODO hash of expected message pattern
+                            definitions.addChildElement(message)
+                            messageEventDefinition.message = message
+                        } else {
+                            messageEventDefinition.camundaDelegateExpression =
+                                    "#{flowActionBehaviour}" // TODO move into exec
+                        }
 
+                    }
+                }
+            }
+            is BpmnTaskSymbol -> {
+                when (symbol.type) {
+                    BpmnTaskType.send -> {
+                        (modelElementInstance as SendTask).camundaDelegateExpression = "#{flowActionBehaviour}"
+                    }
+                    BpmnTaskType.receive -> {
+                        // TODO just one message per hash of expected message pattern
+                        val message = modelInstance.newInstance(Message::class.java)
+                        message.setAttributeValue("name", symbol.id) // TODO hash of expected message pattern
+                        definitions.addChildElement(message)
+                        (modelElementInstance as ReceiveTask).message = message
+                    }
+                    BpmnTaskType.service -> {
+                        (modelElementInstance as ServiceTask).camundaDelegateExpression = "#{flowServiceBehaviour}"
+                    }
                 }
             }
         }
