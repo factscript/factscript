@@ -32,8 +32,6 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
     fun <M: FlowMessagePayload> fix(name: String): FlowReactionAction<M>
     fun <M: FlowMessagePayload> failure(name: String): FlowReactionAction<M>
 
-    fun execute(definition: FlowExecution<I>.() -> Unit): FlowExecution<I>
-
     fun asDefinition(): FlowDefinition {
         return this as FlowDefinition
     }
@@ -41,6 +39,8 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
 }
 
 interface FlowActivities<I: FlowInstance> {
+
+    operator fun invoke(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I>
 
     infix fun service(service: FlowExecution<I>): FlowExecution<I> // TODO work on composition
     infix fun service(service: FlowExecution<I>.() -> Unit): FlowExecution<I>
@@ -110,7 +110,9 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, Flow
         return this
     }
 
-    override fun execute(definition: FlowExecution<I>.() -> Unit): FlowExecution<I> = TODO()
+    override fun invoke(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I> {
+        TODO()
+    }
 
     override infix fun mitigation(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I> {
         executionType = FlowExecutionType.mitigation
