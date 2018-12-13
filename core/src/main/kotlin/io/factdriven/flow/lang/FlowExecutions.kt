@@ -23,8 +23,6 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
     val execute: FlowActivities<I>
     val select: FlowSelections<I>
 
-    fun <M: FlowMessagePayload> type(type: KClass<M>): TypedFlowMessageReaction<M>
-
     fun <M: FlowMessagePayload> intent(name: String): FlowReactionAction<M>
     fun <M: FlowMessagePayload> acceptance(name: String): FlowReactionAction<M>
     fun <M: FlowMessagePayload> progress(name: String): FlowReactionAction<M>
@@ -118,12 +116,6 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, Flow
         executionType = FlowExecutionType.mitigation
         this.apply(mitigation)
         return this
-    }
-
-    // Message Pattern Factories
-
-    override fun <M: FlowMessagePayload> type(type: KClass<M>): TypedFlowMessageReaction<M> {
-        return FlowMessageReactionImpl<I, M>(type)
     }
 
     // Action as Reaction Factories

@@ -34,7 +34,7 @@ class PaymentRetrievalStep0Test {
     fun onMessageType() {
 
         val flow = define <PaymentRetrieval> {
-            on message type(RetrievePayment::class)
+            on message RetrievePayment::class
         }
 
         val node = flow.elements[0] as FlowMessageReactionDefinition
@@ -60,7 +60,7 @@ class PaymentRetrievalStep0Test {
     fun createSuccessWithoutAction() {
 
         val flow = define <PaymentRetrieval> {
-            create success("PaymentRetrieved")
+            create success "PaymentRetrieved"
         }
 
         val node = flow.elements.get(0) as FlowActionDefinition
@@ -72,7 +72,7 @@ class PaymentRetrievalStep0Test {
     fun createSuccessWithAction() {
 
         val flow = define <PaymentRetrieval> {
-            create success("PaymentRetrieved") by { PaymentRetrieved() }
+            create success "PaymentRetrieved" by { PaymentRetrieved() }
         }
 
         val node = flow.elements.get(0) as FlowActionDefinition
@@ -100,7 +100,7 @@ class PaymentRetrievalStep0Test {
 
         val flow = define <PaymentRetrieval> {
             execute service {
-                create intent("ChargeCreditCard") by { ChargeCreditCard() }
+                create intent "ChargeCreditCard" by { ChargeCreditCard() }
             }
         }
 
@@ -117,7 +117,7 @@ class PaymentRetrievalStep0Test {
 
         val flow = define <PaymentRetrieval> {
             execute service {
-                on message type(CreditCardCharged::class) create success("Credit card charged")
+                on message CreditCardCharged::class create success("Credit card charged")
             }
         }
 
@@ -133,14 +133,14 @@ class PaymentRetrievalStep0Test {
     fun flow() {
 
         val flow = define <PaymentRetrieval> {
-            on message type(RetrievePayment::class)
+            on message RetrievePayment::class
             execute service {
-                create intent("ChargeCreditCard") by { ChargeCreditCard() }
-                on message type(CreditCardCharged::class) having("reference") match { paymentId } create success("") by {
+                create intent "ChargeCreditCard" by { ChargeCreditCard() }
+                on message CreditCardCharged::class having "reference" match { paymentId } create success("") by {
 
                 }
             }
-            create success ("PaymentRetrieved") by { PaymentRetrieved() }
+            create success "PaymentRetrieved" by { PaymentRetrieved() }
         }
 
         val service = flow.elements[1] as FlowDefinition

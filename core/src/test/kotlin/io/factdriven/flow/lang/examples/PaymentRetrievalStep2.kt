@@ -7,31 +7,31 @@ import io.factdriven.flow.lang.*
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 val flow2 = execute<PaymentRetrieval> {
-    on message type(RetrievePayment::class) create acceptance("Payment retrieval accepted") by {
+    on message RetrievePayment::class create acceptance("Payment retrieval accepted") by {
         PaymentRetrievalAccepted(paymentId = it.accountId)
     }
     execute service {
-        create intent ("Withdraw amount") by {
+        create intent "Withdraw amount" by {
             WithdrawAmount(
                 reference = paymentId,
                 payment = uncovered
             )
         }
-        on message type(AmountWithdrawn::class) having "reference" match { paymentId } create success("Amount withdrawn")
+        on message AmountWithdrawn::class having "reference" match { paymentId } create success("Amount withdrawn")
     }
     select one {
         topic("Payment covered?")
         given("No") { uncovered!! > 0 } execute service {
-            create intent ("Charge credit card") by {
+            create intent "Charge credit card" by {
                 ChargeCreditCard(
                     reference = paymentId,
                     payment = uncovered
                 )
             }
-            on message type(CreditCardCharged::class) having "reference" match { paymentId } create success("Credit card charged")
+            on message CreditCardCharged::class having "reference" match { paymentId } create success("Credit card charged")
         }
     }
-    create success ("Payment retrieved") by {
+    create success "Payment retrieved" by {
         PaymentRetrieved(paymentId)
     }
 }

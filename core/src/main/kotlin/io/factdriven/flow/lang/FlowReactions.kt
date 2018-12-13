@@ -14,9 +14,9 @@ enum class FlowReactionType {
 
 class FlowReactions<I: FlowInstance>(val parent: FlowDefinition) {
 
-    infix fun <M: Any> message(reaction: TypedFlowMessageReaction<M>): FlowMessageReaction<I, M> {
+    infix fun <M: Any> message(type: KClass<M>): FlowMessageReaction<I, M> {
 
-        val r = reaction as FlowMessageReaction<I, M>
+        val reaction = FlowMessageReactionImpl<I, M>(type)
         parent.elements.add(reaction as FlowElement)
         return reaction
 
@@ -58,7 +58,9 @@ interface FlowMessageReaction<I: FlowInstance, M: FlowMessagePayload> : FlowReac
 
 }
 
+/*
 interface TypedFlowMessageReaction<M: FlowMessagePayload>
+*/
 
 interface MatchableFlowMessageReaction<I: FlowInstance, M: FlowMessagePayload> {
 
@@ -101,7 +103,7 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
 }
 
-class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessagePayload>(override val type: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(type.simpleName!!), FlowMessageReaction<I, M>, TypedFlowMessageReaction<M>, MatchableFlowMessageReaction<I, M> {
+class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessagePayload>(override val type: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(type.simpleName!!), FlowMessageReaction<I, M>, MatchableFlowMessageReaction<I, M> {
 
     override val keys = mutableListOf<FlowMessageProperty>()
     override val values = mutableListOf<FlowInstance.() -> Any?>()
