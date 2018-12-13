@@ -25,7 +25,7 @@ fun <I: FlowInstance> past(history: FlowMessages, flow: FlowExecution<I>): I {
  * @param trigger coming in and influencing the flow instance
  * @return new messages produced
  */
-fun <I: FlowInstance> present(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessage): FlowMessages {
+fun <I: FlowInstance> present(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessages {
     TODO()
 }
 
@@ -36,7 +36,7 @@ fun <I: FlowInstance> present(history: FlowMessages, flow: FlowExecution<I>, tri
  * @param trigger coming in and influencing the flow instance
  * @return future matching patternBuilders
  */
-fun <I: FlowInstance> future(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessage): FlowMessagePatterns {
+fun <I: FlowInstance> future(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessagePatterns {
     TODO()
 }
 
@@ -46,7 +46,7 @@ fun <I: FlowInstance> future(history: FlowMessages, flow: FlowExecution<I>, trig
  * @param trigger coming in and potentially influencing many flow instances
  * @return matching patternBuilders
  */
-fun <I: FlowInstance> potential(flow: FlowExecution<I>, trigger: FlowMessage): FlowMessagePatterns {
+fun <I: FlowInstance> potential(flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessagePatterns {
     TODO()
 }
 
@@ -57,4 +57,93 @@ fun <I: FlowInstance> potential(flow: FlowExecution<I>, trigger: FlowMessage): F
  */
 fun <I: FlowInstance> determine(patterns: FlowMessagePatterns): FlowInstanceIds {
     TODO()
+}
+
+interface ExecutableFlowDefinition: FlowDefinition {
+
+    val instances: FlowInstances
+
+    fun patterns(message: FlowMessagePayload): List<FlowMessagePattern>
+
+}
+
+interface FlowDefinitions {
+
+    fun all(): List<ExecutableFlowDefinition>
+    fun get(id: FlowDefinitionId): ExecutableFlowDefinition
+    // fun add(definition: ExecutableFlowDefinition): List<ExecutableFlowDefinition>
+
+}
+
+interface FlowInstances {
+
+    fun get(id: FlowInstanceId): FlowInstance
+    fun find(pattern: FlowMessagePattern): FlowInstanceIds
+
+}
+
+interface FlowMessageCorrelator {
+
+    val definitions: FlowDefinitions
+
+    fun process(incoming: FlowMessage) {
+
+        if (incoming.target == null) {
+
+            // Implicit targeting means that all correlations will happen synchronously
+            target(incoming).forEach { target -> process(FlowMessage(incoming, target)) }
+
+        } else {
+
+            // Begin transaction for message handling
+            // (A flow definition specific transaction mechanism may be provided)
+
+            // -. Retrieve flow definition by means of flow definition id.
+            val flowDefinition = definitions.get(incoming.target!!.first)
+
+            // -. Load flow instance history by means of the target flow instance id.
+            //    (A flow definition specific loading mechanism may be provided)
+            val flowInstance = flowDefinition.instances.get(incoming.target!!.second)
+
+            // -. Reconstruct flow instance status by means of flow instance history.
+            //    (A flow definition specific reconstruction mechanism may be provided)
+
+            // -. Correlate message to flow instance and retrieve outgoing messages.
+            //    (A flow definition specific correlation mechanism may be provided)
+
+            // -. Append incoming message and outgoing reaction messages to store.
+            //    (A flow definition specific appending mechanism may be provided)
+            // -. Commit unit of work for message correlation phase in case everything goes smoothly
+            //    If temporary failure, feed message into incoming queue and configure retry
+            //    If permanent failure, feed message into error queue
+
+            // -. Commit unit of work for message handling in case everything goes smoothly
+            //    (A flow definition specific transaction mechanism may be provided)
+
+        }
+
+    }
+
+    fun target(message: FlowMessage) : List<FlowMessageTarget> {
+
+        return definitions.all().map { definition ->
+
+            // Retrieve message correlation keys by means of (all) flow definitions and incoming
+            // message. Lookup correlating flow instance ids by means of message correlation keys.
+            // (A flow definition specific lookup mechanism may be provided)
+
+            definition.patterns(message).map {
+                definition.instances.find(it)
+            }.flatten().map {
+                Pair(definition.name, it)
+            }
+
+        }.flatten()
+
+    }
+
+    fun correlate(incoming: FlowMessage): FlowMessages {
+        TODO()
+    }
+
 }

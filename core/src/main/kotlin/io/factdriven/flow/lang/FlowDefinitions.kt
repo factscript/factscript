@@ -8,13 +8,12 @@ import kotlin.reflect.KClass
 typealias FlowInstance = Any
 typealias FlowInstanceId = String
 typealias FlowDefinitionId = String
-typealias FlowMessageProperty = String
 
 typealias FlowInstanceIds = List<FlowInstanceId>
 
 interface FlowElement {
 
-    val name: String
+    val name: FlowDefinitionId
 
 }
 
@@ -29,7 +28,7 @@ interface FlowDefinition: FlowElement {
 interface FlowActionDefinition: FlowElement {
 
     val actionType: FlowActionType
-    val function: (FlowInstance.() -> FlowMessage)?
+    val function: (FlowInstance.() -> FlowMessagePayload)?
 
 }
 
@@ -37,13 +36,13 @@ interface FlowReactionDefinition: FlowElement {
 
     var reactionType: FlowReactionType
     var actionType: FlowActionType
-    var function: (FlowInstance.(Any) -> FlowMessage)?
+    var function: (FlowInstance.(Any) -> FlowMessagePayload)?
 
 }
 
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
-    val type: KClass<out FlowMessage>
+    val type: KClass<out FlowMessagePayload>
     val keys: List<FlowMessageProperty>
     val values: List<FlowInstance.() -> Any?>
 

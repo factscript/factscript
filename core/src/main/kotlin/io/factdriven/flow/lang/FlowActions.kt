@@ -41,7 +41,7 @@ open class FlowActionImpl<I: FlowInstance>: ClassifiedFlowAction<I>, FlowAction<
 
     override var name = ""
     override var actionType = FlowActionType.Success
-    override var function: (FlowInstance.() -> FlowMessage)? = null
+    override var function: (FlowInstance.() -> FlowMessagePayload)? = null
 
     // Flow Action Factories
 
@@ -75,9 +75,9 @@ open class FlowActionImpl<I: FlowInstance>: ClassifiedFlowAction<I>, FlowAction<
         return this
     }
 
-    override fun by(message: I.() -> FlowMessage) {
+    override fun by(message: I.() -> FlowMessagePayload) {
         @Suppress("UNCHECKED_CAST")
-        this.function = message as FlowInstance.() -> FlowMessage
+        this.function = message as FlowInstance.() -> FlowMessagePayload
     }
 
 }

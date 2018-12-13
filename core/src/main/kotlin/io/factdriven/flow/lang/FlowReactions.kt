@@ -47,7 +47,7 @@ interface FlowReaction<I: FlowInstance, A: Any> {
 
 }
 
-interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I, M> {
+interface FlowMessageReaction<I: FlowInstance, M: FlowMessagePayload> : FlowReaction<I, M> {
 
     infix fun having(property: String): MatchableFlowMessageReaction<I, M>
     infix fun supporting(assertion: I.(M) -> Boolean): FlowMessageReaction<I, M>
@@ -58,9 +58,9 @@ interface FlowMessageReaction<I: FlowInstance, M: FlowMessage> : FlowReaction<I,
 
 }
 
-interface TypedFlowMessageReaction<M: FlowMessage>
+interface TypedFlowMessageReaction<M: FlowMessagePayload>
 
-interface MatchableFlowMessageReaction<I: FlowInstance, M: FlowMessage> {
+interface MatchableFlowMessageReaction<I: FlowInstance, M: FlowMessagePayload> {
 
     infix fun match(value: I.() -> Any?): FlowMessageReaction<I, M>
 
@@ -68,7 +68,7 @@ interface MatchableFlowMessageReaction<I: FlowInstance, M: FlowMessage> {
 
 interface ActionableFlowReaction<I: FlowInstance, A: Any> {
 
-    infix fun by(reaction: I.(A) -> FlowMessage)
+    infix fun by(reaction: I.(A) -> FlowMessagePayload)
 
 }
 
@@ -78,7 +78,7 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
     override var actionType = FlowActionType.Progress
     override var reactionType = FlowReactionType.Message
-    override var function: (FlowInstance.(Any) -> FlowMessage)? = null
+    override var function: (FlowInstance.(Any) -> FlowMessagePayload)? = null
 
     // Flow Action as Reaction Factory
 
@@ -94,14 +94,14 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
         TODO()
     }
 
-    override fun by(reaction: I.(A) -> FlowMessage) {
+    override fun by(reaction: I.(A) -> FlowMessagePayload) {
         @Suppress("UNCHECKED_CAST")
-        this.function = reaction as FlowInstance.(Any) -> FlowMessage
+        this.function = reaction as FlowInstance.(Any) -> FlowMessagePayload
     }
 
 }
 
-class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessage>(override val type: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(type.simpleName!!), FlowMessageReaction<I, M>, TypedFlowMessageReaction<M>, MatchableFlowMessageReaction<I, M> {
+class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessagePayload>(override val type: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(type.simpleName!!), FlowMessageReaction<I, M>, TypedFlowMessageReaction<M>, MatchableFlowMessageReaction<I, M> {
 
     override val keys = mutableListOf<FlowMessageProperty>()
     override val values = mutableListOf<FlowInstance.() -> Any?>()
