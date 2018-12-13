@@ -22,7 +22,7 @@ class FlowReactions<I: FlowInstance>(val parent: FlowDefinition) {
 
     }
 
-    infix fun compensation(execution: FlowExecution<I>): FlowExecution<I> {
+    infix fun compensation(execution: FlowExecution<I>.() -> Unit): FlowExecution<I> {
         TODO()
     }
 
@@ -39,7 +39,7 @@ class FlowReactions<I: FlowInstance>(val parent: FlowDefinition) {
 interface FlowReaction<I: FlowInstance, A: Any> {
 
     infix fun create(action: FlowReactionAction<A>): ActionableFlowReaction<I, A>
-    infix fun execute(execution: FlowExecution<I>): FlowExecution<I>
+    infix fun execute(execution: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit
 
     fun asDefinition(): FlowReactionDefinition {
         return this as FlowReactionDefinition
@@ -57,10 +57,6 @@ interface FlowMessageReaction<I: FlowInstance, M: FlowMessagePayload> : FlowReac
     }
 
 }
-
-/*
-interface TypedFlowMessageReaction<M: FlowMessagePayload>
-*/
 
 interface MatchableFlowMessageReaction<I: FlowInstance, M: FlowMessagePayload> {
 
@@ -90,10 +86,8 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
         return this
     }
 
-    // Flow Execution as Reaction Factory
-
-    override infix fun execute(execution: FlowExecution<I>): FlowExecution<I> {
-        TODO()
+    override fun execute(execution: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun by(reaction: I.(A) -> FlowMessagePayload) {

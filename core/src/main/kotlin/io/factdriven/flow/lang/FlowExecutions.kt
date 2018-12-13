@@ -19,7 +19,6 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
 
     val on: FlowReactions<I>
     val create: FlowAction<I>
-
     val execute: FlowActivities<I>
     val select: FlowSelections<I>
 
@@ -38,11 +37,10 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
 
 interface FlowActivities<I: FlowInstance> {
 
-    operator fun invoke(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I>
+    operator fun invoke(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit
 
-    infix fun service(service: FlowExecution<I>): FlowExecution<I> // TODO work on composition
-    infix fun service(service: FlowExecution<I>.() -> Unit): FlowExecution<I>
-    infix fun mitigation(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I>
+    infix fun service(service: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit
+    infix fun mitigation(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit
 
 }
 
@@ -96,32 +94,27 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, Flow
 
     // Sub Flow Execution Factories
 
-    override infix fun service(service: FlowExecution<I>): FlowExecution<I> {
-        executionType = FlowExecutionType.service
-        elements.add(service)
-        return this
-    }
-
-    override infix fun service(service: FlowExecution<I>.() -> Unit): FlowExecution<I> {
+    override infix fun service(service: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit {
         executionType = FlowExecutionType.service
         this.apply(service)
-        return this
+        return service
     }
 
-    override fun invoke(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I> {
-        TODO()
+    override fun invoke(execution: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit {
+        this.apply(execution)
+        return execution
     }
 
-    override infix fun mitigation(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I> {
+    override infix fun mitigation(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit {
         executionType = FlowExecutionType.mitigation
         this.apply(mitigation)
-        return this
+        return mitigation
     }
 
     // Action as Reaction Factories
 
     override fun <M: FlowMessagePayload> intent(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(FlowActionType.Intent, this.name)
+        return FlowReactionAction(FlowActionType.Intent, name)
     }
 
     override fun <M: FlowMessagePayload> acceptance(name: String): FlowReactionAction<M> {

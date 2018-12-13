@@ -6,10 +6,14 @@ import io.factdriven.flow.lang.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-val flow1 = execute<PaymentRetrieval>("Payment retrieval") {
+val flow1 = execute <PaymentRetrieval> ("PaymentRetrieval") {
 
-    on message RetrievePayment::class create acceptance("Payment retrieval accepted") by {
-        PaymentRetrievalAccepted(paymentId = it.id)
+    on message RetrievePayment::class execute {
+
+        create acceptance("Payment retrieval accepted") by {
+            // PaymentRetrievalAccepted(paymentId = it.id)
+        }
+
     }
 
     execute service {

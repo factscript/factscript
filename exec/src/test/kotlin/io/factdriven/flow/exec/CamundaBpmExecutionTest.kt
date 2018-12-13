@@ -24,14 +24,18 @@ class CamundaBpmExecutionTest {
     fun testPaymentRetrievalVersion1() {
 
         val flow = execute <PaymentRetrieval> {
-            on message type(RetrievePayment::class) create acceptance("Payment retrieval accepted") by {
+
+            on message (RetrievePayment::class) create acceptance("Payment retrieval accepted") by {
                 PaymentRetrievalAccepted(paymentId = it.id)
             }
+
             execute service {
-                create intent ("Charge credit card") by { ChargeCreditCard() }
-                on message type(CreditCardCharged::class) create success("Credit card charged")
+                create intent "Charge credit card" by { ChargeCreditCard() }
+                on message CreditCardCharged::class create success("Credit card charged")
             }
-            create success ("Payment retrieved") by { PaymentRetrieved() }
+
+            create success "Payment retrieved" by { PaymentRetrieved() }
+
         }
 
         val bpmn = bpmn(flow)

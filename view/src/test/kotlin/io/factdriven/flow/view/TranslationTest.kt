@@ -30,7 +30,7 @@ class TranslationTest {
     fun translateFlowReaction() {
 
         val flow = execute <PaymentRetrieval> {
-            on message type(RetrievePayment::class) create acceptance("")
+            on message RetrievePayment::class create acceptance("")
         }
 
         val element = translate(flow)
