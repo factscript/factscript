@@ -5,6 +5,8 @@ import io.factdriven.flow.lang.FlowExecution
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
 import org.camunda.bpm.engine.ProcessEngineConfiguration
+import org.camunda.bpm.engine.delegate.JavaDelegate
+import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.junit.jupiter.api.Assertions
@@ -54,7 +56,15 @@ class CamundaBpmExecutionTest {
 
         Assertions.assertEquals("PaymentRetrieval", processDefinition.key)
 
-        // engine.runtimeService.correlateMessage()
+        Mocks.register("flow", JavaDelegate {
+            println(it.currentActivityId)
+        })
+
+        engine.runtimeService.correlateMessage("PaymentRetrievalAccepted")
+
+        val processInstance = engine.runtimeService.createProcessInstanceQuery().singleResult()
+
+        Assertions.assertNotNull(processInstance)
 
     }
 

@@ -4,6 +4,7 @@ import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
 import org.camunda.bpm.model.bpmn.instance.bpmndi.*
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaExecutionListener
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds
 import org.camunda.bpm.model.bpmn.instance.di.Waypoint
 import kotlin.reflect.KClass
@@ -115,66 +116,109 @@ fun transform(container: Container): BpmnModelInstance {
         process.addChildElement(modelElementInstance)
 
         when (symbol) {
+
             is BpmnEventSymbol -> {
+
                 modelElementInstance.setAttributeValue("name", symbol.elementType.sentenceCase().replace(" ", "\n"), false)
+
                 when (symbol.eventType) {
+
                     BpmnEventType.message -> {
 
                         val messageEventDefinition = modelInstance.newInstance(MessageEventDefinition::class.java)
                         modelElementInstance.addChildElement(messageEventDefinition)
 
+                        val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
+                        val executionListener = extensionElements.addExtensionElement(CamundaExecutionListener::class.java)
+                        executionListener.camundaDelegateExpression = "#{flow}"
+                        modelElementInstance.addChildElement(extensionElements)
+
                         if (symbol.characteristic == BpmnEventCharacteristic.catching) {
-                            // TODO just one message per hash of expected message pattern
+
                             val message = modelInstance.newInstance(Message::class.java)
-                            message.setAttributeValue("id", symbol.elementType) // TODO hash of expected message pattern
+                            message.setAttributeValue("id", symbol.elementType)
                             message.setAttributeValue("name", symbol.elementType) // TODO hash of expected message pattern
                             definitions.addChildElement(message)
                             messageEventDefinition.message = message
+
+                            executionListener.camundaEvent = "end"
+
                         } else {
-                            messageEventDefinition.camundaDelegateExpression =
-                                    "#{flowActionBehaviour}" // TODO move into exec
+
+                            executionListener.camundaEvent = "start"
+
                         }
 
                     }
                 }
+
             }
+
             is BpmnTaskSymbol -> {
+
                 modelElementInstance.setAttributeValue("name", symbol.elementType.sentenceCase(), false)
+
+                val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
+                val executionListener = extensionElements.addExtensionElement(CamundaExecutionListener::class.java)
+                executionListener.camundaDelegateExpression = "#{flow}"
+                modelElementInstance.addChildElement(extensionElements)
+
                 when (symbol.taskType) {
+
                     BpmnTaskType.send -> {
-                        (modelElementInstance as SendTask).camundaDelegateExpression = "#{flowActionBehaviour}"
+
+                        executionListener.camundaEvent = "start"
+
                     }
+
                     BpmnTaskType.receive -> {
+
                         // TODO just one message per hash of expected message pattern
                         val message = modelInstance.newInstance(Message::class.java)
-                        message.setAttributeValue("id", symbol.elementType) // TODO hash of expected message pattern
+                        message.setAttributeValue("id", symbol.elementType)
                         message.setAttributeValue("name", symbol.elementType) // TODO hash of expected message pattern
                         definitions.addChildElement(message)
                         (modelElementInstance as ReceiveTask).message = message
+
+                        executionListener.camundaEvent = "end"
+
                     }
+
                     BpmnTaskType.service -> {
-                        (modelElementInstance as ServiceTask).camundaDelegateExpression = "#{flowServiceBehaviour}"
+
+                        (modelElementInstance as ServiceTask).camundaType = "external"
+                        modelElementInstance.camundaTopic = symbol.elementType
+
+                        executionListener.camundaEvent = "start"
+
                     }
+
                 }
+
             }
+
         }
 
         val bpmnShape = modelInstance.newInstance(BpmnShape::class.java)
         bpmnShape.bpmnElement = modelElementInstance as BaseElement
 
         val bounds = modelInstance.newInstance(Bounds::class.java)
-        bounds.setX((symbol.topLeft.x + zero.x).toDouble())
-        bounds.setY((symbol.topLeft.y + zero.y).toDouble())
-        bounds.setWidth(symbol.inner.width.toDouble())
-        bounds.setHeight(symbol.inner.height.toDouble())
+        with(bounds) {
+            x = (symbol.topLeft.x + zero.x).toDouble()
+            y = (symbol.topLeft.y + zero.y).toDouble()
+            width = symbol.inner.width.toDouble()
+            height = symbol.inner.height.toDouble()
+        }
         bpmnShape.bounds = bounds
 
         val bpmnLabel = modelInstance.newInstance(BpmnLabel::class.java)
         val labelBounds = modelInstance.newInstance(Bounds::class.java)
-        labelBounds.setX((symbol.topLeft.x + zero.x).toDouble() + 6)
-        labelBounds.setY((symbol.topLeft.y + zero.y).toDouble() + symbol.inner.height + 6)
-        labelBounds.setHeight(20.toDouble()) // TODO adapt according to text size
-        labelBounds.setWidth(symbol.inner.width.toDouble() - 12)
+        with(labelBounds) {
+            x = (symbol.topLeft.x + zero.x).toDouble() + 6
+            y = (symbol.topLeft.y + zero.y).toDouble() + symbol.inner.height + 6
+            height = 20.toDouble() // TODO adapt according to text size
+            width = symbol.inner.width.toDouble() - 12
+        }
         bpmnLabel.addChildElement(labelBounds)
         bpmnShape.addChildElement(bpmnLabel)
 
@@ -216,5 +260,5 @@ fun transform(container: Container): BpmnModelInstance {
 
 }
 
-fun String.sentenceCase(): String = (replace("[A-Z\\d]".toRegex()) { " " + it.groups[0]!!.value.toLowerCase() }).substring(1).capitalize()
-fun String.camelCase(sentenceCase: String) = replace("\\s([a-z\\\\d])".toRegex()) { it.groups[1]!!.value.toUpperCase() }
+fun String.sentenceCase(): String = (replace("(.)([A-Z\\d])".toRegex()) { "${it.groupValues[1]} ${it.groupValues[2].toLowerCase()}" })
+fun String.camelCase(): String = replace("\\s([a-z\\\\d])".toRegex()) { it.groupValues[1].toUpperCase() }
