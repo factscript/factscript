@@ -21,12 +21,12 @@ abstract class BpmnSymbol(name: String, parent: Container): Symbol(name, parent)
 
 }
 
-class BpmnTaskSymbol(name: String, parent: Container, val type: BpmnTaskType): BpmnSymbol(name, parent)  {
+class BpmnTaskSymbol(name: String, parent: Container, val taskType: BpmnTaskType): BpmnSymbol(name, parent)  {
 
     override val inner = Dimension(100, 80)
 
     override val elementClass: KClass<out FlowNode> get() {
-        return when (type) {
+        return when (taskType) {
             BpmnTaskType.service -> ServiceTask::class
             BpmnTaskType.send -> SendTask::class
             BpmnTaskType.receive -> ReceiveTask::class
@@ -51,12 +51,9 @@ enum class BpmnEventPosition {
     start, intermediate, end
 }
 
-class BpmnEventSymbol(name: String, parent: Container, val type: BpmnEventType, val characteristic: BpmnEventCharacteristic): BpmnSymbol(name, parent) {
+class BpmnEventSymbol(name: String, parent: Container, val eventType: BpmnEventType, val characteristic: BpmnEventCharacteristic): BpmnSymbol(name, parent) {
 
     override val inner = Dimension(36, 36)
-
-    override val name: String = name
-        get() = field.replace(" ", "\n")
 
     override val elementClass: KClass<out FlowNode> get() {
         return when (characteristic) {
@@ -98,8 +95,8 @@ fun transform(container: Container): BpmnModelInstance {
     modelInstance.definitions = definitions
 
     val process = modelInstance.newInstance(Process::class.java)
-    process.setAttributeValue("id", container.name, true)
-    process.setAttributeValue("name", container.name, false)
+    process.setAttributeValue("id", container.elementType, true)
+    process.setAttributeValue("name", container.elementType.sentenceCase(), false)
     process.isExecutable = true
     definitions.addChildElement(process)
 
@@ -115,12 +112,12 @@ fun transform(container: Container): BpmnModelInstance {
     fun createBpmnModelElementInstance(symbol: BpmnSymbol): FlowNode {
 
         val modelElementInstance = modelInstance.newInstance(symbol.elementClass.java)
-        modelElementInstance.setAttributeValue("name", symbol.name, false)
         process.addChildElement(modelElementInstance)
 
         when (symbol) {
             is BpmnEventSymbol -> {
-                when (symbol.type) {
+                modelElementInstance.setAttributeValue("name", symbol.elementType.sentenceCase().replace(" ", "\n"), false)
+                when (symbol.eventType) {
                     BpmnEventType.message -> {
 
                         val messageEventDefinition = modelInstance.newInstance(MessageEventDefinition::class.java)
@@ -129,7 +126,8 @@ fun transform(container: Container): BpmnModelInstance {
                         if (symbol.characteristic == BpmnEventCharacteristic.catching) {
                             // TODO just one message per hash of expected message pattern
                             val message = modelInstance.newInstance(Message::class.java)
-                            message.setAttributeValue("name", symbol.id) // TODO hash of expected message pattern
+                            message.setAttributeValue("id", symbol.elementType) // TODO hash of expected message pattern
+                            message.setAttributeValue("name", symbol.elementType) // TODO hash of expected message pattern
                             definitions.addChildElement(message)
                             messageEventDefinition.message = message
                         } else {
@@ -141,14 +139,16 @@ fun transform(container: Container): BpmnModelInstance {
                 }
             }
             is BpmnTaskSymbol -> {
-                when (symbol.type) {
+                modelElementInstance.setAttributeValue("name", symbol.elementType.sentenceCase(), false)
+                when (symbol.taskType) {
                     BpmnTaskType.send -> {
                         (modelElementInstance as SendTask).camundaDelegateExpression = "#{flowActionBehaviour}"
                     }
                     BpmnTaskType.receive -> {
                         // TODO just one message per hash of expected message pattern
                         val message = modelInstance.newInstance(Message::class.java)
-                        message.setAttributeValue("name", symbol.id) // TODO hash of expected message pattern
+                        message.setAttributeValue("id", symbol.elementType) // TODO hash of expected message pattern
+                        message.setAttributeValue("name", symbol.elementType) // TODO hash of expected message pattern
                         definitions.addChildElement(message)
                         (modelElementInstance as ReceiveTask).message = message
                     }
@@ -215,3 +215,6 @@ fun transform(container: Container): BpmnModelInstance {
     return process.modelInstance as BpmnModelInstance
 
 }
+
+fun String.sentenceCase(): String = (replace("[A-Z\\d]".toRegex()) { " " + it.groups[0]!!.value.toLowerCase() }).substring(1).capitalize()
+fun String.camelCase(sentenceCase: String) = replace("\\s([a-z\\\\d])".toRegex()) { it.groups[1]!!.value.toUpperCase() }

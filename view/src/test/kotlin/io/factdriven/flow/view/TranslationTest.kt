@@ -18,8 +18,8 @@ class TranslationTest {
 
         val element = translate(flow)
 
-        assertNotNull(element.id)
-        assertEquals("PaymentRetrieval", element.name)
+        assertNotNull(element.elementType)
+        assertEquals("PaymentRetrieval", element.elementType)
         assertEquals(null, element.parent)
         assertEquals(Position(0, 0), element.position)
         assertEquals(Dimension(0, 0), element.dimension)
@@ -35,8 +35,8 @@ class TranslationTest {
 
         val element = translate(flow)
 
-        assertNotNull(element.id)
-        assertEquals("PaymentRetrieval", element.name)
+        assertNotNull(element.elementType)
+        assertEquals("PaymentRetrieval", element.elementType)
         assertEquals(null, element.parent)
         assertEquals(Position(0, 0), element.position)
         assertEquals(Dimension(72, 72), element.dimension)
@@ -55,8 +55,8 @@ class TranslationTest {
 
         val element = translate(flow)
 
-        assertNotNull(element.id)
-        assertEquals("CustomPaymentRetrieval", element.name)
+        assertNotNull(element.elementType)
+        assertEquals("CustomPaymentRetrieval", element.elementType)
         assertEquals(null, element.parent)
         assertEquals(Position(0, 0), element.position)
         assertEquals(Dimension(136, 116), element.dimension)
@@ -73,8 +73,8 @@ class TranslationTest {
 
         val element = translate(flow)
 
-        assertNotNull(element.id)
-        assertEquals("CustomPaymentRetrieval", element.name)
+        assertNotNull(element.elementType)
+        assertEquals("CustomPaymentRetrieval", element.elementType)
         assertEquals(null, element.parent)
         assertEquals(Position(0, 0), element.position)
         assertEquals(Dimension(72, 72), element.dimension)

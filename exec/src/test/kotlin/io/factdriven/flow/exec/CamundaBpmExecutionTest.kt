@@ -25,16 +25,16 @@ class CamundaBpmExecutionTest {
 
         val flow = execute <PaymentRetrieval> {
 
-            on message (RetrievePayment::class) create acceptance("Payment retrieval accepted") by {
+            on message (RetrievePayment::class) create acceptance ("PaymentRetrievalAccepted") by {
                 PaymentRetrievalAccepted(paymentId = it.id)
             }
 
             execute service {
-                create intent "Charge credit card" by { ChargeCreditCard() }
-                on message CreditCardCharged::class create success("Credit card charged")
+                create intent ("ChargeCreditCard") by { ChargeCreditCard() }
+                on message CreditCardCharged::class create success("CreditCardCharged")
             }
 
-            create success "Payment retrieved" by { PaymentRetrieved() }
+            create success ("PaymentRetrieved") by { PaymentRetrieved() }
 
         }
 
@@ -53,6 +53,8 @@ class CamundaBpmExecutionTest {
         val processDefinition = engine.repositoryService.createProcessDefinitionQuery().singleResult()
 
         Assertions.assertEquals("PaymentRetrieval", processDefinition.key)
+
+        // engine.runtimeService.correlateMessage()
 
     }
 

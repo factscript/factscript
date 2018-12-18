@@ -15,21 +15,21 @@ class BpmnRenderingIntegrationTest {
     fun testPaymentRetrievalVersion1() {
         render(
             execute <PaymentRetrieval> {
-                on message RetrievePayment::class create acceptance ("Payment retrieval accepted") by {
+                on message RetrievePayment::class create acceptance ("PaymentRetrievalAccepted") by {
                     PaymentRetrievalAccepted(paymentId = it.id)
                 }
                 execute service {
-                    create intent "Charge credit card" by { ChargeCreditCard() }
-                    on message CreditCardCharged::class create success("Credit card charged")
+                    create intent "ChargeCreditCard" by { ChargeCreditCard() }
+                    on message CreditCardCharged::class create success("CreditCardCharged")
                 }
-                create progress ("Payment covered")
+                create progress ("PaymentCovered")
                 execute service {
-                    create intent "Order customer notification" by { NotifyCustomer() }
+                    create intent "OrderCustomerNotification" by { NotifyCustomer() }
                 }
                 execute service {
-                    on message CustomerNotified::class create success("Customer notification confirmed")
+                    on message CustomerNotified::class create success("CustomerNotificationConfirmed")
                 }
-                create success ("Payment retrieved") by { PaymentRetrieved() }
+                create success ("PaymentRetrieved") by { PaymentRetrieved() }
             }
         )
     }

@@ -1,7 +1,5 @@
 package io.factdriven.flow.view
 
-import java.util.*
-
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
@@ -20,7 +18,7 @@ data class Dimension (val width: Int, val height: Int)
 
 const val margin = 18
 
-interface Element: Named, Identified {
+interface Element: Typed {
 
     val parent: Container?
     val dimension: Dimension
@@ -33,10 +31,9 @@ interface Element: Named, Identified {
 
 }
 
-abstract class Container(override val name: String, override val parent: Container? = null):
+abstract class Container(override val elementType: String, override val parent: Container? = null):
     Element {
 
-    override val id = this::class.simpleName!! + "-" + UUID.randomUUID().toString()
     val children = mutableListOf<Element>()
 
     override val dimension: Dimension
@@ -83,24 +80,17 @@ class Sequence(name: String, parent: Container? = null): Container(name, parent)
     
 }
 
-interface Identified {
+interface Typed {
 
-    val id: String
-
-}
-
-interface Named {
-
-    val name: String
+    val elementType: String
 
 }
 
 interface Graphical
 
-abstract class Symbol(override val name: String, override val parent: Container): Graphical,
+abstract class Symbol(override val elementType: String, override val parent: Container): Graphical,
     Element {
 
-    override val id = this::class.simpleName!! + "-" + UUID.randomUUID().toString()
     val outgoing = mutableListOf<Connector>()
     val incoming = mutableListOf<Connector>()
 
@@ -168,19 +158,18 @@ abstract class Symbol(override val name: String, override val parent: Container)
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is Symbol && id.equals(other.id)
+        return other is Symbol && elementType.equals(other.elementType)
     }
 
     override fun hashCode(): Int {
-        return id.hashCode()
+        return elementType.hashCode()
     }
 
 }
 
-data class Connector(val source: Symbol, val target: Symbol): Graphical,
-    Identified {
+data class Connector(val source: Symbol, val target: Symbol): Graphical, Typed {
 
-    override val id = source.id + "-" + target.id
+    override val elementType = source.elementType + "-" + target.elementType
 
     val waypoints: List<Position> get() {
         val from = source.waypoint(this)
