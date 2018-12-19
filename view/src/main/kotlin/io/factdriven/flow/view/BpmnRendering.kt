@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 
-val zero = Position(173 - margin, 80 - margin)
+val zero = Position(160 - margin, 80 - margin)
 
 abstract class BpmnSymbol(name: String, parent: Container): Symbol(name, parent) {
 
@@ -92,21 +92,31 @@ fun transform(container: Container): BpmnModelInstance {
     val modelInstance = Bpmn.createEmptyModel()
 
     val definitions = modelInstance.newInstance(Definitions::class.java)
-    definitions.targetNamespace = "https://factdriven.io/tests"
-    modelInstance.definitions = definitions
-
     val process = modelInstance.newInstance(Process::class.java)
-    process.setAttributeValue("id", container.elementType, true)
-    process.setAttributeValue("name", container.elementType.sentenceCase(), false)
-    process.isExecutable = true
-    definitions.addChildElement(process)
-
     val plane = modelInstance.newInstance(BpmnPlane::class.java)
-    plane.bpmnElement = process
-
     val diagram = modelInstance.newInstance(BpmnDiagram::class.java)
-    diagram.bpmnPlane = plane
-    definitions.addChildElement(diagram)
+
+    with(definitions) {
+        targetNamespace = "https://factdriven.io/tests"
+        modelInstance.definitions = this
+    }
+
+    with(process) {
+        setAttributeValue("id", container.elementType, true)
+        setAttributeValue("name", container.elementType.sentenceCase(), false)
+        isExecutable = true
+        definitions.addChildElement(this)
+    }
+
+    with(plane) {
+        bpmnElement = process
+    }
+
+    with(diagram) {
+        bpmnPlane = plane
+        definitions.addChildElement(this)
+    }
+
 
     val flowNodes = mutableMapOf<Symbol, FlowNode>()
 
@@ -159,28 +169,33 @@ fun transform(container: Container): BpmnModelInstance {
                 modelElementInstance.setAttributeValue("name", symbol.elementType.sentenceCase(), false)
 
                 val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
-                val executionListener = extensionElements.addExtensionElement(CamundaExecutionListener::class.java)
-                executionListener.camundaDelegateExpression = "#{flow}"
                 modelElementInstance.addChildElement(extensionElements)
 
                 when (symbol.taskType) {
 
                     BpmnTaskType.send -> {
 
-                        executionListener.camundaEvent = "start"
+                        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
+                            camundaDelegateExpression = "#{flow}"
+                            camundaEvent = "start"
+                        }
 
                     }
 
                     BpmnTaskType.receive -> {
 
                         // TODO just one message per hash of expected message pattern
-                        val message = modelInstance.newInstance(Message::class.java)
-                        message.setAttributeValue("id", symbol.elementType)
-                        message.setAttributeValue("name", symbol.elementType) // TODO hash of expected message pattern
-                        definitions.addChildElement(message)
-                        (modelElementInstance as ReceiveTask).message = message
+                        with(modelInstance.newInstance(Message::class.java)) {
+                            setAttributeValue("id", symbol.elementType)
+                            setAttributeValue("name", symbol.elementType) // TODO hash of expected message pattern
+                            definitions.addChildElement(this)
+                            (modelElementInstance as ReceiveTask).message = this
+                        }
 
-                        executionListener.camundaEvent = "end"
+                        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
+                            camundaDelegateExpression = "#{flow}"
+                            camundaEvent = "end"
+                        }
 
                     }
 
@@ -189,7 +204,15 @@ fun transform(container: Container): BpmnModelInstance {
                         (modelElementInstance as ServiceTask).camundaType = "external"
                         modelElementInstance.camundaTopic = symbol.elementType
 
-                        executionListener.camundaEvent = "start"
+                        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
+                            camundaDelegateExpression = "#{flow}"
+                            camundaEvent = "start"
+                        }
+
+                        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
+                            camundaDelegateExpression = "#{flow}"
+                            camundaEvent = "end"
+                        }
 
                     }
 
@@ -202,27 +225,25 @@ fun transform(container: Container): BpmnModelInstance {
         val bpmnShape = modelInstance.newInstance(BpmnShape::class.java)
         bpmnShape.bpmnElement = modelElementInstance as BaseElement
 
-        val bounds = modelInstance.newInstance(Bounds::class.java)
-        with(bounds) {
+        with(modelInstance.newInstance(Bounds::class.java)) {
             x = (symbol.topLeft.x + zero.x).toDouble()
             y = (symbol.topLeft.y + zero.y).toDouble()
             width = symbol.inner.width.toDouble()
             height = symbol.inner.height.toDouble()
+            bpmnShape.bounds = this
         }
-        bpmnShape.bounds = bounds
 
         val bpmnLabel = modelInstance.newInstance(BpmnLabel::class.java)
-        val labelBounds = modelInstance.newInstance(Bounds::class.java)
-        with(labelBounds) {
+        bpmnShape.addChildElement(bpmnLabel)
+        plane.addChildElement(bpmnShape)
+
+        with(modelInstance.newInstance(Bounds::class.java)) {
             x = (symbol.topLeft.x + zero.x).toDouble() + 6
             y = (symbol.topLeft.y + zero.y).toDouble() + symbol.inner.height + 6
             height = 20.toDouble() // TODO adapt according to text size
             width = symbol.inner.width.toDouble() - 12
+            bpmnLabel.addChildElement(this)
         }
-        bpmnLabel.addChildElement(labelBounds)
-        bpmnShape.addChildElement(bpmnLabel)
-
-        plane.addChildElement(bpmnShape)
 
         return modelElementInstance
 
@@ -231,25 +252,26 @@ fun transform(container: Container): BpmnModelInstance {
     fun createSequenceFlow(connector: Connector) {
 
         val sequenceFlow = modelInstance.newInstance(SequenceFlow::class.java)
-        process.addChildElement(sequenceFlow)
 
-        sequenceFlow.source = flowNodes[connector.source]
-        sequenceFlow.source.outgoing.add(sequenceFlow)
-
-        sequenceFlow.target = flowNodes[connector.target]
-        sequenceFlow.target.incoming.add(sequenceFlow)
+        with(sequenceFlow) {
+            process.addChildElement(this)
+            source = flowNodes[connector.source]
+            source.outgoing.add(this)
+            target = flowNodes[connector.target]
+            target.incoming.add(this)
+        }
 
         val bpmnEdge = modelInstance.newInstance(BpmnEdge::class.java)
         bpmnEdge.bpmnElement = sequenceFlow
+        plane.addChildElement(bpmnEdge)
 
         connector.waypoints.forEach {
-            val waypoint = modelInstance.newInstance(Waypoint::class.java)
-            waypoint.x = (it.x + zero.x).toDouble()
-            waypoint.y = (it.y + zero.y).toDouble()
-            bpmnEdge.addChildElement(waypoint)
+            with(modelInstance.newInstance(Waypoint::class.java)) {
+                x = (it.x + zero.x).toDouble()
+                y = (it.y + zero.y).toDouble()
+                bpmnEdge.addChildElement(this)
+            }
         }
-
-        plane.addChildElement(bpmnEdge)
 
     }
 
