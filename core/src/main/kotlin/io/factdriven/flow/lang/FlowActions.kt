@@ -40,37 +40,37 @@ open class FlowActionImpl<I: FlowInstance>: ClassifiedFlowAction<I>, FlowAction<
     // Flow Action Definition
 
     override var name = ""
-    override var actionType = FlowActionType.Success
+    override var type = FlowActionType.Success
     override var function: (FlowInstance.() -> FlowMessagePayload)? = null
 
     // Flow Action Factories
 
     override infix fun intent(name: String): ClassifiedFlowAction<I> {
-        this.actionType = FlowActionType.Intent
+        this.type = FlowActionType.Intent
         this.name = name
         return this
     }
 
     override infix fun acceptance(id: String): ClassifiedFlowAction<I> {
-        this.actionType = FlowActionType.Acceptance
+        this.type = FlowActionType.Acceptance
         this.name = id
         return this
     }
 
     override infix fun progress(id: String): ClassifiedFlowAction<I> {
-        this.actionType = FlowActionType.Progress
+        this.type = FlowActionType.Progress
         this.name = id
         return this
     }
 
     override infix fun success(id: String): ClassifiedFlowAction<I> {
-        this.actionType = FlowActionType.Success
+        this.type = FlowActionType.Success
         this.name = id
         return this
     }
 
     override infix fun failure(id: String): ClassifiedFlowAction<I> {
-        this.actionType = FlowActionType.Failure
+        this.type = FlowActionType.Failure
         this.name = id
         return this
     }

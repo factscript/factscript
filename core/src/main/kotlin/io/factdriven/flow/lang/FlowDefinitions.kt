@@ -27,22 +27,28 @@ interface FlowDefinition: FlowElement {
 
 interface FlowActionDefinition: FlowElement {
 
-    val actionType: FlowActionType
+    val type: FlowActionType
     val function: (FlowInstance.() -> FlowMessagePayload)?
+
+}
+
+interface FlowReactionActionDefinition: FlowElement {
+
+    val type: FlowActionType
+    val function: (FlowInstance.(Any) -> FlowMessagePayload)?
 
 }
 
 interface FlowReactionDefinition: FlowElement {
 
-    var reactionType: FlowReactionType
-    var actionType: FlowActionType
-    var function: (FlowInstance.(Any) -> FlowMessagePayload)?
+    val type: FlowReactionType
+    val action: FlowReactionActionDefinition
 
 }
 
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
-    val type: KClass<out FlowMessagePayload>
+    val payloadType: KClass<out FlowMessagePayload>
     val keys: List<FlowMessageProperty>
     val values: List<FlowInstance.() -> Any?>
 

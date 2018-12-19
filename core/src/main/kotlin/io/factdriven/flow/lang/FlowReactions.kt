@@ -74,15 +74,13 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
     // Flow Reaction Definition
 
-    override var actionType = FlowActionType.Progress
-    override var reactionType = FlowReactionType.Message
-    override var function: (FlowInstance.(Any) -> FlowMessagePayload)? = null
+    override var type = FlowReactionType.Message
+    override lateinit var action: FlowReactionAction<A>
 
-    // Flow Action as Reaction Factory
+    // Flow Reaction Action Factory
 
     override infix fun create(action: FlowReactionAction<A>): ActionableFlowReaction<I, A> {
-        this.actionType = action.type
-        this.name = action.id
+        this.action = action
         return this
     }
 
@@ -92,25 +90,25 @@ abstract class FlowReactionImpl<I: FlowInstance, A: Any>(override var name: Stri
 
     override fun by(reaction: I.(A) -> FlowMessagePayload) {
         @Suppress("UNCHECKED_CAST")
-        this.function = reaction as FlowInstance.(Any) -> FlowMessagePayload
+        this.action.function = reaction as FlowInstance.(Any) -> FlowMessagePayload
     }
 
 }
 
-class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessagePayload>(override val type: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(type.simpleName!!), FlowMessageReaction<I, M>, MatchableFlowMessageReaction<I, M> {
+class FlowMessageReactionImpl<I: FlowInstance, M: FlowMessagePayload>(override val payloadType: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(payloadType.simpleName!!), FlowMessageReaction<I, M>, MatchableFlowMessageReaction<I, M> {
 
     override val keys = mutableListOf<FlowMessageProperty>()
     override val values = mutableListOf<FlowInstance.() -> Any?>()
 
     init {
-        reactionType = FlowReactionType.Message
+        type = FlowReactionType.Message
     }
 
     // Message Patterns Refiner
 
     override fun having(property: String): MatchableFlowMessageReaction<I, M> {
-        assert(type.java.kotlin.memberProperties.find { it.name == property } != null)
-            { "Message type '${type.simpleName}' does not have property '${property}'!" }
+        assert(payloadType.java.kotlin.memberProperties.find { it.name == property } != null)
+            { "Message type '${payloadType.simpleName}' does not have property '${property}'!" }
         keys.add(property)
         return this
     }

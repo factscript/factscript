@@ -139,4 +139,13 @@ class FlowExecutionImpl<I: FlowInstance>: FlowDefinition, FlowExecution<I>, Flow
 
 }
 
-data class FlowReactionAction<M: FlowMessagePayload>(val type: FlowActionType = FlowActionType.Success, val id: String = "")
+data class FlowReactionAction<M: FlowMessagePayload>(
+
+    override val type: FlowActionType = FlowActionType.Success,
+    override val name: String = ""
+
+): FlowReactionActionDefinition {
+
+    override var function: (FlowInstance.(Any) -> FlowMessagePayload)? = null
+
+}
