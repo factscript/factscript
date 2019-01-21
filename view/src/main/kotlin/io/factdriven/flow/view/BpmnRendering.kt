@@ -16,13 +16,13 @@ import kotlin.reflect.KClass
 
 val zero = Position(160 - margin, 80 - margin)
 
-abstract class BpmnSymbol(name: String, parent: Container): Symbol(name, parent) {
+abstract class BpmnSymbol(id: String, name: String, parent: Container): Symbol(id, name, parent) {
 
     abstract val elementClass: KClass<out FlowNode>
 
 }
 
-class BpmnTaskSymbol(name: String, parent: Container, val taskType: BpmnTaskType): BpmnSymbol(name, parent)  {
+class BpmnTaskSymbol(id: String, name: String, parent: Container, val taskType: BpmnTaskType): BpmnSymbol(id, name, parent)  {
 
     override val inner = Dimension(100, 80)
 
@@ -52,7 +52,7 @@ enum class BpmnEventPosition {
     start, intermediate, end
 }
 
-class BpmnEventSymbol(name: String, parent: Container, val eventType: BpmnEventType, val characteristic: BpmnEventCharacteristic): BpmnSymbol(name, parent) {
+class BpmnEventSymbol(id: String, name: String, parent: Container, val eventType: BpmnEventType, val characteristic: BpmnEventCharacteristic): BpmnSymbol(id, name, parent) {
 
     override val inner = Dimension(36, 36)
 
@@ -102,8 +102,8 @@ fun transform(container: Container): BpmnModelInstance {
     }
 
     with(process) {
-        setAttributeValue("id", container.elementType, true)
-        setAttributeValue("name", container.elementType.sentenceCase(), false)
+        setAttributeValue("id", container.id, true)
+        setAttributeValue("name", container.name.sentenceCase(), false)
         isExecutable = true
         definitions.addChildElement(this)
     }
@@ -125,11 +125,13 @@ fun transform(container: Container): BpmnModelInstance {
         val modelElementInstance = modelInstance.newInstance(symbol.elementClass.java)
         process.addChildElement(modelElementInstance)
 
+        modelElementInstance.setAttributeValue("id", symbol.id, false)
+
         when (symbol) {
 
             is BpmnEventSymbol -> {
 
-                modelElementInstance.setAttributeValue("name", symbol.elementType.sentenceCase().replace(" ", "\n"), false)
+                modelElementInstance.setAttributeValue("name", symbol.name.sentenceCase().replace(" ", "\n"), false)
 
                 when (symbol.eventType) {
 
@@ -146,8 +148,8 @@ fun transform(container: Container): BpmnModelInstance {
                         if (symbol.characteristic == BpmnEventCharacteristic.catching) {
 
                             val message = modelInstance.newInstance(Message::class.java)
-                            message.setAttributeValue("id", symbol.elementType)
-                            message.setAttributeValue("name", symbol.elementType) // TODO hash of expected message pattern
+                            message.setAttributeValue("id", symbol.name)
+                            message.setAttributeValue("name", symbol.name) // TODO hash of expected message pattern
                             definitions.addChildElement(message)
                             messageEventDefinition.message = message
 
@@ -166,7 +168,7 @@ fun transform(container: Container): BpmnModelInstance {
 
             is BpmnTaskSymbol -> {
 
-                modelElementInstance.setAttributeValue("name", symbol.elementType.sentenceCase(), false)
+                modelElementInstance.setAttributeValue("name", symbol.name.sentenceCase(), false)
 
                 val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
                 modelElementInstance.addChildElement(extensionElements)
@@ -186,8 +188,8 @@ fun transform(container: Container): BpmnModelInstance {
 
                         // TODO just one message per hash of expected message pattern
                         with(modelInstance.newInstance(Message::class.java)) {
-                            setAttributeValue("id", symbol.elementType)
-                            setAttributeValue("name", symbol.elementType) // TODO hash of expected message pattern
+                            setAttributeValue("id", symbol.name)
+                            setAttributeValue("name", symbol.name) // TODO hash of expected message pattern
                             definitions.addChildElement(this)
                             (modelElementInstance as ReceiveTask).message = this
                         }
@@ -202,7 +204,7 @@ fun transform(container: Container): BpmnModelInstance {
                     BpmnTaskType.service -> {
 
                         (modelElementInstance as ServiceTask).camundaType = "external"
-                        modelElementInstance.camundaTopic = symbol.elementType
+                        modelElementInstance.camundaTopic = symbol.name
 
                         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
                             camundaDelegateExpression = "#{flow}"

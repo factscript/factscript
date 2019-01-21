@@ -14,7 +14,9 @@ typealias FlowInstanceIds = List<FlowInstanceId>
 
 interface FlowElement {
 
-    // val id: FlowElementId
+    val id: FlowElementId
+        get() = (parent?.id ?: "") + (if (parent != null) "-" else "") + name
+
     val name: FlowElementName
     val parent: FlowDefinition?
 

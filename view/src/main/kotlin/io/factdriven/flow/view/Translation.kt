@@ -15,6 +15,7 @@ fun translate(definition: FlowDefinition): Container {
         return when(element) {
             is FlowReactionDefinition -> {
                 BpmnEventSymbol(
+                    element.id,
                     element.name,
                     parent,
                     BpmnEventType.message,
@@ -24,7 +25,7 @@ fun translate(definition: FlowDefinition): Container {
             is FlowDefinition -> {
                 when (element.executionType) {
                     FlowExecutionType.execution -> {
-                        val sequence = Sequence(element.name, parent)
+                        val sequence = Sequence(element.id, element.name, parent)
                         element.elements.forEach { translate(it, sequence) }
                         sequence
                     }
@@ -33,12 +34,18 @@ fun translate(definition: FlowDefinition): Container {
                             else if (element.elements.first() is FlowReactionImpl<*,*>) BpmnTaskType.receive
                             else if (element.elements.size == 1) BpmnTaskType.send
                             else BpmnTaskType.service
-                        BpmnTaskSymbol(element.name, parent, type)
+                        BpmnTaskSymbol(
+                            element.id,
+                            element.name,
+                            parent,
+                            type
+                        )
                     }
                 }
             }
             is FlowActionDefinition -> {
                 BpmnEventSymbol(
+                    element.id,
                     element.name,
                     parent,
                     if (element.function != null) BpmnEventType.message else BpmnEventType.none,
@@ -49,7 +56,7 @@ fun translate(definition: FlowDefinition): Container {
         }
     }
 
-    val sequence = Sequence(definition.name)
+    val sequence = Sequence(definition.id, definition.name)
     definition.elements.forEach { translate(it, sequence) }
     return sequence
 

@@ -58,7 +58,7 @@ class CamundaBpmExecutionTest {
         Assertions.assertEquals("PaymentRetrieval", processDefinition.key)
 
         Mocks.register("flow", JavaDelegate {
-            println(it.currentActivityId)
+            println(it.eventName + ":" + it.currentActivityId)
         })
 
         engine.runtimeService.correlateMessage("RetrievePayment")

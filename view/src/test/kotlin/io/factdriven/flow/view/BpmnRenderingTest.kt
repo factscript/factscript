@@ -20,8 +20,9 @@ class BpmnRenderingTest {
     @Test
     fun bpmnStartEventSymbol() {
 
-        val container = Sequence("PaymentRetrieval")
+        val container = Sequence("PaymentRetrieval", "PaymentRetrieval")
         val symbol = BpmnEventSymbol(
+            "RetrievePayment",
             "RetrievePayment",
             container,
             BpmnEventType.message,
@@ -36,8 +37,9 @@ class BpmnRenderingTest {
     @Test
     fun bpmnServiceTaskSymbol() {
 
-        val container = Sequence("PaymentRetrieval")
+        val container = Sequence("PaymentRetrieval", "PaymentRetrieval")
         val symbol = BpmnTaskSymbol(
+            "ChargeCreditCard",
             "ChargeCreditCard",
             container,
             BpmnTaskType.service
@@ -51,8 +53,9 @@ class BpmnRenderingTest {
     @Test
     fun bpmnEndEventSymbol() {
 
-        val container = Sequence("PaymentRetrieval")
+        val container = Sequence("PaymentRetrieval", "PaymentRetrieval")
         val symbol = BpmnEventSymbol(
+            "PaymentRetrieved",
             "PaymentRetrieved",
             container,
             BpmnEventType.message,
@@ -67,9 +70,10 @@ class BpmnRenderingTest {
     @Test
     fun sequence() {
 
-        val container = Sequence("PaymentRetrieval")
+        val container = Sequence("PaymentRetrieval", "PaymentRetrieval")
 
         val startEvent = BpmnEventSymbol(
+            "RetrievePayment",
             "RetrievePayment",
             container,
             BpmnEventType.message,
@@ -77,10 +81,12 @@ class BpmnRenderingTest {
         )
         val serviceTask = BpmnTaskSymbol(
             "ChargeCreditCard",
+            "ChargeCreditCard",
             container,
             BpmnTaskType.service
         )
         val endEvent = BpmnEventSymbol(
+            "PaymentRetrieved",
             "PaymentRetrieved",
             container,
             BpmnEventType.message,

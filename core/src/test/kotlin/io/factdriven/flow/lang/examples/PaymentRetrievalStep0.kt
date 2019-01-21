@@ -148,14 +148,18 @@ class PaymentRetrievalStep0Test {
         }
 
         assertEquals(3, flow.elements.size)
+        println(flow.id)
         flow.elements.forEach {
             assertEquals(flow, it.parent)
+            println(it.id)
         }
 
         val service = flow.elements[1] as FlowDefinition
         assertEquals(2, service.elements.size)
+        println(service.id)
         service.elements.forEach {
             assertEquals(service, it.parent)
+            println(it.id)
         }
 
     }

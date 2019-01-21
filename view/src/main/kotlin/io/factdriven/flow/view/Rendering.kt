@@ -18,7 +18,7 @@ data class Dimension (val width: Int, val height: Int)
 
 const val margin = 18
 
-interface Element: Typed {
+interface Element: Named, Identified {
 
     val parent: Container?
     val dimension: Dimension
@@ -31,7 +31,7 @@ interface Element: Typed {
 
 }
 
-abstract class Container(override val elementType: String, override val parent: Container? = null):
+abstract class Container(override val id: String, override val name: String, override val parent: Container? = null):
     Element {
 
     val children = mutableListOf<Element>()
@@ -61,7 +61,7 @@ abstract class Container(override val elementType: String, override val parent: 
 
 }
 
-class Sequence(name: String, parent: Container? = null): Container(name, parent) {
+class Sequence(id: String, name: String, parent: Container? = null): Container(id, name, parent) {
 
     override fun position(child: Element): Position {
         val predecessors = children.subList(0, children.indexOf(child))
@@ -80,15 +80,21 @@ class Sequence(name: String, parent: Container? = null): Container(name, parent)
     
 }
 
-interface Typed {
+interface Identified {
 
-    val elementType: String
+    val id: String
+
+}
+
+interface Named {
+
+    val name: String
 
 }
 
 interface Graphical
 
-abstract class Symbol(override val elementType: String, override val parent: Container): Graphical,
+abstract class Symbol(override val id: String, override val name: String, override val parent: Container): Graphical,
     Element {
 
     val outgoing = mutableListOf<Connector>()
@@ -158,18 +164,18 @@ abstract class Symbol(override val elementType: String, override val parent: Con
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is Symbol && elementType.equals(other.elementType)
+        return other is Symbol && name.equals(other.name)
     }
 
     override fun hashCode(): Int {
-        return elementType.hashCode()
+        return name.hashCode()
     }
 
 }
 
-data class Connector(val source: Symbol, val target: Symbol): Graphical, Typed {
+data class Connector(val source: Symbol, val target: Symbol): Graphical, Identified {
 
-    override val elementType = source.elementType + "-" + target.elementType
+    override val id = source.id + "-" + target.id
 
     val waypoints: List<Position> get() {
         val from = source.waypoint(this)
