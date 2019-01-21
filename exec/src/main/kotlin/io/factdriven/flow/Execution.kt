@@ -70,7 +70,7 @@ interface ExecutableFlowDefinition: FlowDefinition {
 interface FlowDefinitions {
 
     fun all(): List<ExecutableFlowDefinition>
-    fun get(id: FlowDefinitionId): ExecutableFlowDefinition
+    fun get(id: FlowElementName): ExecutableFlowDefinition
     // fun add(definition: ExecutableFlowDefinition): List<ExecutableFlowDefinition>
 
 }

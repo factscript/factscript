@@ -35,7 +35,7 @@ interface FlowAction<I: FlowInstance> : ClassifiedFlowAction<I> {
 
 }
 
-open class FlowActionImpl<I: FlowInstance>: ClassifiedFlowAction<I>, FlowAction<I>, FlowActionDefinition {
+open class FlowActionImpl<I: FlowInstance>(override val parent: FlowDefinition): ClassifiedFlowAction<I>, FlowAction<I>, FlowActionDefinition {
 
     // Flow Action Definition
 
@@ -51,27 +51,27 @@ open class FlowActionImpl<I: FlowInstance>: ClassifiedFlowAction<I>, FlowAction<
         return this
     }
 
-    override infix fun acceptance(id: String): ClassifiedFlowAction<I> {
+    override infix fun acceptance(name: String): ClassifiedFlowAction<I> {
         this.type = FlowActionType.Acceptance
-        this.name = id
+        this.name = name
         return this
     }
 
-    override infix fun progress(id: String): ClassifiedFlowAction<I> {
+    override infix fun progress(name: String): ClassifiedFlowAction<I> {
         this.type = FlowActionType.Progress
-        this.name = id
+        this.name = name
         return this
     }
 
-    override infix fun success(id: String): ClassifiedFlowAction<I> {
+    override infix fun success(name: String): ClassifiedFlowAction<I> {
         this.type = FlowActionType.Success
-        this.name = id
+        this.name = name
         return this
     }
 
-    override infix fun failure(id: String): ClassifiedFlowAction<I> {
+    override infix fun failure(name: String): ClassifiedFlowAction<I> {
         this.type = FlowActionType.Failure
-        this.name = id
+        this.name = name
         return this
     }
 

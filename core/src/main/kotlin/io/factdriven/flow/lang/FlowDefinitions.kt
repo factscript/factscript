@@ -7,20 +7,23 @@ import kotlin.reflect.KClass
  */
 typealias FlowInstance = Any
 typealias FlowInstanceId = String
-typealias FlowDefinitionId = String
+typealias FlowElementId = String
+typealias FlowElementName = String
 
 typealias FlowInstanceIds = List<FlowInstanceId>
 
 interface FlowElement {
 
-    val name: FlowDefinitionId
+    // val id: FlowElementId
+    val name: FlowElementName
+    val parent: FlowDefinition?
 
 }
 
 interface FlowDefinition: FlowElement {
 
-    val executionType: FlowExecutionType
     val elements: MutableList<FlowElement>
+    val executionType: FlowExecutionType
     val instanceType: KClass<out FlowInstance>
 
 }

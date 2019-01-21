@@ -130,23 +130,33 @@ class PaymentRetrievalStep0Test {
 
 
     @Test()
-    fun flow() {
+    fun parentsAndElements() {
 
         val flow = define <PaymentRetrieval> {
-            on message RetrievePayment::class
-            execute service {
-                create intent "ChargeCreditCard" by { ChargeCreditCard() }
-                on message CreditCardCharged::class having "reference" match { paymentId } create success("") by {
 
-                }
+            on message (RetrievePayment::class) create acceptance("PaymentRetrievalAccepted") by { PaymentRetrievalAccepted() }
+
+            execute service {
+
+                create intent "ChargeCreditCard" by { ChargeCreditCard() }
+                on message (CreditCardCharged::class) having "reference" match { paymentId }
+
             }
+
             create success "PaymentRetrieved" by { PaymentRetrieved() }
+
+        }
+
+        assertEquals(3, flow.elements.size)
+        flow.elements.forEach {
+            assertEquals(flow, it.parent)
         }
 
         val service = flow.elements[1] as FlowDefinition
-
-        assertEquals(3, flow.elements.size)
         assertEquals(2, service.elements.size)
+        service.elements.forEach {
+            assertEquals(service, it.parent)
+        }
 
     }
 
