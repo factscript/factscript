@@ -92,4 +92,24 @@ class FlowDefinitionTest {
 
     }
 
+    @Test
+    fun testExpectedPatternForRetrievePayment() {
+
+        val aggregate = null
+        val retrievePayment = flow.descendantMap["PaymentRetrieval-RetrievePayment"] as FlowMessageReactionDefinition
+
+        assertEquals(MessagePattern(RetrievePayment::class), retrievePayment.expected(aggregate))
+
+    }
+
+    @Test
+    fun testExpectedPatternForCreditCardCharged() {
+
+        val aggregate = PaymentRetrieval(RetrievePayment(id = "anId"))
+        val retrievePayment = flow.descendantMap["PaymentRetrieval-ChargeCreditCard-CreditCardCharged"] as FlowMessageReactionDefinition
+
+        assertEquals(MessagePattern(CreditCardCharged::class, mapOf("reference" to "anId")), retrievePayment.expected(aggregate))
+
+    }
+
 }

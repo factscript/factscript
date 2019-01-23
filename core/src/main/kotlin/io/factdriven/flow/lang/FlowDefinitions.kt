@@ -35,7 +35,7 @@ interface FlowDefinition: FlowElement {
 
         children.forEach { child ->
             when(child) {
-                is FlowMessageReactionDefinition -> if (child.type.isInstance(message)) patterns.add(child.pattern(message))
+                is FlowMessageReactionDefinition -> if (child.type.isInstance(message)) patterns.add(child.incoming(message))
                 is FlowDefinition -> patterns.addAll(child.patterns(message))
             }
         }
@@ -90,14 +90,24 @@ interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
     val type: KClass<out Message>
     val propertyNames: List<PropertyName>
-    val propertyValues: List<Aggregate.() -> Any?>
+    val propertyValues: List<Aggregate?.() -> Any?>
 
-    fun pattern(message: Message): MessagePattern {
+    fun incoming(message: Message): MessagePattern {
 
         assert(type.isInstance(message))
 
         val properties = propertyNames.map { propertyName ->
             propertyName to message.getProperty(propertyName)
+        }.toMap()
+
+        return MessagePattern(type, properties)
+
+    }
+
+    fun expected(aggregate: Aggregate?): MessagePattern {
+
+        val properties = propertyNames.mapIndexed { propertyIndex, propertyName ->
+            propertyName to propertyValues[propertyIndex].invoke(aggregate)
         }.toMap()
 
         return MessagePattern(type, properties)

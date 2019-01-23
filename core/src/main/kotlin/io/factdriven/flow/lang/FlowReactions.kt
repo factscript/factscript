@@ -98,7 +98,7 @@ abstract class FlowReactionImpl<I: Aggregate, A: Any>(override val parent: FlowD
 class FlowMessageReactionImpl<I: Aggregate, M: Message>(override val parent: FlowDefinition, override val type: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(parent, type.simpleName!!), FlowMessageReaction<I, M>, MatchableFlowMessageReaction<I, M> {
 
     override val propertyNames = mutableListOf<PropertyName>()
-    override val propertyValues = mutableListOf<Aggregate.() -> Any?>()
+    override val propertyValues = mutableListOf<Aggregate?.() -> Any?>()
 
     init {
         flowReactionType = FlowReactionType.Message
@@ -115,7 +115,7 @@ class FlowMessageReactionImpl<I: Aggregate, M: Message>(override val parent: Flo
 
     override fun match(value: I.() -> Any?): FlowMessageReaction<I, M> {
         @Suppress("UNCHECKED_CAST")
-        propertyValues.add(value as Aggregate.() -> Any?)
+        propertyValues.add(value as Aggregate?.() -> Any?)
         return this
     }
 
