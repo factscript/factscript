@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
  */
 class FlowDefinitionTest {
 
-    val flow = define <PaymentRetrieval> {
+    private val flow = define <PaymentRetrieval> {
 
         on message (RetrievePayment::class) create acceptance("PaymentRetrievalAccepted") by { PaymentRetrievalAccepted() }
 

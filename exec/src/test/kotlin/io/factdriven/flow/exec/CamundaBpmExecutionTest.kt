@@ -89,12 +89,17 @@ class CamundaBpmExecutionTest {
 
 }
 
-data class PaymentRetrieval(val init: RetrievePayment) {
+class PaymentRetrieval(init: RetrievePayment) {
 
     val paymentId = init.id
     val accountId = init.accountId
     var uncovered = init.payment
     var covered = 0F
+
+    fun apply(event: PaymentRetrieved) {
+        covered += event.payment ?: uncovered
+        uncovered -= event.payment ?: uncovered
+    }
 
 }
 
@@ -102,9 +107,9 @@ class RetrievePayment(val id: String, val accountId: String, val payment: Float)
 class NotifyCustomer(val id: String? = null, val accountId: String? = null, val payment: Float? = null)
 class CustomerNotified(val id: String, val accountId: String, val payment: Float)
 class PaymentRetrievalAccepted(val paymentId: String? = null)
-class PaymentRetrieved(val paymentId: String? = null)
+class PaymentRetrieved(val paymentId: String? = null, val payment: Float? = null)
 class PaymentFailed(val paymentId: String)
-class PaymentCoveredManually(val paymentId: String)
+class PaymentCoveredManually(val paymentId: String, val payment: Float? = null)
 class ChargeCreditCard(val reference: String? = null, val payment: Float? = null)
 class CreditCardCharged(val reference: String)
 class CreditCardExpired(val reference: String)

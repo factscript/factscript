@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
  */
 typealias Aggregate = Any
 typealias AggregateId = String
-typealias AggregateType = KClass<out Aggregate>
+typealias AggregateType = KClass<*>
 typealias AggregateIds = List<AggregateId>
 
 typealias FlowElementType = String

@@ -1,7 +1,9 @@
 package io.factdriven.flow
 
 import io.factdriven.flow.lang.*
+import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
+import kotlin.reflect.full.memberFunctions
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -10,12 +12,32 @@ import kotlin.reflect.KClass
  * Reconstruct the past flow instance state based on a given history of messages.
  * @param history of (consumed and produced) messages
  * @param flow definition
- * @return instance summarizing the state of a specific flow
+ * @return instance summarizing the state of a specific flow or null if history is empty
  */
-fun <I: Aggregate> past(history: Messages, flow: FlowExecution<I>): I {
-    val type = flow.asDefinition().aggregateType
-    val constructor = type.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier as KClass<*> == type }
-    TODO()
+fun <I: Aggregate> past(history: Messages, flow: FlowExecution<I>): I? {
+
+    fun <I: Aggregate> past(history: Messages, aggregate: I): I? {
+        if (!history.isEmpty()) {
+            val message = history.first()
+            val method = aggregate::class.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier as KClass<*> == message::class }
+            if (method != null) method.call(aggregate, message)
+            return past(history.subList(1, history.size), aggregate)
+        } else {
+            return aggregate
+        }
+    }
+
+    if (!history.isEmpty()) {
+        val message = history.first()
+        val constructor = flow.asDefinition()
+            .aggregateType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier as KClass<*> == message::class }
+        return if (constructor != null) {
+            past(history.subList(1, history.size), constructor.call(message) as I)
+        } else throw IllegalArgumentException()
+    } else {
+        return null
+    }
+
 }
 
 /**
