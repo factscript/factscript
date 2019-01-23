@@ -59,6 +59,10 @@ interface FlowDefinition: FlowElement {
 
     }
 
+    val childrenMap: Map<FlowElementId, FlowElement> get() = children.map { it.flowElementId to it }.toMap()
+
+    val descendantMap: Map<FlowElementId, FlowElement> get() = descendants.map { it.flowElementId to it }.toMap()
+
 }
 
 interface FlowActionDefinition: FlowElement {

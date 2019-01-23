@@ -77,4 +77,19 @@ class FlowDefinitionTest {
 
     }
 
+    @Test
+    fun testDescendantsMap() {
+
+        val element1 = flow.descendantMap["PaymentRetrieval-RetrievePayment"]
+        val element2 = flow.descendantMap["PaymentRetrieval-ChargeCreditCard"]
+        val element22 = flow.descendantMap["PaymentRetrieval-ChargeCreditCard-CreditCardCharged"]
+        val doesNotExist = flow.descendantMap["doesNotExist"]
+
+        assertEquals("PaymentRetrieval-RetrievePayment", element1?.flowElementId)
+        assertEquals("PaymentRetrieval-ChargeCreditCard", element2?.flowElementId)
+        assertEquals("PaymentRetrieval-ChargeCreditCard-CreditCardCharged", element22?.flowElementId)
+        assertEquals(null, doesNotExist?.flowElementId)
+
+    }
+
 }
