@@ -29,6 +29,21 @@ interface FlowDefinition: FlowElement {
     val flowExecutionType: FlowExecutionType
     val aggregateType: AggregateType
 
+    fun patterns(message: Message): MessagePatterns {
+
+        val patterns = mutableSetOf<MessagePattern>()
+
+        flowElements.forEach { element ->
+            when(element) {
+                is FlowMessageReactionDefinition -> if (element.type.isInstance(message)) patterns.add(element.pattern(message))
+                is FlowDefinition -> patterns.addAll(element.patterns(message))
+            }
+        }
+
+        return patterns
+
+    }
+
 }
 
 interface FlowActionDefinition: FlowElement {
@@ -55,7 +70,19 @@ interface FlowReactionDefinition: FlowElement {
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
     val type: KClass<out Message>
-    val keys: List<PropertyName>
-    val values: List<Aggregate.() -> Any?>
+    val propertyNames: List<PropertyName>
+    val propertyValues: List<Aggregate.() -> Any?>
+
+    fun pattern(message: Message): MessagePattern {
+
+        assert(type.isInstance(message))
+
+        val properties = propertyNames.map { propertyName ->
+            propertyName to message.getProperty(propertyName)
+        }.toMap()
+
+        return MessagePattern(type, properties)
+
+    }
 
 }

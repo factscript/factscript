@@ -17,7 +17,7 @@ typealias PropertyName = String
 typealias PropertyValue = Any?
 
 typealias Messages = List<Message>
-typealias MessagePatterns = List<MessagePattern>
+typealias MessagePatterns = Set<MessagePattern>
 
 data class MessageContainer(
 
@@ -34,7 +34,7 @@ data class MessageContainer(
 data class MessagePattern(
 
     val type: MessageType,
-    val properties: Map<PropertyName, PropertyValue>? = null
+    val properties: Map<PropertyName, PropertyValue> = emptyMap()
 
 ) {
 
@@ -42,7 +42,7 @@ data class MessagePattern(
 
     init {
         val buffer = StringBuffer(type.simpleName) // TODO simple name is just fallback
-        properties?.toSortedMap()?.forEach {
+        properties.toSortedMap().forEach {
             buffer.append("|").append(it.key).append("=").append(it.value)
         }
         hash = hash(buffer.toString())
@@ -59,4 +59,13 @@ data class MessagePattern(
 
     }
 
+}
+
+
+fun Message.getProperty(propertyName: PropertyName): Any? {
+    return javaClass.getDeclaredField(propertyName).let {
+        it.isAccessible = true
+        val value = it.get(this)
+        return@let value;
+    }
 }

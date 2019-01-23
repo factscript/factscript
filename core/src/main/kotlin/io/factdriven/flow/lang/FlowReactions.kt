@@ -97,8 +97,8 @@ abstract class FlowReactionImpl<I: Aggregate, A: Any>(override val container: Fl
 
 class FlowMessageReactionImpl<I: Aggregate, M: Message>(override val container: FlowDefinition, override val type: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(container, type.simpleName!!), FlowMessageReaction<I, M>, MatchableFlowMessageReaction<I, M> {
 
-    override val keys = mutableListOf<PropertyName>()
-    override val values = mutableListOf<Aggregate.() -> Any?>()
+    override val propertyNames = mutableListOf<PropertyName>()
+    override val propertyValues = mutableListOf<Aggregate.() -> Any?>()
 
     init {
         flowReactionType = FlowReactionType.Message
@@ -109,13 +109,13 @@ class FlowMessageReactionImpl<I: Aggregate, M: Message>(override val container: 
     override fun having(property: String): MatchableFlowMessageReaction<I, M> {
         assert(type.java.kotlin.memberProperties.find { it.name == property } != null)
             { "Message flowActionType '${type.simpleName}' does not have property '${property}'!" }
-        keys.add(property)
+        propertyNames.add(property)
         return this
     }
 
     override fun match(value: I.() -> Any?): FlowMessageReaction<I, M> {
         @Suppress("UNCHECKED_CAST")
-        values.add(value as Aggregate.() -> Any?)
+        propertyValues.add(value as Aggregate.() -> Any?)
         return this
     }
 
