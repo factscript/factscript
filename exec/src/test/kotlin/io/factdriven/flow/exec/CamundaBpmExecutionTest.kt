@@ -2,7 +2,7 @@ package io.factdriven.flow.exec
 
 import io.factdriven.flow.execute
 import io.factdriven.flow.lang.FlowExecution
-import io.factdriven.flow.lang.FlowMessagePayload
+import io.factdriven.flow.lang.Message
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
 import org.camunda.bpm.engine.ProcessEngineConfiguration
@@ -69,7 +69,7 @@ class CamundaBpmExecutionTest {
 
     }
 
-    fun correlate(message: FlowMessagePayload) {
+    fun correlate(message: Message) {
 
     }
 

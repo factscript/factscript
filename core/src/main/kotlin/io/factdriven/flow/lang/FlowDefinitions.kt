@@ -34,14 +34,14 @@ interface FlowDefinition: FlowElement {
 interface FlowActionDefinition: FlowElement {
 
     val flowActionType: FlowActionType
-    val function: (Aggregate.() -> FlowMessagePayload)?
+    val function: (Aggregate.() -> Message)?
 
 }
 
 interface FlowReactionActionDefinition: FlowElement {
 
     val flowActionType: FlowActionType
-    val function: (Aggregate.(Any) -> FlowMessagePayload)?
+    val function: (Aggregate.(Any) -> Message)?
 
 }
 
@@ -54,8 +54,8 @@ interface FlowReactionDefinition: FlowElement {
 
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
-    val payloadType: KClass<out FlowMessagePayload>
-    val keys: List<FlowMessageProperty>
+    val type: KClass<out Message>
+    val keys: List<PropertyName>
     val values: List<Aggregate.() -> Any?>
 
 }

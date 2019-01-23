@@ -41,7 +41,7 @@ open class FlowActionImpl<I: Aggregate>(override val container: FlowDefinition):
 
     override var flowElementType = ""
     override var flowActionType = FlowActionType.Success
-    override var function: (Aggregate.() -> FlowMessagePayload)? = null
+    override var function: (Aggregate.() -> Message)? = null
 
     // Flow Action Factories
 
@@ -75,9 +75,9 @@ open class FlowActionImpl<I: Aggregate>(override val container: FlowDefinition):
         return this
     }
 
-    override fun by(message: I.() -> FlowMessagePayload) {
+    override fun by(message: I.() -> Message) {
         @Suppress("UNCHECKED_CAST")
-        this.function = message as Aggregate.() -> FlowMessagePayload
+        this.function = message as Aggregate.() -> Message
     }
 
 }

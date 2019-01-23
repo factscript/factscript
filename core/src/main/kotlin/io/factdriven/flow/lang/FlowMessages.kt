@@ -2,39 +2,47 @@ package io.factdriven.flow.lang
 
 import java.security.MessageDigest
 import java.math.BigInteger
-
+import kotlin.reflect.KClass
 
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-typealias FlowMessageId = String
-typealias FlowMessageTarget = Pair<FlowElementType, AggregateId>
-typealias FlowMessageType = String
-typealias FlowMessagePayload = Any
-typealias FlowMessageProperty = String
-typealias FlowMessagePropertyValue = Any?
-typealias FlowMessages = List<FlowMessagePayload>
-typealias FlowMessagePatterns = List<FlowMessagePattern>
+typealias Message = Any
+typealias MessageType = KClass<out Message>
+typealias MessageId = String
+typealias MessageTarget = Pair<AggregateType, AggregateId>
 
-data class FlowMessage(
-    val id: FlowMessageId,
-    val payload: FlowMessagePayload,
-    val target: FlowMessageTarget? = null) {
+typealias PropertyName = String
+typealias PropertyValue = Any?
 
-    constructor(message: FlowMessage, target: FlowMessageTarget): this(message.id, message.payload, target)
+typealias Messages = List<Message>
+typealias MessagePatterns = List<MessagePattern>
+
+data class MessageContainer(
+
+    val id: MessageId,
+    val message: Message,
+    val target: MessageTarget? = null
+
+) {
+
+    constructor(container: MessageContainer, target: MessageTarget): this(container.id, container.message, target)
 
 }
 
-data class FlowMessagePattern(
-    val type: FlowMessageType,
-    val keys: Map<FlowMessageProperty, FlowMessagePropertyValue>? = null) {
+data class MessagePattern(
+
+    val type: MessageType,
+    val properties: Map<PropertyName, PropertyValue>? = null
+
+) {
 
     val hash: String
 
     init {
-        val buffer = StringBuffer(type)
-        keys?.toSortedMap()?.forEach {
+        val buffer = StringBuffer(type.simpleName) // TODO simple name is just fallback
+        properties?.toSortedMap()?.forEach {
             buffer.append("|").append(it.key).append("=").append(it.value)
         }
         hash = hash(buffer.toString())

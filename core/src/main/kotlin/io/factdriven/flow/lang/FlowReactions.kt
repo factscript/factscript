@@ -47,7 +47,7 @@ interface FlowReaction<I: Aggregate, A: Any> {
 
 }
 
-interface FlowMessageReaction<I: Aggregate, M: FlowMessagePayload> : FlowReaction<I, M> {
+interface FlowMessageReaction<I: Aggregate, M: Message> : FlowReaction<I, M> {
 
     infix fun having(property: String): MatchableFlowMessageReaction<I, M>
     infix fun supporting(assertion: I.(M) -> Boolean): FlowMessageReaction<I, M>
@@ -58,7 +58,7 @@ interface FlowMessageReaction<I: Aggregate, M: FlowMessagePayload> : FlowReactio
 
 }
 
-interface MatchableFlowMessageReaction<I: Aggregate, M: FlowMessagePayload> {
+interface MatchableFlowMessageReaction<I: Aggregate, M: Message> {
 
     infix fun match(value: I.() -> Any?): FlowMessageReaction<I, M>
 
@@ -66,7 +66,7 @@ interface MatchableFlowMessageReaction<I: Aggregate, M: FlowMessagePayload> {
 
 interface ActionableFlowReaction<I: Aggregate, A: Any> {
 
-    infix fun by(reaction: I.(A) -> FlowMessagePayload)
+    infix fun by(reaction: I.(A) -> Message)
 
 }
 
@@ -88,16 +88,16 @@ abstract class FlowReactionImpl<I: Aggregate, A: Any>(override val container: Fl
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun by(reaction: I.(A) -> FlowMessagePayload) {
+    override fun by(reaction: I.(A) -> Message) {
         @Suppress("UNCHECKED_CAST")
-        this.flowReactionAction.function = reaction as Aggregate.(Any) -> FlowMessagePayload
+        this.flowReactionAction.function = reaction as Aggregate.(Any) -> Message
     }
 
 }
 
-class FlowMessageReactionImpl<I: Aggregate, M: FlowMessagePayload>(override val container: FlowDefinition, override val payloadType: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(container, payloadType.simpleName!!), FlowMessageReaction<I, M>, MatchableFlowMessageReaction<I, M> {
+class FlowMessageReactionImpl<I: Aggregate, M: Message>(override val container: FlowDefinition, override val type: KClass<M>): FlowMessageReactionDefinition, FlowReactionImpl<I, M>(container, type.simpleName!!), FlowMessageReaction<I, M>, MatchableFlowMessageReaction<I, M> {
 
-    override val keys = mutableListOf<FlowMessageProperty>()
+    override val keys = mutableListOf<PropertyName>()
     override val values = mutableListOf<Aggregate.() -> Any?>()
 
     init {
@@ -107,8 +107,8 @@ class FlowMessageReactionImpl<I: Aggregate, M: FlowMessagePayload>(override val 
     // Message Patterns Refiner
 
     override fun having(property: String): MatchableFlowMessageReaction<I, M> {
-        assert(payloadType.java.kotlin.memberProperties.find { it.name == property } != null)
-            { "Message flowActionType '${payloadType.simpleName}' does not have property '${property}'!" }
+        assert(type.java.kotlin.memberProperties.find { it.name == property } != null)
+            { "Message flowActionType '${type.simpleName}' does not have property '${property}'!" }
         keys.add(property)
         return this
     }

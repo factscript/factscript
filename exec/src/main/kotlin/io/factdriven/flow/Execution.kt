@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
  * @param flow definition
  * @return instance summarizing the state of a specific flow
  */
-fun <I: Aggregate> past(history: FlowMessages, flow: FlowExecution<I>): I {
+fun <I: Aggregate> past(history: Messages, flow: FlowExecution<I>): I {
     val type = flow.asDefinition().aggregateType
     val constructor = type.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier as KClass<*> == type }
     TODO()
@@ -25,7 +25,7 @@ fun <I: Aggregate> past(history: FlowMessages, flow: FlowExecution<I>): I {
  * @param trigger coming in and influencing the flow instance
  * @return new messages produced
  */
-fun <I: Aggregate> present(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessages {
+fun <I: Aggregate> present(history: Messages, flow: FlowExecution<I>, trigger: Message): Messages {
     TODO()
 }
 
@@ -36,7 +36,7 @@ fun <I: Aggregate> present(history: FlowMessages, flow: FlowExecution<I>, trigge
  * @param trigger coming in and influencing the flow instance
  * @return future matching patternBuilders
  */
-fun <I: Aggregate> future(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessagePatterns {
+fun <I: Aggregate> future(history: Messages, flow: FlowExecution<I>, trigger: Message): MessagePatterns {
     TODO()
 }
 
@@ -46,7 +46,7 @@ fun <I: Aggregate> future(history: FlowMessages, flow: FlowExecution<I>, trigger
  * @param trigger coming in and potentially influencing many flow instances
  * @return matching patternBuilders
  */
-fun <I: Aggregate> potential(flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessagePatterns {
+fun <I: Aggregate> potential(flow: FlowExecution<I>, trigger: Message): MessagePatterns {
     TODO()
 }
 
@@ -55,15 +55,17 @@ fun <I: Aggregate> potential(flow: FlowExecution<I>, trigger: FlowMessagePayload
  * @param patterns
  * @return matching flow instances
  */
-fun <I: Aggregate> determine(patterns: FlowMessagePatterns): AggregateIds {
+fun <I: Aggregate> determine(patterns: MessagePatterns): AggregateIds {
     TODO()
 }
+
+/*
 
 interface ExecutableFlowDefinition: FlowDefinition {
 
     val instances: FlowInstances
 
-    fun patterns(message: FlowMessagePayload): List<FlowMessagePattern>
+    fun patterns(message: Message): List<MessagePattern>
 
 }
 
@@ -78,7 +80,7 @@ interface FlowDefinitions {
 interface FlowInstances {
 
     fun get(id: AggregateId): Aggregate
-    fun find(pattern: FlowMessagePattern): AggregateIds
+    fun find(pattern: MessagePattern): AggregateIds
 
 }
 
@@ -86,12 +88,12 @@ interface FlowMessageCorrelator {
 
     val definitions: FlowDefinitions
 
-    fun process(incoming: FlowMessage) {
+    fun process(incoming: MessageContainer) {
 
         if (incoming.target == null) {
 
             // Implicit targeting means that all correlations will happen synchronously
-            target(incoming).forEach { target -> process(FlowMessage(incoming, target)) }
+            target(incoming).forEach { target -> process(MessageContainer(incoming, target)) }
 
         } else {
 
@@ -124,7 +126,7 @@ interface FlowMessageCorrelator {
 
     }
 
-    fun target(message: FlowMessage) : List<FlowMessageTarget> {
+    fun target(message: MessageContainer) : List<MessageTarget> {
 
         return definitions.all().map { definition ->
 
@@ -142,8 +144,10 @@ interface FlowMessageCorrelator {
 
     }
 
-    fun correlate(incoming: FlowMessage): FlowMessages {
+    fun correlate(incoming: MessageContainer): Messages {
         TODO()
     }
 
 }
+
+*/
