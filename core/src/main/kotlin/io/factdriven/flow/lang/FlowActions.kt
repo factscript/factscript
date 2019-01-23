@@ -15,13 +15,13 @@ enum class FlowActionType {
 
 }
 
-interface ClassifiedFlowAction<I: FlowInstance> {
+interface ClassifiedFlowAction<I: Aggregate> {
 
     infix fun by(message: I.() -> Any)
 
 }
 
-interface FlowAction<I: FlowInstance> : ClassifiedFlowAction<I> {
+interface FlowAction<I: Aggregate> : ClassifiedFlowAction<I> {
 
     infix fun intent(id: String): ClassifiedFlowAction<I>
     infix fun acceptance(id: String): ClassifiedFlowAction<I>
@@ -35,49 +35,49 @@ interface FlowAction<I: FlowInstance> : ClassifiedFlowAction<I> {
 
 }
 
-open class FlowActionImpl<I: FlowInstance>(override val parent: FlowDefinition): ClassifiedFlowAction<I>, FlowAction<I>, FlowActionDefinition {
+open class FlowActionImpl<I: Aggregate>(override val container: FlowDefinition): ClassifiedFlowAction<I>, FlowAction<I>, FlowActionDefinition {
 
     // Flow Action Definition
 
-    override var name = ""
-    override var type = FlowActionType.Success
-    override var function: (FlowInstance.() -> FlowMessagePayload)? = null
+    override var flowElementType = ""
+    override var flowActionType = FlowActionType.Success
+    override var function: (Aggregate.() -> FlowMessagePayload)? = null
 
     // Flow Action Factories
 
     override infix fun intent(name: String): ClassifiedFlowAction<I> {
-        this.type = FlowActionType.Intent
-        this.name = name
+        this.flowActionType = FlowActionType.Intent
+        this.flowElementType = name
         return this
     }
 
     override infix fun acceptance(name: String): ClassifiedFlowAction<I> {
-        this.type = FlowActionType.Acceptance
-        this.name = name
+        this.flowActionType = FlowActionType.Acceptance
+        this.flowElementType = name
         return this
     }
 
     override infix fun progress(name: String): ClassifiedFlowAction<I> {
-        this.type = FlowActionType.Progress
-        this.name = name
+        this.flowActionType = FlowActionType.Progress
+        this.flowElementType = name
         return this
     }
 
     override infix fun success(name: String): ClassifiedFlowAction<I> {
-        this.type = FlowActionType.Success
-        this.name = name
+        this.flowActionType = FlowActionType.Success
+        this.flowElementType = name
         return this
     }
 
     override infix fun failure(name: String): ClassifiedFlowAction<I> {
-        this.type = FlowActionType.Failure
-        this.name = name
+        this.flowActionType = FlowActionType.Failure
+        this.flowElementType = name
         return this
     }
 
     override fun by(message: I.() -> FlowMessagePayload) {
         @Suppress("UNCHECKED_CAST")
-        this.function = message as FlowInstance.() -> FlowMessagePayload
+        this.function = message as Aggregate.() -> FlowMessagePayload
     }
 
 }

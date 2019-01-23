@@ -15,28 +15,28 @@ fun translate(definition: FlowDefinition): Container {
         return when(element) {
             is FlowReactionDefinition -> {
                 BpmnEventSymbol(
-                    element.id,
-                    element.name,
+                    element.flowElementId,
+                    element.flowElementType,
                     parent,
                     BpmnEventType.message,
                     BpmnEventCharacteristic.catching
                 )
             }
             is FlowDefinition -> {
-                when (element.executionType) {
+                when (element.flowExecutionType) {
                     FlowExecutionType.execution -> {
-                        val sequence = Sequence(element.id, element.name, parent)
-                        element.elements.forEach { translate(it, sequence) }
+                        val sequence = Sequence(element.flowElementId, element.flowElementType, parent)
+                        element.flowElements.forEach { translate(it, sequence) }
                         sequence
                     }
                     else -> {
-                        val type = if (element.elements.isEmpty()) BpmnTaskType.service
-                            else if (element.elements.first() is FlowReactionImpl<*,*>) BpmnTaskType.receive
-                            else if (element.elements.size == 1) BpmnTaskType.send
+                        val type = if (element.flowElements.isEmpty()) BpmnTaskType.service
+                            else if (element.flowElements.first() is FlowReactionImpl<*,*>) BpmnTaskType.receive
+                            else if (element.flowElements.size == 1) BpmnTaskType.send
                             else BpmnTaskType.service
                         BpmnTaskSymbol(
-                            element.id,
-                            element.name,
+                            element.flowElementId,
+                            element.flowElementType,
                             parent,
                             type
                         )
@@ -45,8 +45,8 @@ fun translate(definition: FlowDefinition): Container {
             }
             is FlowActionDefinition -> {
                 BpmnEventSymbol(
-                    element.id,
-                    element.name,
+                    element.flowElementId,
+                    element.flowElementType,
                     parent,
                     if (element.function != null) BpmnEventType.message else BpmnEventType.none,
                     BpmnEventCharacteristic.throwing
@@ -56,8 +56,8 @@ fun translate(definition: FlowDefinition): Container {
         }
     }
 
-    val sequence = Sequence(definition.id, definition.name)
-    definition.elements.forEach { translate(it, sequence) }
+    val sequence = Sequence(definition.flowElementId, definition.flowElementType)
+    definition.flowElements.forEach { translate(it, sequence) }
     return sequence
 
 }

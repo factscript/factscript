@@ -15,7 +15,7 @@ enum class FlowExecutionType {
 
 }
 
-interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
+interface FlowExecution<I : Aggregate>: FlowElement, FlowActivities<I> {
 
     val on: FlowReactions<I>
     val create: FlowAction<I>
@@ -35,7 +35,7 @@ interface FlowExecution<I : FlowInstance>: FlowElement, FlowActivities<I> {
 
 }
 
-interface FlowActivities<I: FlowInstance> {
+interface FlowActivities<I: Aggregate> {
 
     operator fun invoke(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit
 
@@ -44,30 +44,30 @@ interface FlowActivities<I: FlowInstance> {
 
 }
 
-class FlowExecutionImpl<I: FlowInstance>(override val parent: FlowDefinition?): FlowDefinition, FlowExecution<I>, FlowActivities<I> {
+class FlowExecutionImpl<I: Aggregate>(override val container: FlowDefinition?): FlowDefinition, FlowExecution<I>, FlowActivities<I> {
 
     // Flow Definition
 
-    override var executionType = FlowExecutionType.execution
-    override val elements = mutableListOf<FlowElement>()
-    override lateinit var instanceType: KClass<out FlowInstance>
+    override var flowExecutionType = FlowExecutionType.execution
+    override val flowElements = mutableListOf<FlowElement>()
+    override lateinit var aggregateType: KClass<out Aggregate>
 
-    override var name: String = ""
+    override var flowElementType: String = ""
         get() {
-            return when (executionType) {
-                FlowExecutionType.service -> elements[0].name
+            return when (flowExecutionType) {
+                FlowExecutionType.service -> flowElements[0].flowElementType
                 else -> field
             }
         }
 
     val actions: List<FlowAction<I>> get() {
         @Suppress("UNCHECKED_CAST")
-        return elements.filter { it is FlowAction<*> } as List<FlowAction<I>>
+        return flowElements.filter { it is FlowAction<*> } as List<FlowAction<I>>
     }
 
     val reactions: List<FlowReaction<I, *>> get() {
         @Suppress("UNCHECKED_CAST")
-        return elements.filter { it is FlowReaction<*, *> } as List<FlowReaction<I, *>>
+        return flowElements.filter { it is FlowReaction<*, *> } as List<FlowReaction<I, *>>
     }
 
     // Basic Flow Execution<
@@ -79,14 +79,14 @@ class FlowExecutionImpl<I: FlowInstance>(override val parent: FlowDefinition?): 
     override val create: FlowAction<I>
         get() {
             val node = FlowActionImpl<I>(this)
-            elements.add(node)
+            flowElements.add(node)
             return node
         }
 
     override val execute: FlowActivities<I>
         get() {
         val node = FlowExecutionImpl<I>(this)
-        elements.add(node)
+        flowElements.add(node)
         return node
     }
 
@@ -95,7 +95,7 @@ class FlowExecutionImpl<I: FlowInstance>(override val parent: FlowDefinition?): 
     // Sub Flow Execution Factories
 
     override infix fun service(service: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit {
-        executionType = FlowExecutionType.service
+        flowExecutionType = FlowExecutionType.service
         this.apply(service)
         return service
     }
@@ -106,7 +106,7 @@ class FlowExecutionImpl<I: FlowInstance>(override val parent: FlowDefinition?): 
     }
 
     override infix fun mitigation(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit {
-        executionType = FlowExecutionType.mitigation
+        flowExecutionType = FlowExecutionType.mitigation
         this.apply(mitigation)
         return mitigation
     }
@@ -141,12 +141,12 @@ class FlowExecutionImpl<I: FlowInstance>(override val parent: FlowDefinition?): 
 
 data class FlowReactionAction<M: FlowMessagePayload>(
 
-    override val parent: FlowDefinition,
-    override val type: FlowActionType = FlowActionType.Success,
-    override val name: String = ""
+    override val container: FlowDefinition,
+    override val flowActionType: FlowActionType = FlowActionType.Success,
+    override val flowElementType: String = ""
 
 ): FlowReactionActionDefinition {
 
-    override var function: (FlowInstance.(Any) -> FlowMessagePayload)? = null
+    override var function: (Aggregate.(Any) -> FlowMessagePayload)? = null
 
 }

@@ -47,11 +47,11 @@ class CamundaBpmExecutionTest {
 
         val deployment = engine.repositoryService
             .createDeployment()
-            .addModelInstance("${flow.name}.bpmn", bpmn)
-            .name(flow.name)
+            .addModelInstance("${flow.flowElementType}.bpmn", bpmn)
+            .name(flow.flowElementType)
             .deploy()
 
-        Assertions.assertEquals(flow.name, deployment.name)
+        Assertions.assertEquals(flow.flowElementType, deployment.name)
 
         val processDefinition = engine.repositoryService.createProcessDefinitionQuery().singleResult()
 

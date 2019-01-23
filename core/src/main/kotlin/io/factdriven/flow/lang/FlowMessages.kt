@@ -9,7 +9,7 @@ import java.math.BigInteger
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 typealias FlowMessageId = String
-typealias FlowMessageTarget = Pair<FlowElementName, FlowInstanceId>
+typealias FlowMessageTarget = Pair<FlowElementType, AggregateId>
 typealias FlowMessageType = String
 typealias FlowMessagePayload = Any
 typealias FlowMessageProperty = String

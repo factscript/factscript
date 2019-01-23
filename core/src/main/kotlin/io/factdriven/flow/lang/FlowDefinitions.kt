@@ -5,49 +5,50 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-typealias FlowInstance = Any
-typealias FlowInstanceId = String
-typealias FlowElementId = String
-typealias FlowElementName = String
+typealias Aggregate = Any
+typealias AggregateId = String
+typealias AggregateType = KClass<out Aggregate>
+typealias AggregateIds = List<AggregateId>
 
-typealias FlowInstanceIds = List<FlowInstanceId>
+typealias FlowElementType = String
+typealias FlowElementId = String
 
 interface FlowElement {
 
-    val id: FlowElementId
-        get() = (parent?.id ?: "") + (if (parent != null) "-" else "") + name
+    val flowElementId: FlowElementId
+        get() = (container?.flowElementId ?: "") + (if (container != null) "-" else "") + flowElementType
 
-    val name: FlowElementName
-    val parent: FlowDefinition?
+    val flowElementType: FlowElementType
+    val container: FlowDefinition?
 
 }
 
 interface FlowDefinition: FlowElement {
 
-    val elements: MutableList<FlowElement>
-    val executionType: FlowExecutionType
-    val instanceType: KClass<out FlowInstance>
+    val flowElements: MutableList<FlowElement>
+    val flowExecutionType: FlowExecutionType
+    val aggregateType: AggregateType
 
 }
 
 interface FlowActionDefinition: FlowElement {
 
-    val type: FlowActionType
-    val function: (FlowInstance.() -> FlowMessagePayload)?
+    val flowActionType: FlowActionType
+    val function: (Aggregate.() -> FlowMessagePayload)?
 
 }
 
 interface FlowReactionActionDefinition: FlowElement {
 
-    val type: FlowActionType
-    val function: (FlowInstance.(Any) -> FlowMessagePayload)?
+    val flowActionType: FlowActionType
+    val function: (Aggregate.(Any) -> FlowMessagePayload)?
 
 }
 
 interface FlowReactionDefinition: FlowElement {
 
-    val type: FlowReactionType
-    val action: FlowReactionActionDefinition
+    val flowReactionType: FlowReactionType
+    val flowReactionAction: FlowReactionActionDefinition
 
 }
 
@@ -55,6 +56,6 @@ interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
     val payloadType: KClass<out FlowMessagePayload>
     val keys: List<FlowMessageProperty>
-    val values: List<FlowInstance.() -> Any?>
+    val values: List<Aggregate.() -> Any?>
 
 }

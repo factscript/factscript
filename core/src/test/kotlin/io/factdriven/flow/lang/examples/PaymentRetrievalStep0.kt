@@ -27,7 +27,7 @@ class PaymentRetrievalStep0Test {
             on
         }
 
-        assertEquals(0, flow.elements.size)
+        assertEquals(0, flow.flowElements.size)
     }
 
     @Test()
@@ -37,7 +37,7 @@ class PaymentRetrievalStep0Test {
             on message RetrievePayment::class
         }
 
-        val node = flow.elements[0] as FlowMessageReactionDefinition
+        val node = flow.flowElements[0] as FlowMessageReactionDefinition
 
         assertEquals(RetrievePayment::class, node.payloadType)
 
@@ -50,7 +50,7 @@ class PaymentRetrievalStep0Test {
             create
         }
 
-        val node = flow.elements.get(0)
+        val node = flow.flowElements.get(0)
 
         assertTrue(node is FlowActionDefinition)
 
@@ -63,7 +63,7 @@ class PaymentRetrievalStep0Test {
             create success "PaymentRetrieved"
         }
 
-        val node = flow.elements.get(0) as FlowActionDefinition
+        val node = flow.flowElements.get(0) as FlowActionDefinition
 
         assertEquals(null, node.function)
     }
@@ -75,9 +75,9 @@ class PaymentRetrievalStep0Test {
             create success "PaymentRetrieved" by { PaymentRetrieved() }
         }
 
-        val node = flow.elements.get(0) as FlowActionDefinition
+        val node = flow.flowElements.get(0) as FlowActionDefinition
 
-        assertEquals(FlowActionType.Success, node.type)
+        assertEquals(FlowActionType.Success, node.flowActionType)
         assertEquals(PaymentRetrieved::class, node.function!!.invoke(PaymentRetrieval(RetrievePayment()))::class)
 
     }
@@ -89,9 +89,9 @@ class PaymentRetrievalStep0Test {
             execute service {}
         }
 
-        val node = flow.elements.get(0) as FlowDefinition
+        val node = flow.flowElements.get(0) as FlowDefinition
 
-        assertEquals(FlowExecutionType.service, node.executionType)
+        assertEquals(FlowExecutionType.service, node.flowExecutionType)
 
     }
 
@@ -104,11 +104,11 @@ class PaymentRetrievalStep0Test {
             }
         }
 
-        val parentNode = flow.elements.get(0) as FlowDefinition
-        val node = parentNode.elements.get(0)
+        val parentNode = flow.flowElements.get(0) as FlowDefinition
+        val node = parentNode.flowElements.get(0)
         val action = node as FlowActionDefinition
 
-        assertEquals(FlowActionType.Intent, action.type)
+        assertEquals(FlowActionType.Intent, action.flowActionType)
         assertEquals(ChargeCreditCard::class, action.function!!.invoke(PaymentRetrieval(RetrievePayment()))::class)
     }
 
@@ -121,11 +121,11 @@ class PaymentRetrievalStep0Test {
             }
         }
 
-        val parentNode = flow.elements.get(0) as FlowDefinition
-        val node = parentNode.elements.get(0) as FlowMessageReactionDefinition
+        val parentNode = flow.flowElements.get(0) as FlowDefinition
+        val node = parentNode.flowElements.get(0) as FlowMessageReactionDefinition
 
         assertEquals(CreditCardCharged::class, node.payloadType)
-        assertEquals(FlowActionType.Success, node.action.type)
+        assertEquals(FlowActionType.Success, node.flowReactionAction.flowActionType)
     }
 
 
@@ -147,19 +147,19 @@ class PaymentRetrievalStep0Test {
 
         }
 
-        assertEquals(3, flow.elements.size)
-        println(flow.id)
-        flow.elements.forEach {
-            assertEquals(flow, it.parent)
-            println(it.id)
+        assertEquals(3, flow.flowElements.size)
+        println(flow.flowElementId)
+        flow.flowElements.forEach {
+            assertEquals(flow, it.container)
+            println(it.flowElementId)
         }
 
-        val service = flow.elements[1] as FlowDefinition
-        assertEquals(2, service.elements.size)
-        println(service.id)
-        service.elements.forEach {
-            assertEquals(service, it.parent)
-            println(it.id)
+        val service = flow.flowElements[1] as FlowDefinition
+        assertEquals(2, service.flowElements.size)
+        println(service.flowElementId)
+        service.flowElements.forEach {
+            assertEquals(service, it.container)
+            println(it.flowElementId)
         }
 
     }

@@ -12,8 +12,8 @@ import kotlin.reflect.KClass
  * @param flow definition
  * @return instance summarizing the state of a specific flow
  */
-fun <I: FlowInstance> past(history: FlowMessages, flow: FlowExecution<I>): I {
-    val type = flow.asDefinition().instanceType
+fun <I: Aggregate> past(history: FlowMessages, flow: FlowExecution<I>): I {
+    val type = flow.asDefinition().aggregateType
     val constructor = type.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier as KClass<*> == type }
     TODO()
 }
@@ -25,7 +25,7 @@ fun <I: FlowInstance> past(history: FlowMessages, flow: FlowExecution<I>): I {
  * @param trigger coming in and influencing the flow instance
  * @return new messages produced
  */
-fun <I: FlowInstance> present(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessages {
+fun <I: Aggregate> present(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessages {
     TODO()
 }
 
@@ -36,7 +36,7 @@ fun <I: FlowInstance> present(history: FlowMessages, flow: FlowExecution<I>, tri
  * @param trigger coming in and influencing the flow instance
  * @return future matching patternBuilders
  */
-fun <I: FlowInstance> future(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessagePatterns {
+fun <I: Aggregate> future(history: FlowMessages, flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessagePatterns {
     TODO()
 }
 
@@ -46,7 +46,7 @@ fun <I: FlowInstance> future(history: FlowMessages, flow: FlowExecution<I>, trig
  * @param trigger coming in and potentially influencing many flow instances
  * @return matching patternBuilders
  */
-fun <I: FlowInstance> potential(flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessagePatterns {
+fun <I: Aggregate> potential(flow: FlowExecution<I>, trigger: FlowMessagePayload): FlowMessagePatterns {
     TODO()
 }
 
@@ -55,7 +55,7 @@ fun <I: FlowInstance> potential(flow: FlowExecution<I>, trigger: FlowMessagePayl
  * @param patterns
  * @return matching flow instances
  */
-fun <I: FlowInstance> determine(patterns: FlowMessagePatterns): FlowInstanceIds {
+fun <I: Aggregate> determine(patterns: FlowMessagePatterns): AggregateIds {
     TODO()
 }
 
@@ -70,15 +70,15 @@ interface ExecutableFlowDefinition: FlowDefinition {
 interface FlowDefinitions {
 
     fun all(): List<ExecutableFlowDefinition>
-    fun get(id: FlowElementName): ExecutableFlowDefinition
+    fun get(id: FlowElementType): ExecutableFlowDefinition
     // fun add(definition: ExecutableFlowDefinition): List<ExecutableFlowDefinition>
 
 }
 
 interface FlowInstances {
 
-    fun get(id: FlowInstanceId): FlowInstance
-    fun find(pattern: FlowMessagePattern): FlowInstanceIds
+    fun get(id: AggregateId): Aggregate
+    fun find(pattern: FlowMessagePattern): AggregateIds
 
 }
 
@@ -135,7 +135,7 @@ interface FlowMessageCorrelator {
             definition.patterns(message).map {
                 definition.instances.find(it)
             }.flatten().map {
-                Pair(definition.name, it)
+                Pair(definition.flowElementType, it)
             }
 
         }.flatten()
