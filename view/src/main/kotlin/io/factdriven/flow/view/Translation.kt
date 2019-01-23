@@ -26,13 +26,13 @@ fun translate(definition: FlowDefinition): Container {
                 when (element.flowExecutionType) {
                     FlowExecutionType.execution -> {
                         val sequence = Sequence(element.flowElementId, element.flowElementType, parent)
-                        element.flowElements.forEach { translate(it, sequence) }
+                        element.children.forEach { translate(it, sequence) }
                         sequence
                     }
                     else -> {
-                        val type = if (element.flowElements.isEmpty()) BpmnTaskType.service
-                            else if (element.flowElements.first() is FlowReactionImpl<*,*>) BpmnTaskType.receive
-                            else if (element.flowElements.size == 1) BpmnTaskType.send
+                        val type = if (element.children.isEmpty()) BpmnTaskType.service
+                            else if (element.children.first() is FlowReactionImpl<*,*>) BpmnTaskType.receive
+                            else if (element.children.size == 1) BpmnTaskType.send
                             else BpmnTaskType.service
                         BpmnTaskSymbol(
                             element.flowElementId,
@@ -57,7 +57,7 @@ fun translate(definition: FlowDefinition): Container {
     }
 
     val sequence = Sequence(definition.flowElementId, definition.flowElementType)
-    definition.flowElements.forEach { translate(it, sequence) }
+    definition.children.forEach { translate(it, sequence) }
     return sequence
 
 }

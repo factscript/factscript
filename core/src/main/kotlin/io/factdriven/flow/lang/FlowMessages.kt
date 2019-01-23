@@ -61,7 +61,6 @@ data class MessagePattern(
 
 }
 
-
 fun Message.getProperty(propertyName: PropertyName): Any? {
     return javaClass.getDeclaredField(propertyName).let {
         it.isAccessible = true

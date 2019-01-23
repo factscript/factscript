@@ -44,30 +44,30 @@ interface FlowActivities<I: Aggregate> {
 
 }
 
-class FlowExecutionImpl<I: Aggregate>(override val container: FlowDefinition?): FlowDefinition, FlowExecution<I>, FlowActivities<I> {
+class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): FlowDefinition, FlowExecution<I>, FlowActivities<I> {
 
     // Flow Definition
 
     override var flowExecutionType = FlowExecutionType.execution
-    override val flowElements = mutableListOf<FlowElement>()
+    override val children = mutableListOf<FlowElement>()
     override lateinit var aggregateType: KClass<out Aggregate>
 
     override var flowElementType: String = ""
         get() {
             return when (flowExecutionType) {
-                FlowExecutionType.service -> flowElements[0].flowElementType
+                FlowExecutionType.service -> children[0].flowElementType
                 else -> field
             }
         }
 
     val actions: List<FlowAction<I>> get() {
         @Suppress("UNCHECKED_CAST")
-        return flowElements.filter { it is FlowAction<*> } as List<FlowAction<I>>
+        return children.filter { it is FlowAction<*> } as List<FlowAction<I>>
     }
 
     val reactions: List<FlowReaction<I, *>> get() {
         @Suppress("UNCHECKED_CAST")
-        return flowElements.filter { it is FlowReaction<*, *> } as List<FlowReaction<I, *>>
+        return children.filter { it is FlowReaction<*, *> } as List<FlowReaction<I, *>>
     }
 
     // Basic Flow Execution<
@@ -79,14 +79,14 @@ class FlowExecutionImpl<I: Aggregate>(override val container: FlowDefinition?): 
     override val create: FlowAction<I>
         get() {
             val node = FlowActionImpl<I>(this)
-            flowElements.add(node)
+            children.add(node)
             return node
         }
 
     override val execute: FlowActivities<I>
         get() {
         val node = FlowExecutionImpl<I>(this)
-        flowElements.add(node)
+        children.add(node)
         return node
     }
 
@@ -141,7 +141,7 @@ class FlowExecutionImpl<I: Aggregate>(override val container: FlowDefinition?): 
 
 data class FlowReactionAction<M: Message>(
 
-    override val container: FlowDefinition,
+    override val parent: FlowDefinition,
     override val flowActionType: FlowActionType = FlowActionType.Success,
     override val flowElementType: String = ""
 

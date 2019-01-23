@@ -56,4 +56,25 @@ class FlowDefinitionTest {
 
     }
 
+    @Test
+    fun testElementIds () {
+
+        assertEquals("PaymentRetrieval", flow.flowElementId)
+        assertEquals("PaymentRetrieval-RetrievePayment", flow.children[0].flowElementId)
+        assertEquals("PaymentRetrieval-ChargeCreditCard", flow.children[1].flowElementId)
+        assertEquals("PaymentRetrieval-ChargeCreditCard-ChargeCreditCard", (flow.children[1] as FlowDefinition).children[0].flowElementId)
+        assertEquals("PaymentRetrieval-ChargeCreditCard-CreditCardCharged", (flow.children[1] as FlowDefinition).children[1].flowElementId)
+        assertEquals("PaymentRetrieval-PaymentRetrieved", flow.children[2].flowElementId)
+
+    }
+
+    @Test
+    fun testDescendants() {
+
+        val descendants = flow.descendants
+
+        assertEquals(5, descendants.size)
+
+    }
+
 }

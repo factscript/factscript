@@ -35,7 +35,7 @@ interface FlowAction<I: Aggregate> : ClassifiedFlowAction<I> {
 
 }
 
-open class FlowActionImpl<I: Aggregate>(override val container: FlowDefinition): ClassifiedFlowAction<I>, FlowAction<I>, FlowActionDefinition {
+open class FlowActionImpl<I: Aggregate>(override val parent: FlowDefinition): ClassifiedFlowAction<I>, FlowAction<I>, FlowActionDefinition {
 
     // Flow Action Definition
 

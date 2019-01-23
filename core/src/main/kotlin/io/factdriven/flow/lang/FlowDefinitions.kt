@@ -16,16 +16,16 @@ typealias FlowElementId = String
 interface FlowElement {
 
     val flowElementId: FlowElementId
-        get() = (container?.flowElementId ?: "") + (if (container != null) "-" else "") + flowElementType
+        get() = (parent?.flowElementId ?: "") + (if (parent != null) "-" else "") + flowElementType
 
     val flowElementType: FlowElementType
-    val container: FlowDefinition?
+    val parent: FlowDefinition?
 
 }
 
 interface FlowDefinition: FlowElement {
 
-    val flowElements: MutableList<FlowElement>
+    val children: List<FlowElement>
     val flowExecutionType: FlowExecutionType
     val aggregateType: AggregateType
 
@@ -33,14 +33,29 @@ interface FlowDefinition: FlowElement {
 
         val patterns = mutableSetOf<MessagePattern>()
 
-        flowElements.forEach { element ->
-            when(element) {
-                is FlowMessageReactionDefinition -> if (element.type.isInstance(message)) patterns.add(element.pattern(message))
-                is FlowDefinition -> patterns.addAll(element.patterns(message))
+        children.forEach { child ->
+            when(child) {
+                is FlowMessageReactionDefinition -> if (child.type.isInstance(message)) patterns.add(child.pattern(message))
+                is FlowDefinition -> patterns.addAll(child.patterns(message))
             }
         }
 
         return patterns
+
+    }
+
+    val descendants: List<FlowElement> get() {
+
+        val descendants = mutableListOf<FlowElement>()
+
+        children.forEach { child ->
+            descendants.add(child)
+            if (child is FlowDefinition) {
+                descendants.addAll(child.descendants)
+            }
+        }
+
+        return descendants
 
     }
 
