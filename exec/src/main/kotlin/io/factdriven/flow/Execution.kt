@@ -14,7 +14,7 @@ import kotlin.reflect.full.memberFunctions
  * @param flow definition
  * @return instance summarizing the state of a specific flow or null if history is empty
  */
-fun <I: Aggregate> past(history: Messages, flow: FlowExecution<I>): I? {
+fun <I: Aggregate> past(history: Messages, aggregateType: KClass<I>): I? {
 
     fun <I: Aggregate> past(history: Messages, aggregate: I): I? {
         if (!history.isEmpty()) {
@@ -29,8 +29,7 @@ fun <I: Aggregate> past(history: Messages, flow: FlowExecution<I>): I? {
 
     if (!history.isEmpty()) {
         val message = history.first()
-        val constructor = flow.asDefinition()
-            .aggregateType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier as KClass<*> == message::class }
+        val constructor = aggregateType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier as KClass<*> == message::class }
         return if (constructor != null) {
             past(history.subList(1, history.size), constructor.call(message) as I)
         } else throw IllegalArgumentException()

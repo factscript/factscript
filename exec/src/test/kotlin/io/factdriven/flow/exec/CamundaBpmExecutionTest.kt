@@ -2,12 +2,14 @@ package io.factdriven.flow.exec
 
 import io.factdriven.flow.define
 import io.factdriven.flow.lang.*
+import io.factdriven.flow.past
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
 import org.camunda.bpm.engine.delegate.JavaDelegate
 import org.camunda.bpm.engine.impl.event.EventType
+import org.camunda.bpm.engine.impl.util.JsonUtil
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.model.bpmn.Bpmn
@@ -24,40 +26,50 @@ class CamundaBpmExecutionTest {
 
     private val paymentRetrieval = define <PaymentRetrieval> {
 
-        on message (RetrievePayment::class) create acceptance ("PaymentRetrievalAccepted") by {
+        on message RetrievePayment::class create acceptance("PaymentRetrievalAccepted") by {
             PaymentRetrievalAccepted(paymentId = it.id)
         }
 
         execute service {
-            create intent ("ChargeCreditCard") by { ChargeCreditCard() }
+            create intent("ChargeCreditCard") by { ChargeCreditCard(reference = paymentId, payment = uncovered) }
             on message CreditCardCharged::class having "reference" match { paymentId } create success("CreditCardCharged")
         }
 
-        create success ("PaymentRetrieved") by { PaymentRetrieved() }
+        create success("PaymentRetrieved") by {
+            PaymentRetrieved(paymentId = paymentId, payment = uncovered)
+        }
 
     }
-
-    private val incoming = listOf(
-        RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F),
-        CreditCardCharged(reference = "anId")
-    ).map{ it::class to it }.toMap()
-
-    private val messages = mutableListOf<Message>()
 
     @Test
     fun testPaymentRetrieval() {
 
+        assertEquals(0, messages.size)
         assertNull(processInstance())
 
-        correlate(incoming[RetrievePayment::class])
+        correlate(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F))
 
+        assertEquals(3, messages.size)
+        assertEquals(RetrievePayment::class, messages[0]::class)
+        assertEquals(PaymentRetrievalAccepted::class, messages[1]::class)
+        assertEquals(ChargeCreditCard::class, messages[2]::class)
         assertNotNull(processInstance())
 
-        correlate(incoming[CreditCardCharged::class])
+        correlate(CreditCardCharged(reference = "anId"))
 
+        assertEquals(5, messages.size)
+        assertEquals(CreditCardCharged::class, messages[3]::class)
+        assertEquals(PaymentRetrieved::class, messages[4]::class)
         assertNull(processInstance())
 
+        val paymentRetrieval = past(messages, PaymentRetrieval::class)!!
+
+        assertEquals(3F, paymentRetrieval.covered)
+        assertEquals(0F, paymentRetrieval.uncovered)
+
     }
+
+    private val messages = mutableListOf<Message>()
 
     private fun processInstance(): ProcessInstance? {
         return engine.runtimeService.createProcessInstanceQuery().singleResult()
@@ -68,12 +80,14 @@ class CamundaBpmExecutionTest {
         val externalTasks = engine.externalTaskService.fetchAndLock(Int.MAX_VALUE, hash).topic(hash, Long.MAX_VALUE).execute()
         if (externalTasks != null && !externalTasks.isEmpty()) {
             externalTasks.forEach {
+                messages.add(message) // TODO save in process instance
                 engine.externalTaskService.complete(it.id, hash)
             }
         } else {
             val subscriptions = engine.runtimeService.createEventSubscriptionQuery().eventType(EventType.MESSAGE.name()).eventName(hash).list()
             if (subscriptions != null && ! subscriptions.isEmpty()) {
                 subscriptions.forEach {
+                    messages.add(message) // TODO save in process instance
                     val correlationBuilder = engine.runtimeService.createMessageCorrelation(hash)
                     if (it.processInstanceId != null)
                         correlationBuilder.processInstanceId(it.processInstanceId)
@@ -132,15 +146,38 @@ class CamundaBpmExecutionTest {
             println("Enter ${it.currentActivityId}")
             val element = paymentRetrieval.descendantMap[it.currentActivityId]
             when (element) {
+                is FlowActionDefinition -> {
+                    val action = element.function
+                    if (action != null) {
+                        val aggregate = past(messages, PaymentRetrieval::class)
+                        messages.add(action.invoke(aggregate!!))
+                    }
+                }
                 is FlowMessageReactionDefinition -> {
-                    val message = element.expected(null) // TODO properly reconstruct aggregate
+                    val child = element.flowReactionAction // TODO properly retrieve intent creator
+                    val action = child.function
+                    if (action != null) {
+                        val aggregate = past(messages, PaymentRetrieval::class)
+                        messages.add(action.invoke(aggregate!!, messages.last()))
+                    }
+                    val aggregate = past(messages, PaymentRetrieval::class)
+                    val message = element.expected(aggregate)
                     it.setVariable("message", message.hash)
                     println("Message: ${message.hash}")
                 }
                 is FlowDefinition -> {
-                    val listener = element.children.last() // TODO properly retrieve success listener
-                    if (listener is FlowMessageReactionDefinition) {
-                        val message = listener.expected(PaymentRetrieval(incoming[RetrievePayment::class] as RetrievePayment)) // TODO properly reconstruct aggregate
+                    val createIntentElement = element.children.first() // TODO properly retrieve intent creator
+                    if (createIntentElement is FlowActionDefinition) {
+                        val action = createIntentElement.function
+                        if (action != null) {
+                            val aggregate = past(messages, PaymentRetrieval::class)
+                            messages.add(action.invoke(aggregate!!))
+                        }
+                    }
+                    val createSuccessElement = element.children.last() // TODO properly retrieve success listener
+                    if (createSuccessElement is FlowMessageReactionDefinition) {
+                        val aggregate = past(messages, PaymentRetrieval::class)
+                        val message = createSuccessElement.expected(aggregate)
                         it.setVariable("message", message.hash)
                         println("Message: ${message.hash}")
                     }
@@ -170,17 +207,17 @@ class PaymentRetrieval(init: RetrievePayment) {
 
 }
 
-class RetrievePayment(val id: String, val accountId: String, val payment: Float)
-class NotifyCustomer(val id: String? = null, val accountId: String? = null, val payment: Float? = null)
-class CustomerNotified(val id: String, val accountId: String, val payment: Float)
-class PaymentRetrievalAccepted(val paymentId: String? = null)
-class PaymentRetrieved(val paymentId: String? = null, val payment: Float? = null)
-class PaymentFailed(val paymentId: String)
-class PaymentCoveredManually(val paymentId: String, val payment: Float? = null)
-class ChargeCreditCard(val reference: String? = null, val payment: Float? = null)
-class CreditCardCharged(val reference: String)
-class CreditCardExpired(val reference: String)
-class CreditCardDetailsUpdated(val reference: String)
-class WithdrawAmount(val reference: String, val payment: Float)
-class CreditAmount(val reference: String)
-class AmountWithdrawn(val reference: String)
+data class RetrievePayment(val id: String, val accountId: String, val payment: Float)
+data class NotifyCustomer(val id: String? = null, val accountId: String? = null, val payment: Float? = null)
+data class CustomerNotified(val id: String, val accountId: String, val payment: Float)
+data class PaymentRetrievalAccepted(val paymentId: String? = null)
+data class PaymentRetrieved(val paymentId: String? = null, val payment: Float? = null)
+data class PaymentFailed(val paymentId: String)
+data class PaymentCoveredManually(val paymentId: String, val payment: Float? = null)
+data class ChargeCreditCard(val reference: String? = null, val payment: Float? = null)
+data class CreditCardCharged(val reference: String)
+data class CreditCardExpired(val reference: String)
+data class CreditCardDetailsUpdated(val reference: String)
+data class WithdrawAmount(val reference: String, val payment: Float)
+data class CreditAmount(val reference: String)
+data class AmountWithdrawn(val reference: String)

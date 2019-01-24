@@ -17,7 +17,7 @@ class ExecutionPastTest {
     fun testPastWithEmptyMessages() {
 
         val messages = emptyList<Message>()
-        val aggregate = past(messages, flow)
+        val aggregate = past(messages, PaymentRetrieval::class)
 
         assertNull(aggregate)
 
@@ -29,7 +29,7 @@ class ExecutionPastTest {
         val messages = listOf(
             RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F)
         )
-        val aggregate = past(messages, flow)
+        val aggregate = past(messages, PaymentRetrieval::class)
 
         assertEquals("anId", aggregate!!.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
@@ -45,7 +45,7 @@ class ExecutionPastTest {
             RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F),
             PaymentRetrieved()
         )
-        val aggregate = past(messages, flow)
+        val aggregate = past(messages, PaymentRetrieval::class)
 
         assertEquals("anId", aggregate!!.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
@@ -62,7 +62,7 @@ class ExecutionPastTest {
             PaymentRetrieved(payment = 1F),
             PaymentRetrieved(payment = 1F)
         )
-        val aggregate = past(messages, flow)
+        val aggregate = past(messages, PaymentRetrieval::class)
 
         assertEquals("anId", aggregate!!.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
