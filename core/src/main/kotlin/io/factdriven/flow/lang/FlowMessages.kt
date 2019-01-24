@@ -9,7 +9,8 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 typealias Message = Any
-typealias MessageType = KClass<out Message>
+typealias MessageName = String
+typealias MessageClass = KClass<out Message>
 typealias MessageId = String
 typealias MessageTarget = Pair<AggregateType, AggregateId>
 
@@ -32,16 +33,19 @@ data class MessageContainer(
 }
 
 data class MessagePattern(
-
-    val type: MessageType,
+    val name: MessageName,
     val properties: Map<PropertyName, PropertyValue> = emptyMap()
-
 ) {
+
+    constructor(
+        type: MessageClass,
+        properties: Map<PropertyName, PropertyValue> = emptyMap()
+    ): this(type.simpleName!!, properties) // TODO simple name is just fallback
 
     val hash: String
 
     init {
-        val buffer = StringBuffer(type.simpleName) // TODO simple name is just fallback
+        val buffer = StringBuffer(name)
         properties.toSortedMap().forEach {
             buffer.append("|").append(it.key).append("=").append(it.value)
         }

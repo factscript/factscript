@@ -3,6 +3,7 @@ package io.factdriven.flow.exec
 import io.factdriven.flow.execute
 import io.factdriven.flow.lang.FlowExecution
 import io.factdriven.flow.lang.Message
+import io.factdriven.flow.lang.MessagePattern
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
 import org.camunda.bpm.engine.ProcessEngineConfiguration
@@ -57,11 +58,13 @@ class CamundaBpmExecutionTest {
 
         Assertions.assertEquals("PaymentRetrieval", processDefinition.key)
 
-        Mocks.register("flow", JavaDelegate {
+        Mocks.register("create", JavaDelegate {
             println(it.eventName + ":" + it.currentActivityId)
         })
 
-        engine.runtimeService.correlateMessage("RetrievePayment")
+        Mocks.register("message", "message")
+
+        engine.runtimeService.correlateMessage(MessagePattern("RetrievePayment").hash)
 
         val processInstance = engine.runtimeService.createProcessInstanceQuery().singleResult()
 

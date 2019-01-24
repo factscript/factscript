@@ -1,5 +1,6 @@
 package io.factdriven.flow.view
 
+import io.factdriven.flow.lang.MessagePattern
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
@@ -75,7 +76,7 @@ class BpmnEventSymbol(id: String, name: String, parent: Container, val eventType
         }
     }
 
-    private fun position(): BpmnEventPosition {
+    fun position(): BpmnEventPosition {
         return if (incoming.isEmpty()) {
             BpmnEventPosition.start
         } else if (outgoing.isEmpty()) {
@@ -142,14 +143,14 @@ fun transform(container: Container): BpmnModelInstance {
 
                         val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
                         val executionListener = extensionElements.addExtensionElement(CamundaExecutionListener::class.java)
-                        executionListener.camundaDelegateExpression = "#{flow}"
+                        executionListener.camundaDelegateExpression = "#{create}"
                         modelElementInstance.addChildElement(extensionElements)
 
                         if (symbol.characteristic == BpmnEventCharacteristic.catching) {
 
                             val message = modelInstance.newInstance(Message::class.java)
                             message.setAttributeValue("id", symbol.name)
-                            message.setAttributeValue("name", symbol.name) // TODO hash of expected message pattern
+                            message.setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(symbol.name).hash else "#{message}")
                             definitions.addChildElement(message)
                             messageEventDefinition.message = message
 
@@ -178,7 +179,7 @@ fun transform(container: Container): BpmnModelInstance {
                     BpmnTaskType.send -> {
 
                         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-                            camundaDelegateExpression = "#{flow}"
+                            camundaDelegateExpression = "#{create}"
                             camundaEvent = "start"
                         }
 
@@ -189,13 +190,13 @@ fun transform(container: Container): BpmnModelInstance {
                         // TODO just one message per hash of expected message pattern
                         with(modelInstance.newInstance(Message::class.java)) {
                             setAttributeValue("id", symbol.name)
-                            setAttributeValue("name", symbol.name) // TODO hash of expected message pattern
+                            setAttributeValue("name", "#{message}")
                             definitions.addChildElement(this)
                             (modelElementInstance as ReceiveTask).message = this
                         }
 
                         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-                            camundaDelegateExpression = "#{flow}"
+                            camundaDelegateExpression = "#{create}"
                             camundaEvent = "end"
                         }
 
@@ -204,15 +205,15 @@ fun transform(container: Container): BpmnModelInstance {
                     BpmnTaskType.service -> {
 
                         (modelElementInstance as ServiceTask).camundaType = "external"
-                        modelElementInstance.camundaTopic = symbol.name
+                        modelElementInstance.camundaTopic = "#{message}"
 
                         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-                            camundaDelegateExpression = "#{flow}"
+                            camundaDelegateExpression = "#{create}"
                             camundaEvent = "start"
                         }
 
                         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-                            camundaDelegateExpression = "#{flow}"
+                            camundaDelegateExpression = "#{create}"
                             camundaEvent = "end"
                         }
 
