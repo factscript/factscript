@@ -1,17 +1,18 @@
 package io.factdriven.flow.exec
 
-import io.factdriven.flow.execute
-import io.factdriven.flow.lang.FlowExecution
-import io.factdriven.flow.lang.Message
-import io.factdriven.flow.lang.MessagePattern
+import io.factdriven.flow.define
+import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
+import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
 import org.camunda.bpm.engine.delegate.JavaDelegate
+import org.camunda.bpm.engine.impl.event.EventType
+import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -21,59 +22,94 @@ import java.io.File
  */
 class CamundaBpmExecutionTest {
 
-    val configuration = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
-    val engine = configuration.buildProcessEngine()
+    private val paymentRetrieval = define <PaymentRetrieval> {
 
-    @Test
-    fun testPaymentRetrievalVersion1() {
-
-        val flow = execute <PaymentRetrieval> {
-
-            on message (RetrievePayment::class) create acceptance ("PaymentRetrievalAccepted") by {
-                PaymentRetrievalAccepted(paymentId = it.id)
-            }
-
-            execute service {
-                create intent ("ChargeCreditCard") by { ChargeCreditCard() }
-                on message CreditCardCharged::class create success("CreditCardCharged")
-            }
-
-            create success ("PaymentRetrieved") by { PaymentRetrieved() }
-
+        on message (RetrievePayment::class) create acceptance ("PaymentRetrievalAccepted") by {
+            PaymentRetrievalAccepted(paymentId = it.id)
         }
 
-        val bpmn = bpmn(flow)
+        execute service {
+            create intent ("ChargeCreditCard") by { ChargeCreditCard() }
+            on message CreditCardCharged::class having "reference" match { paymentId } create success("CreditCardCharged")
+        }
+
+        create success ("PaymentRetrieved") by { PaymentRetrieved() }
+
+    }
+
+    private val incoming = listOf(
+        RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F),
+        CreditCardCharged(reference = "anId")
+    ).map{ it::class to it }.toMap()
+
+    private val messages = mutableListOf<Message>()
+
+    @Test
+    fun testPaymentRetrieval() {
+
+        assertNull(processInstance())
+
+        correlate(incoming[RetrievePayment::class])
+
+        assertNotNull(processInstance())
+
+        correlate(incoming[CreditCardCharged::class])
+
+        assertNull(processInstance())
+
+    }
+
+    private fun processInstance(): ProcessInstance? {
+        return engine.runtimeService.createProcessInstanceQuery().singleResult()
+    }
+
+    private fun correlate(message: Message?) {
+        val hash = paymentRetrieval.patterns(message!!).iterator().next().hash
+        val externalTasks = engine.externalTaskService.fetchAndLock(Int.MAX_VALUE, hash).topic(hash, Long.MAX_VALUE).execute()
+        if (externalTasks != null && !externalTasks.isEmpty()) {
+            externalTasks.forEach {
+                engine.externalTaskService.complete(it.id, hash)
+            }
+        } else {
+            val subscriptions = engine.runtimeService.createEventSubscriptionQuery().eventType(EventType.MESSAGE.name()).eventName(hash).list()
+            if (subscriptions != null && ! subscriptions.isEmpty()) {
+                subscriptions.forEach {
+                    val correlationBuilder = engine.runtimeService.createMessageCorrelation(hash)
+                    if (it.processInstanceId != null)
+                        correlationBuilder.processInstanceId(it.processInstanceId)
+                    correlationBuilder.correlate()
+                }
+            }
+        }
+    }
+
+
+    private val engine = engine()
+
+    init {
+
+        val bpmn = bpmn(paymentRetrieval)
 
         open(bpmn)
 
         val deployment = engine.repositoryService
             .createDeployment()
-            .addModelInstance("${flow.flowElementType}.bpmn", bpmn)
-            .name(flow.flowElementType)
+            .addModelInstance("${paymentRetrieval.flowElementType}.bpmn", bpmn)
+            .name(paymentRetrieval.flowElementType)
             .deploy()
 
-        Assertions.assertEquals(flow.flowElementType, deployment.name)
+        assertEquals(paymentRetrieval.flowElementType, deployment.name)
 
         val processDefinition = engine.repositoryService.createProcessDefinitionQuery().singleResult()
 
-        Assertions.assertEquals("PaymentRetrieval", processDefinition.key)
+        assertEquals(paymentRetrieval.flowElementType, processDefinition.key)
 
-        Mocks.register("create", JavaDelegate {
-            println(it.eventName + ":" + it.currentActivityId)
-        })
-
-        Mocks.register("message", "message")
-
-        engine.runtimeService.correlateMessage(MessagePattern("RetrievePayment").hash)
-
-        val processInstance = engine.runtimeService.createProcessInstanceQuery().singleResult()
-
-        Assertions.assertNotNull(processInstance)
+        mock()
 
     }
 
-    fun correlate(message: Message) {
-
+    private fun engine(): ProcessEngine {
+        return ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration().buildProcessEngine()
     }
 
     fun open(bpmnModelInstance: BpmnModelInstance) {
@@ -83,11 +119,39 @@ class CamundaBpmExecutionTest {
             Runtime.getRuntime().exec("open " + file.absoluteFile);
     }
 
-    fun bpmn(flow: FlowExecution<*>): BpmnModelInstance {
+    fun bpmn(flow: FlowDefinition): BpmnModelInstance {
         val container = translate(flow)
         val bpmnModelInstance = transform(container)
         Bpmn.validateModel(bpmnModelInstance);
         return bpmnModelInstance
+    }
+
+    fun mock() {
+
+        Mocks.register("enter", JavaDelegate {
+            println("Enter ${it.currentActivityId}")
+            val element = paymentRetrieval.descendantMap[it.currentActivityId]
+            when (element) {
+                is FlowMessageReactionDefinition -> {
+                    val message = element.expected(null) // TODO properly reconstruct aggregate
+                    it.setVariable("message", message.hash)
+                    println("Message: ${message.hash}")
+                }
+                is FlowDefinition -> {
+                    val listener = element.children.last() // TODO properly retrieve success listener
+                    if (listener is FlowMessageReactionDefinition) {
+                        val message = listener.expected(PaymentRetrieval(incoming[RetrievePayment::class] as RetrievePayment)) // TODO properly reconstruct aggregate
+                        it.setVariable("message", message.hash)
+                        println("Message: ${message.hash}")
+                    }
+                }
+            }
+        })
+
+        Mocks.register("leave", JavaDelegate {
+            println("Leave ${it.currentActivityId}")
+        })
+
     }
 
 }

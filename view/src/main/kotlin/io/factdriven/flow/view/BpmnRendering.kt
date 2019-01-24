@@ -128,6 +128,19 @@ fun transform(container: Container): BpmnModelInstance {
 
         modelElementInstance.setAttributeValue("id", symbol.id, false)
 
+        val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
+        modelElementInstance.addChildElement(extensionElements)
+
+        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
+            camundaDelegateExpression = "#{enter}"
+            camundaEvent = "start"
+        }
+
+        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
+            camundaDelegateExpression = "#{leave}"
+            camundaEvent = "end"
+        }
+
         when (symbol) {
 
             is BpmnEventSymbol -> {
@@ -141,11 +154,6 @@ fun transform(container: Container): BpmnModelInstance {
                         val messageEventDefinition = modelInstance.newInstance(MessageEventDefinition::class.java)
                         modelElementInstance.addChildElement(messageEventDefinition)
 
-                        val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
-                        val executionListener = extensionElements.addExtensionElement(CamundaExecutionListener::class.java)
-                        executionListener.camundaDelegateExpression = "#{create}"
-                        modelElementInstance.addChildElement(extensionElements)
-
                         if (symbol.characteristic == BpmnEventCharacteristic.catching) {
 
                             val message = modelInstance.newInstance(Message::class.java)
@@ -153,12 +161,6 @@ fun transform(container: Container): BpmnModelInstance {
                             message.setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(symbol.name).hash else "#{message}")
                             definitions.addChildElement(message)
                             messageEventDefinition.message = message
-
-                            executionListener.camundaEvent = "end"
-
-                        } else {
-
-                            executionListener.camundaEvent = "start"
 
                         }
 
@@ -171,33 +173,15 @@ fun transform(container: Container): BpmnModelInstance {
 
                 modelElementInstance.setAttributeValue("name", symbol.name.sentenceCase(), false)
 
-                val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
-                modelElementInstance.addChildElement(extensionElements)
-
                 when (symbol.taskType) {
-
-                    BpmnTaskType.send -> {
-
-                        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-                            camundaDelegateExpression = "#{create}"
-                            camundaEvent = "start"
-                        }
-
-                    }
 
                     BpmnTaskType.receive -> {
 
-                        // TODO just one message per hash of expected message pattern
                         with(modelInstance.newInstance(Message::class.java)) {
                             setAttributeValue("id", symbol.name)
                             setAttributeValue("name", "#{message}")
                             definitions.addChildElement(this)
                             (modelElementInstance as ReceiveTask).message = this
-                        }
-
-                        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-                            camundaDelegateExpression = "#{create}"
-                            camundaEvent = "end"
                         }
 
                     }
@@ -206,16 +190,6 @@ fun transform(container: Container): BpmnModelInstance {
 
                         (modelElementInstance as ServiceTask).camundaType = "external"
                         modelElementInstance.camundaTopic = "#{message}"
-
-                        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-                            camundaDelegateExpression = "#{create}"
-                            camundaEvent = "start"
-                        }
-
-                        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-                            camundaDelegateExpression = "#{create}"
-                            camundaEvent = "end"
-                        }
 
                     }
 
