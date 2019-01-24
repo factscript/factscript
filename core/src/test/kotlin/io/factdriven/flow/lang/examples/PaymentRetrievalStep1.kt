@@ -8,17 +8,13 @@ import io.factdriven.flow.lang.*
  */
 val flow1 = execute <PaymentRetrieval> ("PaymentRetrieval") {
 
-    on message RetrievePayment::class execute {
-
-        create acceptance("Payment retrieval accepted") by {
-            // PaymentRetrievalAccepted(paymentId = it.id)
-        }
-
+    on message RetrievePayment::class create acceptance(PaymentRetrievalAccepted::class) by {
+        PaymentRetrievalAccepted(paymentId = "paymentId")
     }
 
     execute service {
 
-        create intent "Charge credit card" by {
+        create intent ChargeCreditCard::class by {
             ChargeCreditCard(
                 reference = paymentId,
                 payment = uncovered
@@ -29,7 +25,7 @@ val flow1 = execute <PaymentRetrieval> ("PaymentRetrieval") {
 
     }
 
-    create success ("Payment retrieved") by {
+    create success (PaymentRetrieved::class) by {
         PaymentRetrieved(paymentId)
     }
 

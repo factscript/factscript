@@ -11,16 +11,16 @@ class FlowDefinitionTest {
 
     private val flow = define <PaymentRetrieval> {
 
-        on message (RetrievePayment::class) create acceptance("PaymentRetrievalAccepted") by { PaymentRetrievalAccepted() }
+        on message (RetrievePayment::class) create acceptance(PaymentRetrievalAccepted::class) by { PaymentRetrievalAccepted() }
 
         execute service {
 
-            create intent "ChargeCreditCard" by { ChargeCreditCard() }
+            create intent ChargeCreditCard::class by { ChargeCreditCard() }
             on message (CreditCardCharged::class) having "reference" match { paymentId }
 
         }
 
-        create success "PaymentRetrieved" by { PaymentRetrieved() }
+        create success PaymentRetrieved::class by { PaymentRetrieved() }
 
     }
 

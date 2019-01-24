@@ -26,16 +26,16 @@ class CamundaBpmExecutionTest {
 
     private val paymentRetrieval = define <PaymentRetrieval> {
 
-        on message RetrievePayment::class create acceptance("PaymentRetrievalAccepted") by {
+        on message(RetrievePayment::class) create acceptance(PaymentRetrievalAccepted::class) by {
             PaymentRetrievalAccepted(paymentId = it.id)
         }
 
         execute service {
-            create intent("ChargeCreditCard") by { ChargeCreditCard(reference = paymentId, payment = uncovered) }
-            on message CreditCardCharged::class having "reference" match { paymentId } create success("CreditCardCharged")
+            create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, payment = uncovered) }
+            on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
         }
 
-        create success("PaymentRetrieved") by {
+        create success(PaymentRetrieved::class) by {
             PaymentRetrieved(paymentId = paymentId, payment = uncovered)
         }
 

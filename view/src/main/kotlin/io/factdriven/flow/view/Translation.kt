@@ -31,7 +31,7 @@ fun translate(definition: FlowDefinition): Container {
                     }
                     else -> {
                         val type = if (element.children.isEmpty()) BpmnTaskType.service
-                            else if (element.children.first() is FlowReactionImpl<*,*>) BpmnTaskType.receive
+                            else if (element.children.first() is FlowReactionImpl<*,*,*>) BpmnTaskType.receive
                             else if (element.children.size == 1) BpmnTaskType.send
                             else BpmnTaskType.service
                         BpmnTaskSymbol(

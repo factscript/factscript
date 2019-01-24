@@ -16,26 +16,26 @@ class BpmnRenderingIntegrationTest {
 
             val process = execute <PaymentRetrieval> {
 
-                on message (RetrievePayment::class) create acceptance ("RetrievePayment") by {
+                on message (RetrievePayment::class) create acceptance (PaymentRetrievalAccepted::class) by {
                     PaymentRetrievalAccepted(paymentId = it.id)
                 }
 
                 execute service {
-                    create intent ("ChargeCreditCard") by { ChargeCreditCard() }
-                    on message CreditCardCharged::class create success("CreditCardCharged")
+                    create intent (ChargeCreditCard::class) by { ChargeCreditCard() }
+                    on message CreditCardCharged::class create success()
                 }
 
                 create progress ("PaymentCovered")
 
                 execute service {
-                    create intent ("NotifyCustomer") by { NotifyCustomer() }
+                    create intent (NotifyCustomer::class) by { NotifyCustomer() }
                 }
 
                 execute service {
-                    on message (CustomerNotified::class) create success("CustomerNotificationConfirmed")
+                    on message (CustomerNotified::class) create success()
                 }
 
-                create success ("PaymentRetrieved") by { PaymentRetrieved() }
+                create success (PaymentRetrieved::class) by { PaymentRetrieved() }
 
             }
 

@@ -75,7 +75,7 @@ interface FlowActionDefinition: FlowElement {
 interface FlowReactionActionDefinition: FlowElement {
 
     val flowActionType: FlowActionType
-    val function: (Aggregate.(Any) -> Message)?
+    val function: (Aggregate.(Message) -> Message)?
 
 }
 

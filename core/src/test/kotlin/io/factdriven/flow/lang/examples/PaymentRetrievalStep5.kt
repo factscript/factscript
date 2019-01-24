@@ -7,11 +7,11 @@ import io.factdriven.flow.lang.*
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 val flow5 = execute<PaymentRetrieval> {
-    on message RetrievePayment::class create acceptance("Payment retrieval accepted") by {
+    on message RetrievePayment::class create acceptance(PaymentRetrievalAccepted::class) by {
         PaymentRetrievalAccepted(paymentId = it.accountId)
     }
     execute service {
-        create intent "Withdraw amount" by {
+        create intent WithdrawAmount::class by {
             WithdrawAmount(
                 reference = paymentId,
                 payment = uncovered
@@ -19,7 +19,7 @@ val flow5 = execute<PaymentRetrieval> {
         }
         on message AmountWithdrawn::class having "reference" match { paymentId } create success("Amount withdrawn")
         on compensation service {
-            create intent "Credit amount" by {
+            create intent CreditAmount::class by {
                 CreditAmount(reference = paymentId)
             }
         }
@@ -27,7 +27,7 @@ val flow5 = execute<PaymentRetrieval> {
     select one {
         topic("Payment covered?")
         given("No") { uncovered!! > 0 } execute service {
-            create intent "Charge credit card" by {
+            create intent ChargeCreditCard::class by {
                 ChargeCreditCard(
                     reference = paymentId,
                     payment = uncovered
@@ -37,14 +37,14 @@ val flow5 = execute<PaymentRetrieval> {
             on message CreditCardExpired::class having "reference" match { paymentId } execute mitigation {
                 execute service {
                     on message CreditCardDetailsUpdated::class having "reference" match { accountId } create fix("")
-                    on timeout "P14D" create failure("") by {
+                    on timeout "P14D" create failure(PaymentFailed::class) by {
                         PaymentFailed(paymentId)
                     }
                 }
             }
         }
     }
-    create success ("Payment retrieved") by {
+    create success (PaymentRetrieved::class) by {
         PaymentRetrieved(paymentId)
     }
 }

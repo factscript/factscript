@@ -72,7 +72,7 @@ class PaymentRetrievalStep0Test {
     fun createSuccessWithAction() {
 
         val flow = define <PaymentRetrieval> {
-            create success "PaymentRetrieved" by { PaymentRetrieved() }
+            create success (PaymentRetrieved::class) by { PaymentRetrieved() }
         }
 
         val node = flow.children.get(0) as FlowActionDefinition
@@ -100,7 +100,7 @@ class PaymentRetrievalStep0Test {
 
         val flow = define <PaymentRetrieval> {
             execute service {
-                create intent "ChargeCreditCard" by { ChargeCreditCard() }
+                create intent ChargeCreditCard::class by { ChargeCreditCard() }
             }
         }
 
@@ -134,16 +134,16 @@ class PaymentRetrievalStep0Test {
 
         val flow = define <PaymentRetrieval> {
 
-            on message (RetrievePayment::class) create acceptance("PaymentRetrievalAccepted") by { PaymentRetrievalAccepted() }
+            on message (RetrievePayment::class) create acceptance(PaymentRetrievalAccepted::class) by { PaymentRetrievalAccepted() }
 
             execute service {
 
-                create intent "ChargeCreditCard" by { ChargeCreditCard() }
+                create intent ChargeCreditCard::class by { ChargeCreditCard() }
                 on message (CreditCardCharged::class) having "reference" match { paymentId }
 
             }
 
-            create success "PaymentRetrieved" by { PaymentRetrieved() }
+            create success PaymentRetrieved::class by { PaymentRetrieved() }
 
         }
 

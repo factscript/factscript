@@ -22,12 +22,19 @@ interface FlowExecution<I : Aggregate>: FlowElement, FlowActivities<I> {
     val execute: FlowActivities<I>
     val select: FlowSelections<I>
 
-    fun <M: Message> intent(name: String): FlowReactionAction<M>
-    fun <M: Message> acceptance(name: String): FlowReactionAction<M>
-    fun <M: Message> progress(name: String): FlowReactionAction<M>
-    fun <M: Message> success(name: String): FlowReactionAction<M>
-    fun <M: Message> fix(name: String): FlowReactionAction<M>
-    fun <M: Message> failure(name: String): FlowReactionAction<M>
+    fun intent(name: String? = null): FlowReactionWithoutAction
+    fun acceptance(name: String? = null): FlowReactionWithoutAction
+    fun progress(name: String? = null): FlowReactionWithoutAction
+    fun success(name: String? = null): FlowReactionWithoutAction
+    fun fix(name: String? = null): FlowReactionWithoutAction
+    fun failure(name: String? = null): FlowReactionWithoutAction
+
+    fun <IN: Message, OUT: Message> intent(type: KClass<OUT>): FlowReactionAction<IN, OUT>
+    fun <IN: Message, OUT: Message> acceptance(type: KClass<OUT>): FlowReactionAction<IN, OUT>
+    fun <IN: Message, OUT: Message> progress(type: KClass<OUT>): FlowReactionAction<IN, OUT>
+    fun <IN: Message, OUT: Message> success(type: KClass<OUT>): FlowReactionAction<IN, OUT>
+    fun <IN: Message, OUT: Message> fix(type: KClass<OUT>): FlowReactionAction<IN, OUT>
+    fun <IN: Message, OUT: Message> failure(type: KClass<OUT>): FlowReactionAction<IN, OUT>
 
     fun asDefinition(): FlowDefinition {
         return this as FlowDefinition
@@ -78,7 +85,7 @@ class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): Flo
 
     override val create: FlowAction<I>
         get() {
-            val node = FlowActionImpl<I>(this)
+            val node = FlowActionImpl<I, Any>(this)
             children.add(node)
             return node
         }
@@ -113,40 +120,66 @@ class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): Flo
 
     // Action as Reaction Factories
 
-    override fun <M: Message> intent(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(this, FlowActionType.Intent, name)
+    override fun intent(name: String?): FlowReactionWithoutAction {
+        return FlowReactionAction<Nothing, Nothing>(this, FlowActionType.Intent, name ?: flowElementType)
     }
 
-    override fun <M: Message> acceptance(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(this, FlowActionType.Acceptance, name)
+    override fun <IN : Message, OUT : Message> intent(type: KClass<OUT>): FlowReactionAction<IN, OUT> {
+        return FlowReactionAction(this, FlowActionType.Intent, type.simpleName!!)
     }
 
-    override fun <M: Message> progress(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(this, FlowActionType.Progress, name)
+    override fun acceptance(name: String?): FlowReactionWithoutAction {
+        return FlowReactionAction<Nothing, Nothing>(this, FlowActionType.Acceptance, name ?: flowElementType)
     }
 
-    override fun <M: Message> success(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(this, FlowActionType.Success, name)
+    override fun <IN : Message, OUT : Message> acceptance(type: KClass<OUT>): FlowReactionAction<IN, OUT> {
+        return FlowReactionAction(this, FlowActionType.Acceptance, type.simpleName!!)
     }
 
-    override fun <M: Message> fix(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(this, FlowActionType.Fix, name)
+    override fun progress(name: String?): FlowReactionWithoutAction {
+        return FlowReactionAction<Nothing, Nothing>(this, FlowActionType.Progress, name ?: flowElementType)
     }
 
-    override fun <M: Message> failure(name: String): FlowReactionAction<M> {
-        return FlowReactionAction(this, FlowActionType.Failure, name)
+    override fun <IN : Message, OUT : Message> progress(type: KClass<OUT>): FlowReactionAction<IN, OUT> {
+        return FlowReactionAction(this, FlowActionType.Progress, type.simpleName!!)
+    }
+
+    override fun success(name: String?): FlowReactionWithoutAction {
+        return FlowReactionAction<Nothing, Nothing>(this, FlowActionType.Success, name ?: flowElementType)
+    }
+
+    override fun <IN : Message, OUT : Message> success(type: KClass<OUT>): FlowReactionAction<IN, OUT> {
+        return FlowReactionAction(this, FlowActionType.Success, type.simpleName!!)
+    }
+
+    override fun fix(name: String?): FlowReactionWithoutAction {
+        return FlowReactionAction<Nothing, Nothing>(this, FlowActionType.Fix, name ?: flowElementType)
+    }
+
+    override fun <IN : Message, OUT : Message> fix(type: KClass<OUT>): FlowReactionAction<IN, OUT> {
+        return FlowReactionAction(this, FlowActionType.Fix, type.simpleName!!)
+    }
+
+    override fun failure(name: String?): FlowReactionWithoutAction {
+        return FlowReactionAction<Nothing, Nothing>(this, FlowActionType.Failure, name ?: flowElementType)
+    }
+
+    override fun <IN : Message, OUT : Message> failure(type: KClass<OUT>): FlowReactionAction<IN, OUT> {
+        return FlowReactionAction(this, FlowActionType.Failure, type.simpleName!!)
     }
 
 }
 
-data class FlowReactionAction<M: Message>(
+interface FlowReactionWithoutAction
+
+data class FlowReactionAction<IN: Message, OUT: Message>(
 
     override val parent: FlowDefinition,
     override val flowActionType: FlowActionType = FlowActionType.Success,
     override val flowElementType: String = ""
 
-): FlowReactionActionDefinition {
+): FlowReactionActionDefinition, FlowReactionWithoutAction {
 
-    override var function: (Aggregate.(Any) -> Message)? = null
+    override var function: (Aggregate.(Message) -> Message)? = null
 
 }
