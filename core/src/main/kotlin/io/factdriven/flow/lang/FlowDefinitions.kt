@@ -1,5 +1,6 @@
 package io.factdriven.flow.lang
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlin.reflect.KClass
 
 /**
@@ -78,6 +79,16 @@ interface FlowDefinition: FlowElement {
 
         return null
 
+    }
+
+    fun deserialize(stream: String): List<Message<*>> {
+        return jacksonObjectMapper().readTree(stream).map {
+            Message.fromJson(it, messageType(it.get("name").textValue())!!)
+        }
+    }
+
+    fun serialize(messages: List<Message<*>>): String {
+        return jacksonObjectMapper().writeValueAsString(messages)
     }
 
 }

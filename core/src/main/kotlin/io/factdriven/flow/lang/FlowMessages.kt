@@ -1,6 +1,8 @@
 package io.factdriven.flow.lang
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.treeToValue
 import java.security.MessageDigest
 import java.math.BigInteger
 import java.util.*
@@ -35,6 +37,10 @@ data class Message<F: Fact>(
         return jacksonObjectMapper().writeValueAsString(this)
     }
 
+    fun toJsonNode(): JsonNode {
+        return jacksonObjectMapper().valueToTree(this)
+    }
+
     companion object {
 
         fun <F: Fact> create(fact: F): Message<F> {
@@ -46,6 +52,13 @@ data class Message<F: Fact>(
             mapper.registerSubtypes(factType.java)
             val type = mapper.typeFactory.constructParametricType(Message::class.java, factType.java)
             return mapper.readValue(json, type)
+        }
+
+        fun <F: Fact> fromJson(json: JsonNode, factType: FactType<F>): Message<F> {
+            val mapper = jacksonObjectMapper()
+            mapper.registerSubtypes(factType.java)
+            val type = mapper.typeFactory.constructParametricType(Message::class.java, factType.java)
+            return mapper.readValue(mapper.treeAsTokens(json), type)
         }
 
     }
