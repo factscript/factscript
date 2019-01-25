@@ -9,7 +9,6 @@ import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
 import org.camunda.bpm.engine.delegate.JavaDelegate
 import org.camunda.bpm.engine.impl.event.EventType
-import org.camunda.bpm.engine.impl.util.JsonUtil
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.model.bpmn.Bpmn
@@ -108,15 +107,15 @@ class CamundaBpmExecutionTest {
 
         val deployment = engine.repositoryService
             .createDeployment()
-            .addModelInstance("${paymentRetrieval.flowElementType}.bpmn", bpmn)
-            .name(paymentRetrieval.flowElementType)
+            .addModelInstance("${paymentRetrieval.name}.bpmn", bpmn)
+            .name(paymentRetrieval.name)
             .deploy()
 
-        assertEquals(paymentRetrieval.flowElementType, deployment.name)
+        assertEquals(paymentRetrieval.name, deployment.name)
 
         val processDefinition = engine.repositoryService.createProcessDefinitionQuery().singleResult()
 
-        assertEquals(paymentRetrieval.flowElementType, processDefinition.key)
+        assertEquals(paymentRetrieval.name, processDefinition.key)
 
         mock()
 
@@ -154,8 +153,7 @@ class CamundaBpmExecutionTest {
                     }
                 }
                 is FlowMessageReactionDefinition -> {
-                    val child = element.flowReactionAction // TODO properly retrieve intent creator
-                    val action = child.function
+                    val action = element.action?.function // TODO properly retrieve intent creator
                     if (action != null) {
                         val aggregate = past(messages, PaymentRetrieval::class)
                         messages.add(action.invoke(aggregate!!, messages.last()))

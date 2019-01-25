@@ -47,58 +47,64 @@ open class FlowActionImpl<I: Aggregate, O: Message>(override val parent: FlowDef
 
     // Flow Action Definition
 
-    override var flowElementType = ""
-    override var flowActionType = FlowActionType.Success
+    override lateinit var name: ElementName
+    override var messageType: MessageType? = null
+    override var actionType = FlowActionType.Success
     override var function: (Aggregate.() -> Message)? = null
 
     // Flow Action Factories
 
     override infix fun intent(name: String) {
-        this.flowActionType = FlowActionType.Intent
-        this.flowElementType = name
+        this.actionType = FlowActionType.Intent
+        this.name = name
     }
 
     override infix fun <O: Message> intent(type: KClass<O>): ClassifiedFlowAction<I, O> {
+        this.messageType = type
         intent(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
     }
 
     override infix fun acceptance(name: String) {
-        this.flowActionType = FlowActionType.Acceptance
-        this.flowElementType = name
+        this.actionType = FlowActionType.Acceptance
+        this.name = name
     }
 
     override infix fun <O: Message> acceptance(type: KClass<O>): ClassifiedFlowAction<I, O> {
+        this.messageType = type
         acceptance(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
     }
 
     override infix fun progress(name: String) {
-        this.flowActionType = FlowActionType.Progress
-        this.flowElementType = name
+        this.actionType = FlowActionType.Progress
+        this.name = name
     }
 
     override infix fun <O: Message> progress(type: KClass<O>): ClassifiedFlowAction<I, O> {
+        this.messageType = type
         progress(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
     }
 
     override infix fun success(name: String) {
-        this.flowActionType = FlowActionType.Success
-        this.flowElementType = name
+        this.actionType = FlowActionType.Success
+        this.name = name
     }
 
     override infix fun <O: Message> success(type: KClass<O>): ClassifiedFlowAction<I, O> {
+        this.messageType = type
         success(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
     }
 
     override infix fun failure(name: String) {
-        this.flowActionType = FlowActionType.Failure
-        this.flowElementType = name
+        this.actionType = FlowActionType.Failure
+        this.name = name
     }
 
     override infix fun <O: Message> failure(type: KClass<O>): ClassifiedFlowAction<I, O> {
+        this.messageType = type
         failure(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
     }

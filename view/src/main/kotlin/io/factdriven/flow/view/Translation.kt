@@ -15,17 +15,17 @@ fun translate(definition: FlowDefinition): Container {
         return when(element) {
             is FlowReactionDefinition -> {
                 BpmnEventSymbol(
-                    element.flowElementId,
-                    element.flowElementType,
+                    element.id,
+                    element.name,
                     parent,
                     BpmnEventType.message,
                     BpmnEventCharacteristic.catching
                 )
             }
             is FlowDefinition -> {
-                when (element.flowExecutionType) {
+                when (element.executionType) {
                     FlowExecutionType.execution -> {
-                        val sequence = Sequence(element.flowElementId, element.flowElementType, parent)
+                        val sequence = Sequence(element.id, element.name, parent)
                         element.children.forEach { translate(it, sequence) }
                         sequence
                     }
@@ -35,8 +35,8 @@ fun translate(definition: FlowDefinition): Container {
                             else if (element.children.size == 1) BpmnTaskType.send
                             else BpmnTaskType.service
                         BpmnTaskSymbol(
-                            element.flowElementId,
-                            element.flowElementType,
+                            element.id,
+                            element.name,
                             parent,
                             type
                         )
@@ -45,8 +45,8 @@ fun translate(definition: FlowDefinition): Container {
             }
             is FlowActionDefinition -> {
                 BpmnEventSymbol(
-                    element.flowElementId,
-                    element.flowElementType,
+                    element.id,
+                    element.name,
                     parent,
                     if (element.function != null) BpmnEventType.message else BpmnEventType.none,
                     BpmnEventCharacteristic.throwing
@@ -56,7 +56,7 @@ fun translate(definition: FlowDefinition): Container {
         }
     }
 
-    val sequence = Sequence(definition.flowElementId, definition.flowElementType)
+    val sequence = Sequence(definition.id, definition.name)
     definition.children.forEach { translate(it, sequence) }
     return sequence
 

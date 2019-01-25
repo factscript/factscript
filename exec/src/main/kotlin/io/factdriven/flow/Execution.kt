@@ -93,7 +93,7 @@ interface ExecutableFlowDefinition: FlowDefinition {
 interface FlowDefinitions {
 
     fun all(): List<ExecutableFlowDefinition>
-    fun get(id: FlowElementType): ExecutableFlowDefinition
+    fun get(id: ElementName): ExecutableFlowDefinition
     // fun add(definition: ExecutableFlowDefinition): List<ExecutableFlowDefinition>
 
 }
@@ -158,7 +158,7 @@ interface FlowMessageCorrelator {
             definition.patterns(message).map {
                 definition.instances.find(it)
             }.flatten().map {
-                Pair(definition.flowElementType, it)
+                Pair(definition.name, it)
             }
 
         }.flatten()

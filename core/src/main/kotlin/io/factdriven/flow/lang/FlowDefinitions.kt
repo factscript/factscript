@@ -10,15 +10,15 @@ typealias AggregateId = String
 typealias AggregateType = KClass<*>
 typealias AggregateIds = List<AggregateId>
 
-typealias FlowElementType = String
-typealias FlowElementId = String
+typealias ElementName = String
+typealias ElementId = String
 
 interface FlowElement {
 
-    val flowElementId: FlowElementId
-        get() = (parent?.flowElementId ?: "") + (if (parent != null) "-" else "") + flowElementType
+    val id: ElementId
+        get() = (parent?.id ?: "") + (if (parent != null) "-" else "") + name
 
-    val flowElementType: FlowElementType
+    val name: ElementName
     val parent: FlowDefinition?
 
 }
@@ -26,7 +26,7 @@ interface FlowElement {
 interface FlowDefinition: FlowElement {
 
     val children: List<FlowElement>
-    val flowExecutionType: FlowExecutionType
+    val executionType: FlowExecutionType
     val aggregateType: AggregateType
 
     fun patterns(message: Message): MessagePatterns {
@@ -35,7 +35,7 @@ interface FlowDefinition: FlowElement {
 
         children.forEach { child ->
             when(child) {
-                is FlowMessageReactionDefinition -> if (child.type.isInstance(message)) patterns.add(child.incoming(message))
+                is FlowMessageReactionDefinition -> if (child.messageType.isInstance(message)) patterns.add(child.incoming(message))
                 is FlowDefinition -> patterns.addAll(child.patterns(message))
             }
         }
@@ -53,54 +53,73 @@ interface FlowDefinition: FlowElement {
             if (child is FlowDefinition) {
                 descendants.addAll(child.descendants)
             }
+            if (child is FlowReactionDefinition && child.action != null) {
+                descendants.add(child.action!!)
+            }
         }
 
         return descendants
 
     }
 
-    val childrenMap: Map<FlowElementId, FlowElement> get() = children.map { it.flowElementId to it }.toMap()
+    val childrenMap: Map<ElementId, FlowElement> get() = children.map { it.id to it }.toMap()
 
-    val descendantMap: Map<FlowElementId, FlowElement> get() = descendants.map { it.flowElementId to it }.toMap()
+    val descendantMap: Map<ElementId, FlowElement> get() = descendants.map { it.id to it }.toMap()
+
+    fun messageType(messageName: MessageName): MessageType? {
+
+        descendants.forEach {
+            when(it) {
+                is FlowActionDefinition -> if (it.name == messageName && it.messageType != null) return it.messageType
+                is FlowReactionActionDefinition -> if (it.name == messageName && it.messageType != null) return it.messageType
+                is FlowMessageReactionDefinition -> if (it.name == messageName) return it.messageType
+            }
+        }
+
+        return null
+
+    }
 
 }
 
 interface FlowActionDefinition: FlowElement {
 
-    val flowActionType: FlowActionType
+    val actionType: FlowActionType
+    val messageType: MessageType?
     val function: (Aggregate.() -> Message)?
 
 }
 
 interface FlowReactionActionDefinition: FlowElement {
 
-    val flowActionType: FlowActionType
+    val actionType: FlowActionType
+    val messageType: MessageType?
     val function: (Aggregate.(Message) -> Message)?
 
 }
 
 interface FlowReactionDefinition: FlowElement {
 
-    val flowReactionType: FlowReactionType
-    val flowReactionAction: FlowReactionActionDefinition
+    val reactionType: FlowReactionType
+    val action: FlowReactionActionDefinition?
 
 }
 
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
-    val type: KClass<out Message>
+    val messageType: MessageType
     val propertyNames: List<PropertyName>
     val propertyValues: List<Aggregate?.() -> Any?>
 
     fun incoming(message: Message): MessagePattern {
 
-        assert(type.isInstance(message))
+        assert(messageType.isInstance(message))
 
         val properties = propertyNames.map { propertyName ->
             propertyName to message.getProperty(propertyName)
         }.toMap()
 
-        return MessagePattern(type, properties)
+        return MessagePattern(messageType, properties)
 
     }
 
@@ -110,7 +129,7 @@ interface FlowMessageReactionDefinition: FlowReactionDefinition {
             propertyName to propertyValues[propertyIndex].invoke(aggregate)
         }.toMap()
 
-        return MessagePattern(type, properties)
+        return MessagePattern(messageType, properties)
 
     }
 

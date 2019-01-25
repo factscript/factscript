@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
  */
 typealias Message = Any
 typealias MessageName = String
-typealias MessageClass = KClass<out Message>
+typealias MessageType = KClass<out Message>
 typealias MessageId = String
 typealias MessageTarget = Pair<AggregateType, AggregateId>
 
@@ -38,7 +38,7 @@ data class MessagePattern(
 ) {
 
     constructor(
-        type: MessageClass,
+        type: MessageType,
         properties: Map<PropertyName, PropertyValue> = emptyMap()
     ): this(type.simpleName!!, properties) // TODO simple name is just fallback
 
