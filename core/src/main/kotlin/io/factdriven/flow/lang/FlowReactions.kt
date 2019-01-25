@@ -36,9 +36,9 @@ class FlowReactions<I: Aggregate>(val parent: FlowDefinition) {
 
 }
 
-interface FlowReaction<I: Aggregate, IN: Message> {
+interface FlowReaction<I: Aggregate, IN: Fact> {
 
-    infix fun <OUT: Message> create(action: FlowReactionActionImpl<IN, OUT>): ActionableFlowReaction<I, IN, OUT>
+    infix fun <OUT: Fact> create(action: FlowReactionActionImpl<IN, OUT>): ActionableFlowReaction<I, IN, OUT>
     infix fun create(action: FlowReactionWithoutAction): FlowReactionWithoutAction
     infix fun execute(execution: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit
 
@@ -48,7 +48,7 @@ interface FlowReaction<I: Aggregate, IN: Message> {
 
 }
 
-interface FlowMessageReaction<I: Aggregate, M: Message> : FlowReaction<I, M> {
+interface FlowMessageReaction<I: Aggregate, M: Fact> : FlowReaction<I, M> {
 
     infix fun having(property: String): MatchableFlowMessageReaction<I, M>
     infix fun supporting(assertion: I.(M) -> Boolean): FlowMessageReaction<I, M>
@@ -59,19 +59,19 @@ interface FlowMessageReaction<I: Aggregate, M: Message> : FlowReaction<I, M> {
 
 }
 
-interface MatchableFlowMessageReaction<I: Aggregate, M: Message> {
+interface MatchableFlowMessageReaction<I: Aggregate, M: Fact> {
 
     infix fun match(value: I.() -> Any?): FlowMessageReaction<I, M>
 
 }
 
-interface ActionableFlowReaction<I: Aggregate, IN: Message, OUT: Message> {
+interface ActionableFlowReaction<I: Aggregate, IN: Fact, OUT: Fact> {
 
     infix fun by(reaction: I.(IN) -> OUT)
 
 }
 
-abstract class FlowReactionImpl<I: Aggregate, IN: Message, OUT: Message>(override val parent: FlowDefinition, override var name: String): FlowReactionDefinition, FlowReaction<I, IN>, ActionableFlowReaction<I, IN, OUT> {
+abstract class FlowReactionImpl<I: Aggregate, IN: Fact, OUT: Fact>(override val parent: FlowDefinition, override var name: String): FlowReactionDefinition, FlowReaction<I, IN>, ActionableFlowReaction<I, IN, OUT> {
 
     // Flow Reaction Definition
 
@@ -80,7 +80,7 @@ abstract class FlowReactionImpl<I: Aggregate, IN: Message, OUT: Message>(overrid
 
     // Flow Reaction Action Factory
 
-    override infix fun <OUT: Message> create(action: FlowReactionActionImpl<IN, OUT>): ActionableFlowReaction<I, IN, OUT> {
+    override infix fun <OUT: Fact> create(action: FlowReactionActionImpl<IN, OUT>): ActionableFlowReaction<I, IN, OUT> {
         this.action = action
         return this as ActionableFlowReaction<I, IN, OUT>
     }
@@ -96,12 +96,12 @@ abstract class FlowReactionImpl<I: Aggregate, IN: Message, OUT: Message>(overrid
 
     override fun by(reaction: I.(IN) -> OUT) {
         @Suppress("UNCHECKED_CAST")
-        this.action!!.function = reaction as Aggregate.(Any) -> Message
+        this.action!!.function = reaction as Aggregate.(Any) -> Fact
     }
 
 }
 
-class FlowMessageReactionImpl<I: Aggregate, IN: Message, OUT: Message>(override val parent: FlowDefinition, override val messageType: KClass<IN>): FlowMessageReactionDefinition, FlowReactionImpl<I, IN, OUT>(parent, messageType.simpleName!!), FlowMessageReaction<I, IN>, MatchableFlowMessageReaction<I, IN> {
+class FlowMessageReactionImpl<I: Aggregate, IN: Fact, OUT: Fact>(override val parent: FlowDefinition, override val messageType: KClass<IN>): FlowMessageReactionDefinition, FlowReactionImpl<I, IN, OUT>(parent, messageType.simpleName!!), FlowMessageReaction<I, IN>, MatchableFlowMessageReaction<I, IN> {
 
     override val propertyNames = mutableListOf<PropertyName>()
     override val propertyValues = mutableListOf<Aggregate?.() -> Any?>()

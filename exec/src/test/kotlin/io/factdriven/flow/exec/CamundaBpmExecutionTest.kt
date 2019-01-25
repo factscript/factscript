@@ -68,13 +68,13 @@ class CamundaBpmExecutionTest {
 
     }
 
-    private val messages = mutableListOf<Message>()
+    private val messages = mutableListOf<Fact>()
 
     private fun processInstance(): ProcessInstance? {
         return engine.runtimeService.createProcessInstanceQuery().singleResult()
     }
 
-    private fun correlate(message: Message?) {
+    private fun correlate(message: Fact?) {
         val hash = paymentRetrieval.patterns(message!!).iterator().next().hash
         val externalTasks = engine.externalTaskService.fetchAndLock(Int.MAX_VALUE, hash).topic(hash, Long.MAX_VALUE).execute()
         if (externalTasks != null && !externalTasks.isEmpty()) {
@@ -160,7 +160,7 @@ class CamundaBpmExecutionTest {
                     }
                     val aggregate = past(messages, PaymentRetrieval::class)
                     val message = element.expected(aggregate)
-                    it.setVariable("message", message.hash)
+                    it.setVariable("data", message.hash)
                     println("Message: ${message.hash}")
                 }
                 is FlowDefinition -> {
@@ -176,7 +176,7 @@ class CamundaBpmExecutionTest {
                     if (createSuccessElement is FlowMessageReactionDefinition) {
                         val aggregate = past(messages, PaymentRetrieval::class)
                         val message = createSuccessElement.expected(aggregate)
-                        it.setVariable("message", message.hash)
+                        it.setVariable("data", message.hash)
                         println("Message: ${message.hash}")
                     }
                 }

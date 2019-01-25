@@ -29,12 +29,12 @@ interface FlowExecution<I : Aggregate>: FlowElement, FlowActivities<I> {
     fun fix(name: String? = null): FlowReactionWithoutAction
     fun failure(name: String? = null): FlowReactionWithoutAction
 
-    fun <IN: Message, OUT: Message> intent(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
-    fun <IN: Message, OUT: Message> acceptance(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
-    fun <IN: Message, OUT: Message> progress(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
-    fun <IN: Message, OUT: Message> success(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
-    fun <IN: Message, OUT: Message> fix(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
-    fun <IN: Message, OUT: Message> failure(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
+    fun <IN: Fact, OUT: Fact> intent(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
+    fun <IN: Fact, OUT: Fact> acceptance(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
+    fun <IN: Fact, OUT: Fact> progress(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
+    fun <IN: Fact, OUT: Fact> success(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
+    fun <IN: Fact, OUT: Fact> fix(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
+    fun <IN: Fact, OUT: Fact> failure(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
 
     fun asDefinition(): FlowDefinition {
         return this as FlowDefinition
@@ -124,7 +124,7 @@ class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): Flo
         return FlowReactionActionImpl<Nothing, Nothing>(this, FlowActionType.Intent, name = name ?: this.name)
     }
 
-    override fun <IN : Message, OUT : Message> intent(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
+    override fun <IN : Fact, OUT : Fact> intent(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
         return FlowReactionActionImpl(this, FlowActionType.Intent, type)
     }
 
@@ -132,7 +132,7 @@ class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): Flo
         return FlowReactionActionImpl<Nothing, Nothing>(this, FlowActionType.Acceptance, name = name ?: this.name)
     }
 
-    override fun <IN : Message, OUT : Message> acceptance(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
+    override fun <IN : Fact, OUT : Fact> acceptance(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
         return FlowReactionActionImpl(this, FlowActionType.Acceptance, type)
     }
 
@@ -140,7 +140,7 @@ class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): Flo
         return FlowReactionActionImpl<Nothing, Nothing>(this, FlowActionType.Progress, name = name ?: this.name)
     }
 
-    override fun <IN : Message, OUT : Message> progress(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
+    override fun <IN : Fact, OUT : Fact> progress(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
         return FlowReactionActionImpl(this, FlowActionType.Progress, type)
     }
 
@@ -148,7 +148,7 @@ class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): Flo
         return FlowReactionActionImpl<Nothing, Nothing>(this, FlowActionType.Success, name = name ?: this.name)
     }
 
-    override fun <IN : Message, OUT : Message> success(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
+    override fun <IN : Fact, OUT : Fact> success(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
         return FlowReactionActionImpl(this, FlowActionType.Success, type)
     }
 
@@ -156,7 +156,7 @@ class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): Flo
         return FlowReactionActionImpl<Nothing, Nothing>(this, FlowActionType.Fix, name = name ?: this.name)
     }
 
-    override fun <IN : Message, OUT : Message> fix(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
+    override fun <IN : Fact, OUT : Fact> fix(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
         return FlowReactionActionImpl(this, FlowActionType.Fix, type)
     }
 
@@ -164,7 +164,7 @@ class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): Flo
         return FlowReactionActionImpl<Nothing, Nothing>(this, FlowActionType.Failure, name = name ?: this.name)
     }
 
-    override fun <IN : Message, OUT : Message> failure(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
+    override fun <IN : Fact, OUT : Fact> failure(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT> {
         return FlowReactionActionImpl(this, FlowActionType.Failure, type)
     }
 
@@ -172,15 +172,15 @@ class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): Flo
 
 interface FlowReactionWithoutAction
 
-class FlowReactionActionImpl<IN: Message, OUT: Message>(
+class FlowReactionActionImpl<IN: Fact, OUT: Fact>(
 
     override val parent: FlowDefinition,
     override val actionType: FlowActionType = FlowActionType.Success,
-    override var messageType: MessageType? = null,
+    override var messageType: FactType<*>? = null,
     override val name: String = messageType?.simpleName ?: ""
 
 ): FlowReactionActionDefinition, FlowReactionWithoutAction {
 
-    override var function: (Aggregate.(Message) -> Message)? = null
+    override var function: (Aggregate.(Fact) -> Fact)? = null
 
 }

@@ -46,7 +46,7 @@ fun <I: Aggregate> past(history: Messages, aggregateType: KClass<I>): I? {
  * @param trigger coming in and influencing the flow instance
  * @return new messages produced
  */
-fun <I: Aggregate> present(history: Messages, flow: FlowExecution<I>, trigger: Message): Messages {
+fun <I: Aggregate> present(history: Messages, flow: FlowExecution<I>, trigger: Fact): Messages {
     TODO()
 }
 
@@ -57,17 +57,17 @@ fun <I: Aggregate> present(history: Messages, flow: FlowExecution<I>, trigger: M
  * @param trigger coming in and influencing the flow instance
  * @return future matching patternBuilders
  */
-fun <I: Aggregate> future(history: Messages, flow: FlowExecution<I>, trigger: Message): MessagePatterns {
+fun <I: Aggregate> future(history: Messages, flow: FlowExecution<I>, trigger: Fact): MessagePatterns {
     TODO()
 }
 
 /**
- * Produce a list of potential patternBuilders for an incoming message.
+ * Produce a list of potential patternBuilders for an incoming data.
  * @param flow definition
  * @param trigger coming in and potentially influencing many flow instances
  * @return matching patternBuilders
  */
-fun <I: Aggregate> potential(flow: FlowExecution<I>, trigger: Message): MessagePatterns {
+fun <I: Aggregate> potential(flow: FlowExecution<I>, trigger: Fact): MessagePatterns {
     TODO()
 }
 
@@ -86,7 +86,7 @@ interface ExecutableFlowDefinition: FlowDefinition {
 
     val instances: FlowInstances
 
-    fun patterns(message: Message): List<MessagePattern>
+    fun patterns(data: Message): List<MessagePattern>
 
 }
 
@@ -118,7 +118,7 @@ interface FlowMessageCorrelator {
 
         } else {
 
-            // Begin transaction for message handling
+            // Begin transaction for data handling
             // (A flow definition specific transaction mechanism may be provided)
 
             // -. Retrieve flow definition by means of flow definition id.
@@ -131,31 +131,31 @@ interface FlowMessageCorrelator {
             // -. Reconstruct flow instance status by means of flow instance history.
             //    (A flow definition specific reconstruction mechanism may be provided)
 
-            // -. Correlate message to flow instance and retrieve outgoing messages.
+            // -. Correlate data to flow instance and retrieve outgoing messages.
             //    (A flow definition specific correlation mechanism may be provided)
 
-            // -. Append incoming message and outgoing reaction messages to store.
+            // -. Append incoming data and outgoing reaction messages to store.
             //    (A flow definition specific appending mechanism may be provided)
-            // -. Commit unit of work for message correlation phase in case everything goes smoothly
-            //    If temporary failure, feed message into incoming queue and configure retry
-            //    If permanent failure, feed message into error queue
+            // -. Commit unit of work for data correlation phase in case everything goes smoothly
+            //    If temporary failure, feed data into incoming queue and configure retry
+            //    If permanent failure, feed data into error queue
 
-            // -. Commit unit of work for message handling in case everything goes smoothly
+            // -. Commit unit of work for data handling in case everything goes smoothly
             //    (A flow definition specific transaction mechanism may be provided)
 
         }
 
     }
 
-    fun target(message: MessageContainer) : List<MessageTarget> {
+    fun target(data: MessageContainer) : List<MessageTarget> {
 
         return definitions.all().map { definition ->
 
-            // Retrieve message correlation keys by means of (all) flow definitions and incoming
-            // message. Lookup correlating flow instance ids by means of message correlation keys.
+            // Retrieve data correlation keys by means of (all) flow definitions and incoming
+            // data. Lookup correlating flow instance ids by means of data correlation keys.
             // (A flow definition specific lookup mechanism may be provided)
 
-            definition.patterns(message).map {
+            definition.patterns(data).map {
                 definition.instances.find(it)
             }.flatten().map {
                 Pair(definition.name, it)

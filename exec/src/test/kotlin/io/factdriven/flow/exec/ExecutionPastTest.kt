@@ -1,7 +1,7 @@
 package io.factdriven.flow.exec
 
 import io.factdriven.flow.execute
-import io.factdriven.flow.lang.Message
+import io.factdriven.flow.lang.Fact
 import io.factdriven.flow.past
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -16,7 +16,7 @@ class ExecutionPastTest {
     @Test
     fun testPastWithEmptyMessages() {
 
-        val messages = emptyList<Message>()
+        val messages = emptyList<Fact>()
         val aggregate = past(messages, PaymentRetrieval::class)
 
         assertNull(aggregate)

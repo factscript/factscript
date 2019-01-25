@@ -1,44 +1,64 @@
 package io.factdriven.flow.lang
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.security.MessageDigest
 import java.math.BigInteger
+import java.util.*
 import kotlin.reflect.KClass
 
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-typealias Message = Any
-typealias MessageName = String
-typealias MessageType = KClass<out Message>
+typealias Fact = Any
+typealias FactType<F> = KClass<out F>
+typealias FactName = String
+
 typealias MessageId = String
 typealias MessageTarget = Pair<AggregateType, AggregateId>
 
 typealias PropertyName = String
 typealias PropertyValue = Any?
 
-typealias Messages = List<Message>
+typealias Messages = List<Fact>
 typealias MessagePatterns = Set<MessagePattern>
 
-data class MessageContainer(
+data class Message<F: Fact>(
 
     val id: MessageId,
-    val message: Message,
-    val target: MessageTarget? = null
+    val name: FactName,
+    val fact: F
 
 ) {
 
-    constructor(container: MessageContainer, target: MessageTarget): this(container.id, container.message, target)
+    fun toJson(): String {
+        return jacksonObjectMapper().writeValueAsString(this)
+    }
+
+    companion object {
+
+        fun <F: Fact> create(fact: F): Message<F> {
+            return Message(UUID.randomUUID().toString(), fact::class.java.simpleName, fact)
+        }
+
+        fun <F: Fact> fromJson(json: String, factType: FactType<F>): Message<F> {
+            val mapper = jacksonObjectMapper()
+            mapper.registerSubtypes(factType.java)
+            val type = mapper.typeFactory.constructParametricType(Message::class.java, factType.java)
+            return mapper.readValue(json, type)
+        }
+
+    }
 
 }
 
 data class MessagePattern(
-    val name: MessageName,
+    val name: FactName,
     val properties: Map<PropertyName, PropertyValue> = emptyMap()
 ) {
 
     constructor(
-        type: MessageType,
+        type: FactType<*>,
         properties: Map<PropertyName, PropertyValue> = emptyMap()
     ): this(type.simpleName!!, properties) // TODO simple name is just fallback
 
@@ -65,7 +85,7 @@ data class MessagePattern(
 
 }
 
-fun Message.getProperty(propertyName: PropertyName): Any? {
+fun Fact.getProperty(propertyName: PropertyName): Any? {
     return javaClass.getDeclaredField(propertyName).let {
         it.isAccessible = true
         val value = it.get(this)

@@ -29,7 +29,7 @@ interface FlowDefinition: FlowElement {
     val executionType: FlowExecutionType
     val aggregateType: AggregateType
 
-    fun patterns(message: Message): MessagePatterns {
+    fun patterns(message: Fact): MessagePatterns {
 
         val patterns = mutableSetOf<MessagePattern>()
 
@@ -66,7 +66,7 @@ interface FlowDefinition: FlowElement {
 
     val descendantMap: Map<ElementId, FlowElement> get() = descendants.map { it.id to it }.toMap()
 
-    fun messageType(messageName: MessageName): MessageType? {
+    fun messageType(messageName: FactName): FactType<*>? {
 
         descendants.forEach {
             when(it) {
@@ -85,16 +85,16 @@ interface FlowDefinition: FlowElement {
 interface FlowActionDefinition: FlowElement {
 
     val actionType: FlowActionType
-    val messageType: MessageType?
-    val function: (Aggregate.() -> Message)?
+    val messageType: FactType<*>?
+    val function: (Aggregate.() -> Fact)?
 
 }
 
 interface FlowReactionActionDefinition: FlowElement {
 
     val actionType: FlowActionType
-    val messageType: MessageType?
-    val function: (Aggregate.(Message) -> Message)?
+    val messageType: FactType<*>?
+    val function: (Aggregate.(Fact) -> Fact)?
 
 }
 
@@ -107,11 +107,11 @@ interface FlowReactionDefinition: FlowElement {
 
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
-    val messageType: MessageType
+    val messageType: FactType<*>
     val propertyNames: List<PropertyName>
     val propertyValues: List<Aggregate?.() -> Any?>
 
-    fun incoming(message: Message): MessagePattern {
+    fun incoming(message: Fact): MessagePattern {
 
         assert(messageType.isInstance(message))
 

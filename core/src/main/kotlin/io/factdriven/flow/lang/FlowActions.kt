@@ -17,7 +17,7 @@ enum class FlowActionType {
 
 }
 
-interface ClassifiedFlowAction<I: Aggregate, O: Message> {
+interface ClassifiedFlowAction<I: Aggregate, O: Fact> {
 
     infix fun by(message: I.() -> O?)
 
@@ -31,11 +31,11 @@ interface FlowAction<I: Aggregate> {
     infix fun success(id: String)
     infix fun failure(id: String)
 
-    infix fun <O: Message> intent(type: KClass<O>): ClassifiedFlowAction<I, O>
-    infix fun <O: Message> acceptance(type: KClass<O>): ClassifiedFlowAction<I, O>
-    infix fun <O: Message> progress(type: KClass<O>): ClassifiedFlowAction<I, O>
-    infix fun <O: Message> success(type: KClass<O>): ClassifiedFlowAction<I, O>
-    infix fun <O: Message> failure(type: KClass<O>): ClassifiedFlowAction<I, O>
+    infix fun <O: Fact> intent(type: KClass<O>): ClassifiedFlowAction<I, O>
+    infix fun <O: Fact> acceptance(type: KClass<O>): ClassifiedFlowAction<I, O>
+    infix fun <O: Fact> progress(type: KClass<O>): ClassifiedFlowAction<I, O>
+    infix fun <O: Fact> success(type: KClass<O>): ClassifiedFlowAction<I, O>
+    infix fun <O: Fact> failure(type: KClass<O>): ClassifiedFlowAction<I, O>
 
     fun asDefinition(): FlowActionDefinition {
         return this as FlowActionDefinition
@@ -43,14 +43,14 @@ interface FlowAction<I: Aggregate> {
 
 }
 
-open class FlowActionImpl<I: Aggregate, O: Message>(override val parent: FlowDefinition): ClassifiedFlowAction<I, O>, FlowAction<I>, FlowActionDefinition {
+open class FlowActionImpl<I: Aggregate, O: Fact>(override val parent: FlowDefinition): ClassifiedFlowAction<I, O>, FlowAction<I>, FlowActionDefinition {
 
     // Flow Action Definition
 
     override lateinit var name: ElementName
-    override var messageType: MessageType? = null
+    override var messageType: FactType<*>? = null
     override var actionType = FlowActionType.Success
-    override var function: (Aggregate.() -> Message)? = null
+    override var function: (Aggregate.() -> Fact)? = null
 
     // Flow Action Factories
 
@@ -59,7 +59,7 @@ open class FlowActionImpl<I: Aggregate, O: Message>(override val parent: FlowDef
         this.name = name
     }
 
-    override infix fun <O: Message> intent(type: KClass<O>): ClassifiedFlowAction<I, O> {
+    override infix fun <O: Fact> intent(type: KClass<O>): ClassifiedFlowAction<I, O> {
         this.messageType = type
         intent(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
@@ -70,7 +70,7 @@ open class FlowActionImpl<I: Aggregate, O: Message>(override val parent: FlowDef
         this.name = name
     }
 
-    override infix fun <O: Message> acceptance(type: KClass<O>): ClassifiedFlowAction<I, O> {
+    override infix fun <O: Fact> acceptance(type: KClass<O>): ClassifiedFlowAction<I, O> {
         this.messageType = type
         acceptance(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
@@ -81,7 +81,7 @@ open class FlowActionImpl<I: Aggregate, O: Message>(override val parent: FlowDef
         this.name = name
     }
 
-    override infix fun <O: Message> progress(type: KClass<O>): ClassifiedFlowAction<I, O> {
+    override infix fun <O: Fact> progress(type: KClass<O>): ClassifiedFlowAction<I, O> {
         this.messageType = type
         progress(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
@@ -92,7 +92,7 @@ open class FlowActionImpl<I: Aggregate, O: Message>(override val parent: FlowDef
         this.name = name
     }
 
-    override infix fun <O: Message> success(type: KClass<O>): ClassifiedFlowAction<I, O> {
+    override infix fun <O: Fact> success(type: KClass<O>): ClassifiedFlowAction<I, O> {
         this.messageType = type
         success(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
@@ -103,7 +103,7 @@ open class FlowActionImpl<I: Aggregate, O: Message>(override val parent: FlowDef
         this.name = name
     }
 
-    override infix fun <O: Message> failure(type: KClass<O>): ClassifiedFlowAction<I, O> {
+    override infix fun <O: Fact> failure(type: KClass<O>): ClassifiedFlowAction<I, O> {
         this.messageType = type
         failure(type.simpleName!!)
         return this as ClassifiedFlowAction<I, O>
@@ -111,7 +111,7 @@ open class FlowActionImpl<I: Aggregate, O: Message>(override val parent: FlowDef
 
     override fun by(message: I.() -> O?) {
         @Suppress("UNCHECKED_CAST")
-        this.function = message as Aggregate.() -> Message
+        this.function = message as Aggregate.() -> Fact
     }
 
 }

@@ -158,7 +158,7 @@ fun transform(container: Container): BpmnModelInstance {
 
                             val message = modelInstance.newInstance(Message::class.java)
                             message.setAttributeValue("id", symbol.name)
-                            message.setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(symbol.name).hash else "#{message}")
+                            message.setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(symbol.name).hash else "#{data}")
                             definitions.addChildElement(message)
                             messageEventDefinition.message = message
 
@@ -179,7 +179,7 @@ fun transform(container: Container): BpmnModelInstance {
 
                         with(modelInstance.newInstance(Message::class.java)) {
                             setAttributeValue("id", symbol.name)
-                            setAttributeValue("name", "#{message}")
+                            setAttributeValue("name", "#{data}")
                             definitions.addChildElement(this)
                             (modelElementInstance as ReceiveTask).message = this
                         }
@@ -189,7 +189,7 @@ fun transform(container: Container): BpmnModelInstance {
                     BpmnTaskType.service -> {
 
                         (modelElementInstance as ServiceTask).camundaType = "external"
-                        modelElementInstance.camundaTopic = "#{message}"
+                        modelElementInstance.camundaTopic = "#{data}"
 
                     }
 
