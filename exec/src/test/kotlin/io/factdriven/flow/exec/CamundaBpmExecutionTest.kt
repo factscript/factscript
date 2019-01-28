@@ -49,33 +49,34 @@ class CamundaBpmExecutionTest {
         correlate(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F))
 
         assertEquals(3, messages.size)
-        assertEquals(RetrievePayment::class, messages[0]::class)
-        assertEquals(PaymentRetrievalAccepted::class, messages[1]::class)
-        assertEquals(ChargeCreditCard::class, messages[2]::class)
+        assertEquals(RetrievePayment::class, messages[0].fact::class)
+        assertEquals(PaymentRetrievalAccepted::class, messages[1].fact::class)
+        assertEquals(ChargeCreditCard::class, messages[2].fact::class)
         assertNotNull(processInstance())
 
         correlate(CreditCardCharged(reference = "anId"))
 
         assertEquals(5, messages.size)
-        assertEquals(CreditCardCharged::class, messages[3]::class)
-        assertEquals(PaymentRetrieved::class, messages[4]::class)
+        assertEquals(CreditCardCharged::class, messages[3].fact::class)
+        assertEquals(PaymentRetrieved::class, messages[4].fact::class)
         assertNull(processInstance())
 
-        val paymentRetrieval = past(messages, PaymentRetrieval::class)!!
+        val paymentRetrieval = past(messages.map { it.fact }, PaymentRetrieval::class)!!
 
         assertEquals(3F, paymentRetrieval.covered)
         assertEquals(0F, paymentRetrieval.uncovered)
 
     }
 
-    private val messages = mutableListOf<Fact>()
+    private val messages = mutableListOf<Message<*>>()
 
     private fun processInstance(): ProcessInstance? {
         return engine.runtimeService.createProcessInstanceQuery().singleResult()
     }
 
-    private fun correlate(message: Fact?) {
-        val hash = paymentRetrieval.patterns(message!!).iterator().next().hash
+    private fun correlate(fact: Fact) {
+        val message = Message.createFrom(fact)
+        val hash = paymentRetrieval.patterns(fact!!).iterator().next().hash
         val externalTasks = engine.externalTaskService.fetchAndLock(Int.MAX_VALUE, hash).topic(hash, Long.MAX_VALUE).execute()
         if (externalTasks != null && !externalTasks.isEmpty()) {
             externalTasks.forEach {
@@ -148,17 +149,18 @@ class CamundaBpmExecutionTest {
                 is FlowActionDefinition -> {
                     val action = element.function
                     if (action != null) {
-                        val aggregate = past(messages, PaymentRetrieval::class)
-                        messages.add(action.invoke(aggregate!!))
+                        val aggregate = past(messages.map { it.fact }, PaymentRetrieval::class)
+                        messages.add(Message.createFrom(action.invoke(aggregate!!)))
                     }
                 }
                 is FlowMessageReactionDefinition -> {
                     val action = element.action?.function // TODO properly retrieve intent creator
                     if (action != null) {
-                        val aggregate = past(messages, PaymentRetrieval::class)
-                        messages.add(action.invoke(aggregate!!, messages.last()))
+                        val aggregate = past(messages.map { it.fact }, PaymentRetrieval::class)
+                        val fact = action.invoke(aggregate!!, messages.last().fact)
+                        messages.add(Message.createFrom(fact))
                     }
-                    val aggregate = past(messages, PaymentRetrieval::class)
+                    val aggregate = past(messages.map { it.fact }, PaymentRetrieval::class)
                     val message = element.expected(aggregate)
                     it.setVariable("data", message.hash)
                     println("Message: ${message.hash}")
@@ -168,13 +170,13 @@ class CamundaBpmExecutionTest {
                     if (createIntentElement is FlowActionDefinition) {
                         val action = createIntentElement.function
                         if (action != null) {
-                            val aggregate = past(messages, PaymentRetrieval::class)
-                            messages.add(action.invoke(aggregate!!))
+                            val aggregate = past(messages.map { it.fact }, PaymentRetrieval::class)
+                            messages.add(Message.createFrom(action.invoke(aggregate!!)))
                         }
                     }
                     val createSuccessElement = element.children.last() // TODO properly retrieve success listener
                     if (createSuccessElement is FlowMessageReactionDefinition) {
-                        val aggregate = past(messages, PaymentRetrieval::class)
+                        val aggregate = past(messages.map { it.fact }, PaymentRetrieval::class)
                         val message = createSuccessElement.expected(aggregate)
                         it.setVariable("data", message.hash)
                         println("Message: ${message.hash}")

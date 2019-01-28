@@ -43,7 +43,7 @@ data class Message<F: Fact>(
 
     companion object {
 
-        fun <F: Fact> create(fact: F): Message<F> {
+        fun <F: Fact> createFrom(fact: F): Message<F> {
             return Message(UUID.randomUUID().toString(), fact::class.java.simpleName, fact)
         }
 

@@ -12,7 +12,7 @@ class MessageTest {
     fun testCreate() {
 
         val fact = RetrievePayment(payment = 3F, accountId = "abc")
-        val message = Message.create(fact)
+        val message = Message.createFrom(fact)
 
         assertNotNull(message.id)
         assertEquals(fact::class.java.simpleName, message.name)
@@ -24,7 +24,7 @@ class MessageTest {
     fun testJson() {
 
         val fact = RetrievePayment(payment = 3F, accountId = "abc")
-        val expected = Message.create(fact)
+        val expected = Message.createFrom(fact)
         val json = expected.toJson()
         val actual = Message.fromJson(json, RetrievePayment::class)
 
