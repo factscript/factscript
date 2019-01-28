@@ -17,6 +17,7 @@ inline fun <reified I: Aggregate> execute(name: ElementName = I::class.simpleNam
     val flowExecution = FlowExecutionImpl<I>(null).apply(definition)
     flowExecution.name = name
     flowExecution.aggregateType = type
+    FlowDefinitions.add(flowExecution)
     return flowExecution
 
 }

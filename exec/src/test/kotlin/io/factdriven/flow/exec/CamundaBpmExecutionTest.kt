@@ -1,5 +1,6 @@
 package io.factdriven.flow.exec
 
+import io.factdriven.flow.camunda.CamundaBpmFlowExecutor
 import io.factdriven.flow.define
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.past
@@ -13,7 +14,6 @@ import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
 import org.camunda.bpm.engine.impl.event.EventType
 import org.camunda.bpm.engine.runtime.ProcessInstance
 import org.camunda.bpm.engine.test.mock.Mocks
-import org.camunda.bpm.engine.variable.value.PrimitiveValue
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin
@@ -96,32 +96,8 @@ class CamundaBpmExecutionTest {
 
     private fun correlate(fact: Fact) {
 
-        val message = Message.createFrom(fact)
-        val hash = paymentRetrieval.patterns(fact).iterator().next().hash
-
-        val externalTasks = engine.externalTaskService.fetchAndLock(Int.MAX_VALUE, hash).topic(hash, Long.MAX_VALUE).execute()
-        if (externalTasks != null && !externalTasks.isEmpty()) {
-            externalTasks.forEach {
-                val messages = messages(it.processInstanceId)
-                messages.add(message)
-                engine.externalTaskService.complete(it.id, hash, mapOf("messages" to SpinValues.jsonValue(paymentRetrieval.serialize(messages))))
-            }
-
-        } else {
-
-            val subscriptions = engine.runtimeService.createEventSubscriptionQuery().eventType(EventType.MESSAGE.name()).eventName(hash).list()
-            if (subscriptions != null && ! subscriptions.isEmpty()) {
-                subscriptions.forEach {
-                    val messages = messages(it.processInstanceId)
-                    messages.add(message)
-                    val correlationBuilder = engine.runtimeService.createMessageCorrelation(hash)
-                        .setVariable("messages", SpinValues.jsonValue(paymentRetrieval.serialize(messages)))
-                    if (it.processInstanceId != null)
-                        correlationBuilder.processInstanceId(it.processInstanceId)
-                    correlationBuilder.correlate()
-                }
-            }
-
+        CamundaBpmFlowExecutor.target(Message.from(fact)).forEach {
+            CamundaBpmFlowExecutor.correlate(it)
         }
 
     }
@@ -154,7 +130,9 @@ class CamundaBpmExecutionTest {
     private fun engine(): ProcessEngine {
         val configuration = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration() as ProcessEngineConfigurationImpl
         configuration.processEnginePlugins = listOf(SpinProcessEnginePlugin())
-        return configuration.buildProcessEngine()
+        val engine = configuration.buildProcessEngine()
+        CamundaBpmFlowExecutor.engine = engine
+        return engine
     }
 
     fun open(bpmnModelInstance: BpmnModelInstance) {
@@ -182,7 +160,7 @@ class CamundaBpmExecutionTest {
                     if (action != null) {
                         val messages = messages(it)
                         val aggregate = past(messages.map { it.fact }, PaymentRetrieval::class)
-                        messages.add(Message.createFrom(action.invoke(aggregate!!)))
+                        messages.add(Message.from(action.invoke(aggregate!!)))
                         it.setVariable("messages", SpinValues.jsonValue(paymentRetrieval.serialize(messages)))
                         messages(it)
                     }
@@ -193,7 +171,7 @@ class CamundaBpmExecutionTest {
                         val messages = messages(it)
                         val aggregate = past(messages.map { it.fact }, PaymentRetrieval::class)
                         val fact = action.invoke(aggregate!!, messages.last().fact)
-                        messages.add(Message.createFrom(fact))
+                        messages.add(Message.from(fact))
                         it.setVariable("messages", SpinValues.jsonValue(paymentRetrieval.serialize(messages)))
                         messages(it)
                     }
@@ -210,7 +188,7 @@ class CamundaBpmExecutionTest {
                         if (action != null) {
                             val messages = messages(it)
                             val aggregate = past(messages.map { it.fact }, PaymentRetrieval::class)
-                            messages.add(Message.createFrom(action.invoke(aggregate!!)))
+                            messages.add(Message.from(action.invoke(aggregate!!)))
                             it.setVariable("messages", SpinValues.jsonValue(paymentRetrieval.serialize(messages)))
                             messages(it)
                         }

@@ -129,11 +129,11 @@ class FlowDefinitionTest {
     fun testSerialisation() {
 
         val original = listOf<Message<*>>(
-            Message.createFrom(RetrievePayment(id="anId", payment = 1F)),
-            Message.createFrom(PaymentRetrievalAccepted(paymentId = "anId")),
-            Message.createFrom(ChargeCreditCard(reference = "anId", payment = 1F)),
-            Message.createFrom(CreditCardCharged(reference = "anId")),
-            Message.createFrom(PaymentRetrieved(paymentId = "anId"))
+            Message.from(RetrievePayment(id="anId", payment = 1F)),
+            Message.from(PaymentRetrievalAccepted(paymentId = "anId")),
+            Message.from(ChargeCreditCard(reference = "anId", payment = 1F)),
+            Message.from(CreditCardCharged(reference = "anId")),
+            Message.from(PaymentRetrieved(paymentId = "anId"))
         )
 
         val serialized = flow.serialize(original)

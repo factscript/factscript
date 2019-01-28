@@ -1,6 +1,7 @@
 package io.factdriven.flow.lang
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 
 /**
@@ -8,6 +9,7 @@ import kotlin.reflect.KClass
  */
 typealias Aggregate = Any
 typealias AggregateId = String
+typealias AggregateName = String
 typealias AggregateType = KClass<*>
 typealias AggregateIds = List<AggregateId>
 
@@ -21,6 +23,27 @@ interface FlowElement {
 
     val name: ElementName
     val parent: FlowDefinition?
+
+}
+
+object FlowDefinitions {
+
+    private val list = mutableListOf<FlowDefinition>()
+
+    fun add(definition: FlowDefinition) {
+        list.add(definition)
+    }
+
+    fun all(): List<FlowDefinition> {
+        return list
+    }
+
+    fun get(name: ElementName): FlowDefinition {
+        val definition = list.find {
+            it.name == name
+        }
+        return definition ?: throw IllegalArgumentException()
+    }
 
 }
 

@@ -17,19 +17,21 @@ typealias FactType<F> = KClass<out F>
 typealias FactName = String
 
 typealias MessageId = String
-typealias MessageTarget = Pair<AggregateType, AggregateId>
+typealias MessageTarget = Triple<AggregateName, AggregateId?, MessagePatternHash>
 
 typealias PropertyName = String
 typealias PropertyValue = Any?
 
 typealias Messages = List<Fact>
 typealias MessagePatterns = Set<MessagePattern>
+typealias MessagePatternHash = String
 
 data class Message<F: Fact>(
 
     val id: MessageId,
     val name: FactName,
-    val fact: F
+    val fact: F,
+    val target: MessageTarget? = null
 
 ) {
 
@@ -41,9 +43,13 @@ data class Message<F: Fact>(
         return jacksonObjectMapper().valueToTree(this)
     }
 
+    fun target(to: MessageTarget): Message<F> {
+        return Message(id, name, fact, to)
+    }
+
     companion object {
 
-        fun <F: Fact> createFrom(fact: F): Message<F> {
+        fun <F: Fact> from(fact: F): Message<F> {
             return Message(UUID.randomUUID().toString(), fact::class.java.simpleName, fact)
         }
 
