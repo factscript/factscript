@@ -1,19 +1,55 @@
 package io.factdriven.flow.exec
 
+import io.factdriven.flow.define
+
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+class PaymentRetrieval(command: RetrievePayment) {
 
-class PaymentRetrieval(init: RetrievePayment) {
+    val paymentId: String?
+    val accountId: String?
+    var uncovered: Float
+    var covered: Float
 
-    val paymentId = init.id
-    val accountId = init.accountId
-    var uncovered = init.payment
-    var covered = 0F
+    init {
+        this.paymentId = command.id
+        this.accountId = command.accountId
+        this.uncovered = command.payment
+        this.covered = 0F
+    }
 
     fun apply(event: PaymentRetrieved) {
+
         covered += event.payment ?: uncovered
         uncovered -= event.payment ?: uncovered
+
+    }
+
+    companion object {
+
+        fun init() {}
+
+        init {
+
+            define <PaymentRetrieval> {
+
+                on message(RetrievePayment::class) create acceptance(PaymentRetrievalAccepted::class) by {
+                    PaymentRetrievalAccepted(paymentId = it.id)
+                }
+
+                execute service {
+                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, payment = uncovered) }
+                    on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
+                }
+
+                create success(PaymentRetrieved::class) by {
+                    PaymentRetrieved(paymentId = paymentId, payment = uncovered)
+                }
+
+            }
+
+        }
     }
 
 }
@@ -21,12 +57,6 @@ class PaymentRetrieval(init: RetrievePayment) {
 data class RetrievePayment(val id: String? = null, val accountId: String? = null, val payment: Float)
 data class PaymentRetrievalAccepted(val paymentId: String? = null)
 data class PaymentRetrieved(val paymentId: String? = null, val payment: Float? = null)
-data class PaymentFailed(val paymentId: String? = null)
-data class PaymentCoveredManually(val paymentId: String? = null)
+
 data class ChargeCreditCard(val reference: String? = null, val payment: Float? = null)
 data class CreditCardCharged(val reference: String? = null)
-data class CreditCardExpired(val reference: String? = null)
-data class CreditCardDetailsUpdated(val reference: String? = null)
-data class WithdrawAmount(val reference: String? = null, val payment: Float? = null)
-data class CreditAmount(val reference: String? = null)
-data class AmountWithdrawn(val reference: String? = null)

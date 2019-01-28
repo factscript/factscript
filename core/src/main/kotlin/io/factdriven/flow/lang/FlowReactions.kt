@@ -67,7 +67,7 @@ interface MatchableFlowMessageReaction<I: Aggregate, M: Fact> {
 
 interface ActionableFlowReaction<I: Aggregate, IN: Fact, OUT: Fact> {
 
-    infix fun by(reaction: I.(IN) -> OUT)
+    infix fun by(reaction: I.(IN) -> OUT?)
 
 }
 
@@ -94,7 +94,7 @@ abstract class FlowReactionImpl<I: Aggregate, IN: Fact, OUT: Fact>(override val 
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun by(reaction: I.(IN) -> OUT) {
+    override fun by(reaction: I.(IN) -> OUT?) {
         @Suppress("UNCHECKED_CAST")
         this.action!!.function = reaction as Aggregate.(Any) -> Fact
     }
