@@ -7,12 +7,12 @@ import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
-import org.camunda.bpm.engine.delegate.JavaDelegate
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -22,22 +22,39 @@ import java.io.File
  */
 class CamundaBpmExecutionTest {
 
+    var id: String? = null
+
     @Test
     fun testPaymentRetrieval() {
 
-        correlate(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F))
-        correlate(CreditCardCharged(reference = "anId"))
+        correlate(RetrievePayment(reference = "anOrderId", accountId = "anAccountId", payment = 3F))
+
+        assertEquals(0F, paymentRetrieval().covered)
+
+        correlate(CreditCardCharged(reference = "anOrderId"))
+
+        assertEquals(3F, paymentRetrieval().covered)
 
     }
 
     private fun correlate(fact: Fact) {
 
-        CamundaBpmFlowExecutor.target(Message.from(fact)).forEach {
+        val message = Message.from(fact)
+
+        if (id == null)
+            id = message.id
+
+        CamundaBpmFlowExecutor.target(message).map {
             CamundaBpmFlowExecutor.correlate(it)
         }
 
     }
 
+    private fun paymentRetrieval(): PaymentRetrieval {
+
+        return CamundaBpmFlowExecutor.load(id!!, PaymentRetrieval::class)
+
+    }
 
     init {
 

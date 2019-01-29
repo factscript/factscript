@@ -1,5 +1,6 @@
 package io.factdriven.flow.lang
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
@@ -38,6 +39,13 @@ object FlowDefinitions {
 
     fun all(): List<FlowDefinition<*>> {
         return list
+    }
+
+    fun <A: Aggregate> get(type: KClass<A>): FlowDefinition<A> {
+        val definition = list.find {
+            it.aggregateType == type
+        } as FlowDefinition<A>?
+        return definition ?: throw IllegalArgumentException()
     }
 
     fun get(name: ElementName): FlowDefinition<*> {
@@ -107,7 +115,11 @@ interface FlowDefinition<A: Aggregate>: FlowElement {
     }
 
     fun deserialize(stream: String): List<Message<*>> {
-        return jacksonObjectMapper().readTree(stream).map {
+        return deserialize(jacksonObjectMapper().readTree(stream))
+    }
+
+    fun deserialize(stream: JsonNode): List<Message<*>> {
+        return stream.map {
             Message.fromJson(it, messageType(it.get("name").textValue())!!)
         }
     }
@@ -116,9 +128,11 @@ interface FlowDefinition<A: Aggregate>: FlowElement {
         return jacksonObjectMapper().writeValueAsString(messages)
     }
 
-    fun aggregate(history: Messages): A? {
+    fun aggregate(history: Messages): A {
 
-        fun past(history: Messages, aggregate: A): A? {
+        assert(!history.isEmpty())
+
+        fun past(history: Messages, aggregate: A): A {
             if (!history.isEmpty()) {
                 val message = history.first()
                 val method = aggregate::class.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == message::class }
@@ -129,15 +143,11 @@ interface FlowDefinition<A: Aggregate>: FlowElement {
             }
         }
 
-        if (!history.isEmpty()) {
-            val message = history.first()
-            val constructor = aggregateType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == message::class }
-            return if (constructor != null) {
-                past(history.subList(1, history.size), constructor.call(message) as A)
-            } else throw IllegalArgumentException()
-        } else {
-            return null
-        }
+        val message = history.first()
+        val constructor = aggregateType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == message::class }
+        return if (constructor != null) {
+            past(history.subList(1, history.size), constructor.call(message) as A)
+        } else throw IllegalArgumentException()
 
     }
 

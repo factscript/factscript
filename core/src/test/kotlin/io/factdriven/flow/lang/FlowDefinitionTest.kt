@@ -145,16 +145,6 @@ class FlowDefinitionTest {
     }
 
     @Test
-    fun testAggregateWithEmptyMessages() {
-
-        val messages = emptyList<Fact>()
-        val aggregate = flow.aggregate(messages)
-
-        Assertions.assertNull(aggregate)
-
-    }
-
-    @Test
     fun testAggregateWithOneMessage() {
 
         val messages = listOf(

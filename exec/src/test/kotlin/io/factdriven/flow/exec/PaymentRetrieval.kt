@@ -5,19 +5,16 @@ import io.factdriven.flow.define
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class PaymentRetrieval(command: RetrievePayment) {
+data class PaymentRetrieval(
 
-    val paymentId: String?
-    val accountId: String?
-    var uncovered: Float
+    val paymentId: String?,
+    val accountId: String?,
+    var uncovered: Float,
     var covered: Float
 
-    init {
-        this.paymentId = command.id
-        this.accountId = command.accountId
-        this.uncovered = command.payment
-        this.covered = 0F
-    }
+) {
+
+    constructor(command: RetrievePayment): this(command.reference, command.accountId, command.payment, 0F)
 
     fun apply(event: PaymentRetrieved) {
 
@@ -33,7 +30,7 @@ class PaymentRetrieval(command: RetrievePayment) {
             define <PaymentRetrieval> {
 
                 on message(RetrievePayment::class) create acceptance(PaymentRetrievalAccepted::class) by {
-                    PaymentRetrievalAccepted(paymentId = it.id)
+                    PaymentRetrievalAccepted(paymentId = it.reference)
                 }
 
                 execute service {
@@ -53,7 +50,7 @@ class PaymentRetrieval(command: RetrievePayment) {
 
 }
 
-data class RetrievePayment(val id: String? = null, val accountId: String? = null, val payment: Float)
+data class RetrievePayment(val reference: String? = null, val accountId: String? = null, val payment: Float)
 data class PaymentRetrievalAccepted(val paymentId: String? = null)
 data class PaymentRetrieved(val paymentId: String? = null, val payment: Float? = null)
 

@@ -6,20 +6,26 @@ import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.camunda.bpm.engine.delegate.JavaDelegate
 import org.camunda.bpm.engine.impl.event.EventType
+import org.camunda.spin.impl.json.jackson.JacksonJsonNode
 import org.camunda.spin.plugin.variable.SpinValues
 import org.camunda.spin.plugin.variable.value.JsonValue
+import kotlin.reflect.KClass
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+const val DEFINITION_NAME_VAR = "name"
+const val MESSAGE_NAME_VAR = "message"
+const val MESSAGES_VAR = "messages"
+
 object CamundaBpmFlowBehaviour: JavaDelegate {
 
     override fun execute(execution: DelegateExecution) {
 
-        val processDefinitionKey = execution.getVariable("processDefinitionKey") as String
-        val flowDefinition = FlowDefinitions.get(processDefinitionKey)
+        val definitionName = execution.getVariable(DEFINITION_NAME_VAR) as String
+        val flowDefinition = FlowDefinitions.get(definitionName)
         val element = flowDefinition.descendantMap[execution.currentActivityId]!!
-        val messages = flowDefinition.deserialize(execution.getVariableTyped<JsonValue>("messages", false).valueSerialized!!).toMutableList()
+        val messages = flowDefinition.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
         fun aggregate() = flowDefinition.aggregate(messages.map { it.fact })!!
 
@@ -63,8 +69,8 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
         val pattern = pattern(element)
 
         execution.variables = mapOf(
-            "messages" to SpinValues.jsonValue(flowDefinition.serialize(messages)),
-            "message" to pattern?.hash
+            MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(messages)),
+            MESSAGE_NAME_VAR to pattern?.hash
         )
 
     }
@@ -107,7 +113,7 @@ object CamundaBpmFlowExecutor {
         fun variables(): Map<String, Any> {
 
             val messages = if (processInstanceId != null) {
-                val serialised = engine.runtimeService.getVariableTyped<JsonValue>(processInstanceId, "messages", false)?.valueSerialized
+                val serialised = engine.runtimeService.getVariableTyped<JsonValue>(processInstanceId, MESSAGES_VAR, false)?.valueSerialized
                 if (serialised != null) flowDefinition.deserialize(serialised) else emptyList()
             } else emptyList()
 
@@ -115,8 +121,8 @@ object CamundaBpmFlowExecutor {
                 add(message)
                 println("Incoming: ${message.fact}") // TODO
                 return mapOf(
-                    "processDefinitionKey" to flowDefinition.name,
-                    "messages" to SpinValues.jsonValue(flowDefinition.serialize(this)).create()
+                    DEFINITION_NAME_VAR to flowDefinition.name,
+                    MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(this)).create()
                 )
             }
 
@@ -144,9 +150,37 @@ object CamundaBpmFlowExecutor {
         val correlationBuilder = engine.runtimeService
             .createMessageCorrelation(correlationHash)
             .setVariables(variables())
-        if (processInstanceId != null)
+        if (processInstanceId != null) {
             correlationBuilder.processInstanceId(processInstanceId)
+        } else {
+            correlationBuilder.processInstanceBusinessKey(message.id)
+        }
         correlationBuilder.correlate()
+
+    }
+
+    fun <A: Aggregate> load(id: AggregateId, type: KClass<A>): A {
+
+        val flowDefinition = FlowDefinitions.get(type)
+
+        val processInstance =
+            engine.historyService.createHistoricProcessInstanceQuery()
+                .processInstanceBusinessKey(id)
+                .singleResult()
+
+        val messages = engine.historyService.createHistoricVariableInstanceQuery()
+            .processInstanceId(processInstance.id)
+            .variableName(MESSAGES_VAR)
+            .disableCustomObjectDeserialization()
+            .singleResult().value as JacksonJsonNode?
+
+        if (messages != null) {
+            val aggregate = flowDefinition.aggregate(flowDefinition.deserialize(messages.unwrap()).map { it.fact })
+            println("  Status: ${aggregate}")
+            return aggregate
+        }
+
+        throw IllegalArgumentException()
 
     }
 
