@@ -132,7 +132,7 @@ fun transform(container: Container): BpmnModelInstance {
         modelElementInstance.addChildElement(extensionElements)
 
         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-            camundaDelegateExpression = "#{enter}"
+            camundaDelegateExpression = "#{start}"
             camundaEvent = "start"
         }
 

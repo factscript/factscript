@@ -9,17 +9,24 @@ data class PaymentRetrieval(
 
     val paymentId: String?,
     val accountId: String?,
-    var uncovered: Float,
-    var covered: Float
+    var total: Float,
+    var covered: Float = 0F
 
 ) {
 
-    constructor(command: RetrievePayment): this(command.reference, command.accountId, command.payment, 0F)
+    constructor(command: RetrievePayment): this(command.reference, command.accountId, command.payment)
 
-    fun apply(event: PaymentRetrieved) {
+    var pending = 0F
 
-        covered += event.payment ?: uncovered
-        uncovered -= event.payment ?: uncovered
+    fun apply(command: ChargeCreditCard) {
+
+        pending = command.payment!!
+
+    }
+
+    fun apply(event: CreditCardCharged) {
+
+        covered += event.payment ?: pending
 
     }
 
@@ -34,12 +41,19 @@ data class PaymentRetrieval(
                 }
 
                 execute service {
-                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, payment = uncovered) }
+                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, payment = total /*- 1*/) }
                     on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
                 }
 
+                /*
+                execute service {
+                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, payment = total - covered) }
+                    on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
+                }
+                */
+
                 create success(PaymentRetrieved::class) by {
-                    PaymentRetrieved(paymentId = paymentId, payment = uncovered)
+                    PaymentRetrieved(paymentId = paymentId, payment = total)
                 }
 
             }
@@ -55,4 +69,4 @@ data class PaymentRetrievalAccepted(val paymentId: String? = null)
 data class PaymentRetrieved(val paymentId: String? = null, val payment: Float? = null)
 
 data class ChargeCreditCard(val reference: String? = null, val payment: Float? = null)
-data class CreditCardCharged(val reference: String? = null)
+data class CreditCardCharged(val reference: String? = null, val payment: Float? = null)

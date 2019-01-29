@@ -28,6 +28,11 @@ class BpmnRenderingIntegrationTest {
                 create progress ("PaymentCovered")
 
                 execute service {
+                    create intent (ChargeCreditCard::class) by { ChargeCreditCard() }
+                    on message CreditCardCharged::class create success()
+                }
+
+                execute service {
                     create intent (NotifyCustomer::class) by { NotifyCustomer() }
                 }
 
@@ -44,6 +49,7 @@ class BpmnRenderingIntegrationTest {
 
     fun render(flow: FlowExecution<*>) {
         val container = translate(flow)
+        val symbols = container.symbols
         val bpmnModelInstance = transform(container)
         Bpmn.validateModel(bpmnModelInstance);
         val file = File.createTempFile("./bpmn-model-api-", ".bpmn")

@@ -59,6 +59,14 @@ abstract class Container(override val id: String, override val name: String, ove
         children.add(child)
     }
 
+    override fun equals(other: Any?): Boolean {
+        return other is Symbol && id.equals(other.id)
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
+
 }
 
 class Sequence(id: String, name: String, parent: Container? = null): Container(id, name, parent) {
@@ -164,16 +172,16 @@ abstract class Symbol(override val id: String, override val name: String, overri
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is Symbol && name.equals(other.name)
+        return other is Symbol && id.equals(other.id)
     }
 
     override fun hashCode(): Int {
-        return name.hashCode()
+        return id.hashCode()
     }
 
 }
 
-data class Connector(val source: Symbol, val target: Symbol): Graphical, Identified {
+class Connector(val source: Symbol, val target: Symbol): Graphical, Identified {
 
     override val id = source.id + "-" + target.id
 
@@ -182,6 +190,14 @@ data class Connector(val source: Symbol, val target: Symbol): Graphical, Identif
         val to = target.waypoint(this)
         // TODO intermediate waypoints
         return listOf(from, to)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is Symbol && id.equals(other.id)
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
     }
 
 }

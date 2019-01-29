@@ -2,6 +2,7 @@ package io.factdriven.flow.exec
 
 import io.factdriven.flow.camunda.CamundaBpmFlowBehaviour
 import io.factdriven.flow.camunda.CamundaBpmFlowExecutor
+import io.factdriven.flow.camunda.CamundaBpmFlowExecutor.correlate
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
@@ -32,6 +33,12 @@ class CamundaBpmExecutionTest {
         assertEquals(0F, paymentRetrieval().covered)
 
         correlate(CreditCardCharged(reference = "anOrderId"))
+
+        /*
+        assertEquals(2F, paymentRetrieval().covered)
+
+        correlate(CreditCardCharged(reference = "anOrderId"))
+        */
 
         assertEquals(3F, paymentRetrieval().covered)
 
@@ -101,7 +108,7 @@ class CamundaBpmExecutionTest {
 
     fun mock() {
 
-        Mocks.register("enter", CamundaBpmFlowBehaviour)
+        Mocks.register("start", CamundaBpmFlowBehaviour)
 
     }
 

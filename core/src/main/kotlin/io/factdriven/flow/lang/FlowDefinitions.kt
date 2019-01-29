@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
-import kotlin.reflect.KFunction
 import kotlin.reflect.full.memberFunctions
 
 /**
@@ -22,7 +21,23 @@ typealias ElementId = String
 interface FlowElement {
 
     val id: ElementId
-        get() = (parent?.id ?: "") + (if (parent != null) "-" else "") + name
+        get() {
+            val id = StringBuffer()
+            if (parent != null && parent!!.parent != null) {
+                id.append(parent!!.id)
+                id.append("-")
+            }
+            id.append(name)
+            if (parent != null) {
+                id.append("-")
+                val idx = parent!!.children.indexOf(this)
+                val counter = parent!!.children.count {
+                    it.name == name && parent!!.children.indexOf(it) <= idx
+                }
+                id.append(counter)
+            }
+            return id.toString()
+        }
 
     val name: ElementName
     val parent: FlowDefinition<*>?
