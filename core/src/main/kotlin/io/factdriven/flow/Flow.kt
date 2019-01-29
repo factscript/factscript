@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-inline fun <reified I: Aggregate> define(name: ElementName = I::class.simpleName!!, type: KClass<I> = I::class, definition: FlowExecution<I>.() -> Unit): FlowDefinition {
+inline fun <reified I: Aggregate> define(name: ElementName = I::class.simpleName!!, type: KClass<I> = I::class, definition: FlowExecution<I>.() -> Unit): FlowDefinition<I> {
 
     return execute (name, type, definition).asDefinition()
 

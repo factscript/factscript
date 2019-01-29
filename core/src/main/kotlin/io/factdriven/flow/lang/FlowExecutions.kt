@@ -36,8 +36,8 @@ interface FlowExecution<I : Aggregate>: FlowElement, FlowActivities<I> {
     fun <IN: Fact, OUT: Fact> fix(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
     fun <IN: Fact, OUT: Fact> failure(type: KClass<OUT>): FlowReactionActionImpl<IN, OUT>
 
-    fun asDefinition(): FlowDefinition {
-        return this as FlowDefinition
+    fun asDefinition(): FlowDefinition<I> {
+        return this as FlowDefinition<I>
     }
 
 }
@@ -51,7 +51,7 @@ interface FlowActivities<I: Aggregate> {
 
 }
 
-class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition?): FlowDefinition, FlowExecution<I>, FlowActivities<I> {
+class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition<*>?): FlowDefinition<I>, FlowExecution<I>, FlowActivities<I> {
 
     // Flow Definition
 
@@ -174,7 +174,7 @@ interface FlowReactionWithoutAction
 
 class FlowReactionActionImpl<IN: Fact, OUT: Fact>(
 
-    override val parent: FlowDefinition,
+    override val parent: FlowDefinition<*>,
     override val actionType: FlowActionType = FlowActionType.Success,
     override var messageType: FactType<*>? = null,
     override val name: String = messageType?.simpleName ?: ""

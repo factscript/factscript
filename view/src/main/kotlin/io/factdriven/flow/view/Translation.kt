@@ -9,7 +9,7 @@ fun translate(execution: FlowExecution<*>): Container {
     return translate(execution.asDefinition())
 }
 
-fun translate(definition: FlowDefinition): Container {
+fun translate(definition: FlowDefinition<*>): Container {
 
     fun translate(element: FlowElement, parent: Container): Element {
         return when(element) {
@@ -22,7 +22,7 @@ fun translate(definition: FlowDefinition): Container {
                     BpmnEventCharacteristic.catching
                 )
             }
-            is FlowDefinition -> {
+            is FlowDefinition<*> -> {
                 when (element.executionType) {
                     FlowExecutionType.execution -> {
                         val sequence = Sequence(element.id, element.name, parent)

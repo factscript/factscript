@@ -98,7 +98,7 @@ fun transform(container: Container): BpmnModelInstance {
     val diagram = modelInstance.newInstance(BpmnDiagram::class.java)
 
     with(definitions) {
-        targetNamespace = "https://factdriven.io/tests"
+        targetNamespace = "https://factdriven.io/flowlang"
         modelInstance.definitions = this
     }
 
@@ -136,11 +136,6 @@ fun transform(container: Container): BpmnModelInstance {
             camundaEvent = "start"
         }
 
-        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-            camundaDelegateExpression = "#{leave}"
-            camundaEvent = "end"
-        }
-
         when (symbol) {
 
             is BpmnEventSymbol -> {
@@ -156,11 +151,12 @@ fun transform(container: Container): BpmnModelInstance {
 
                         if (symbol.characteristic == BpmnEventCharacteristic.catching) {
 
-                            val message = modelInstance.newInstance(Message::class.java)
-                            message.setAttributeValue("id", symbol.name)
-                            message.setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(symbol.name).hash else "#{data}")
-                            definitions.addChildElement(message)
-                            messageEventDefinition.message = message
+                            with(modelInstance.newInstance(Message::class.java)) {
+                                setAttributeValue("id", symbol.name)
+                                setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(symbol.name).hash else "#{message}")
+                                definitions.addChildElement(this)
+                                messageEventDefinition.message = this
+                            }
 
                         }
 
@@ -179,7 +175,7 @@ fun transform(container: Container): BpmnModelInstance {
 
                         with(modelInstance.newInstance(Message::class.java)) {
                             setAttributeValue("id", symbol.name)
-                            setAttributeValue("name", "#{data}")
+                            setAttributeValue("name", "#{message}")
                             definitions.addChildElement(this)
                             (modelElementInstance as ReceiveTask).message = this
                         }
@@ -189,7 +185,7 @@ fun transform(container: Container): BpmnModelInstance {
                     BpmnTaskType.service -> {
 
                         (modelElementInstance as ServiceTask).camundaType = "external"
-                        modelElementInstance.camundaTopic = "#{data}"
+                        modelElementInstance.camundaTopic = "#{message}"
 
                     }
 
@@ -217,7 +213,7 @@ fun transform(container: Container): BpmnModelInstance {
         with(modelInstance.newInstance(Bounds::class.java)) {
             x = (symbol.topLeft.x + zero.x).toDouble() + 6
             y = (symbol.topLeft.y + zero.y).toDouble() + symbol.inner.height + 6
-            height = 20.toDouble() // TODO adapt according to text size
+            height = 20.toDouble()
             width = symbol.inner.width.toDouble() - 12
             bpmnLabel.addChildElement(this)
         }

@@ -1,6 +1,7 @@
 package io.factdriven.flow.lang
 
 import io.factdriven.flow.define
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -62,8 +63,8 @@ class FlowDefinitionTest {
         assertEquals("PaymentRetrieval", flow.id)
         assertEquals("PaymentRetrieval-RetrievePayment", flow.children[0].id)
         assertEquals("PaymentRetrieval-ChargeCreditCard", flow.children[1].id)
-        assertEquals("PaymentRetrieval-ChargeCreditCard-ChargeCreditCard", (flow.children[1] as FlowDefinition).children[0].id)
-        assertEquals("PaymentRetrieval-ChargeCreditCard-CreditCardCharged", (flow.children[1] as FlowDefinition).children[1].id)
+        assertEquals("PaymentRetrieval-ChargeCreditCard-ChargeCreditCard", (flow.children[1] as FlowDefinition<*>).children[0].id)
+        assertEquals("PaymentRetrieval-ChargeCreditCard-CreditCardCharged", (flow.children[1] as FlowDefinition<*>).children[1].id)
         assertEquals("PaymentRetrieval-PaymentRetrieved", flow.children[2].id)
 
     }
@@ -105,7 +106,7 @@ class FlowDefinitionTest {
     @Test
     fun testExpectedPatternForCreditCardCharged() {
 
-        val aggregate = PaymentRetrieval(RetrievePayment(id = "anId"))
+        val aggregate = PaymentRetrieval(RetrievePayment(id = "anId", payment = 2F))
         val retrievePayment = flow.descendantMap["PaymentRetrieval-ChargeCreditCard-CreditCardCharged"] as FlowMessageReactionDefinition
 
         assertEquals(MessagePattern(CreditCardCharged::class, mapOf("reference" to "anId")), retrievePayment.expected(aggregate))
@@ -140,6 +141,64 @@ class FlowDefinitionTest {
         val deserialised = flow.deserialize(serialized)
 
         assertEquals(original, deserialised)
+
+    }
+
+    @Test
+    fun testAggregateWithEmptyMessages() {
+
+        val messages = emptyList<Fact>()
+        val aggregate = flow.aggregate(messages)
+
+        Assertions.assertNull(aggregate)
+
+    }
+
+    @Test
+    fun testAggregateWithOneMessage() {
+
+        val messages = listOf(
+            RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F)
+        )
+        val aggregate = flow.aggregate(messages)
+
+        assertEquals("anId", aggregate!!.paymentId)
+        assertEquals("anAccountId", aggregate.accountId)
+        assertEquals(3F, aggregate.uncovered)
+        assertEquals(0F, aggregate.covered)
+
+    }
+
+    @Test
+    fun testAggregateWithTwoMessages() {
+
+        val messages = listOf(
+            RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F),
+            PaymentRetrieved()
+        )
+        val aggregate = flow.aggregate(messages)
+
+        assertEquals("anId", aggregate!!.paymentId)
+        assertEquals("anAccountId", aggregate.accountId)
+        assertEquals(0F, aggregate.uncovered)
+        assertEquals(3F, aggregate.covered)
+
+    }
+
+    @Test
+    fun testAggregateWithThreeMessages() {
+
+        val messages = listOf(
+            RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F),
+            PaymentRetrieved(payment = 1F),
+            PaymentRetrieved(payment = 1F)
+        )
+        val aggregate = flow.aggregate(messages)
+
+        assertEquals("anId", aggregate!!.paymentId)
+        assertEquals("anAccountId", aggregate.accountId)
+        assertEquals(1F, aggregate.uncovered)
+        assertEquals(2F, aggregate.covered)
 
     }
 

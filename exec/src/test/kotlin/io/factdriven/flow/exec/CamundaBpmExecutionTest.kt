@@ -64,7 +64,6 @@ class CamundaBpmExecutionTest {
             val configuration = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration() as ProcessEngineConfigurationImpl
             configuration.processEnginePlugins = listOf(SpinProcessEnginePlugin())
             engine = configuration.buildProcessEngine()
-            CamundaBpmFlowExecutor.engine = engine!!
         }
         return engine!!
     }
@@ -76,7 +75,7 @@ class CamundaBpmExecutionTest {
             Runtime.getRuntime().exec("open " + file.absoluteFile);
     }
 
-    fun bpmn(flow: FlowDefinition): BpmnModelInstance {
+    fun bpmn(flow: FlowDefinition<*>): BpmnModelInstance {
         val container = translate(flow)
         val bpmnModelInstance = transform(container)
         Bpmn.validateModel(bpmnModelInstance);
@@ -86,7 +85,6 @@ class CamundaBpmExecutionTest {
     fun mock() {
 
         Mocks.register("enter", CamundaBpmFlowBehaviour)
-        Mocks.register("leave", JavaDelegate {})
 
     }
 

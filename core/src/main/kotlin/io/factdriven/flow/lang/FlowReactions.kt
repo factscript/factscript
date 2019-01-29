@@ -12,7 +12,7 @@ enum class FlowReactionType {
 
 }
 
-class FlowReactions<I: Aggregate>(val parent: FlowDefinition) {
+class FlowReactions<I: Aggregate>(val parent: FlowDefinition<*>) {
 
     infix fun <M: Any> message(type: KClass<M>): FlowMessageReaction<I, M> {
 
@@ -71,7 +71,7 @@ interface ActionableFlowReaction<I: Aggregate, IN: Fact, OUT: Fact> {
 
 }
 
-abstract class FlowReactionImpl<I: Aggregate, IN: Fact, OUT: Fact>(override val parent: FlowDefinition, override var name: String): FlowReactionDefinition, FlowReaction<I, IN>, ActionableFlowReaction<I, IN, OUT> {
+abstract class FlowReactionImpl<I: Aggregate, IN: Fact, OUT: Fact>(override val parent: FlowDefinition<*>, override var name: String): FlowReactionDefinition, FlowReaction<I, IN>, ActionableFlowReaction<I, IN, OUT> {
 
     // Flow Reaction Definition
 
@@ -101,7 +101,7 @@ abstract class FlowReactionImpl<I: Aggregate, IN: Fact, OUT: Fact>(override val 
 
 }
 
-class FlowMessageReactionImpl<I: Aggregate, IN: Fact, OUT: Fact>(override val parent: FlowDefinition, override val messageType: KClass<IN>): FlowMessageReactionDefinition, FlowReactionImpl<I, IN, OUT>(parent, messageType.simpleName!!), FlowMessageReaction<I, IN>, MatchableFlowMessageReaction<I, IN> {
+class FlowMessageReactionImpl<I: Aggregate, IN: Fact, OUT: Fact>(override val parent: FlowDefinition<*>, override val messageType: KClass<IN>): FlowMessageReactionDefinition, FlowReactionImpl<I, IN, OUT>(parent, messageType.simpleName!!), FlowMessageReaction<I, IN>, MatchableFlowMessageReaction<I, IN> {
 
     override val propertyNames = mutableListOf<PropertyName>()
     override val propertyValues = mutableListOf<Aggregate?.() -> Any?>()

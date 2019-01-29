@@ -3,6 +3,8 @@ package io.factdriven.flow.lang
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
+import kotlin.reflect.KFunction
+import kotlin.reflect.full.memberFunctions
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -22,23 +24,23 @@ interface FlowElement {
         get() = (parent?.id ?: "") + (if (parent != null) "-" else "") + name
 
     val name: ElementName
-    val parent: FlowDefinition?
+    val parent: FlowDefinition<*>?
 
 }
 
 object FlowDefinitions {
 
-    private val list = mutableListOf<FlowDefinition>()
+    private val list = mutableListOf<FlowDefinition<*>>()
 
-    fun add(definition: FlowDefinition) {
+    fun add(definition: FlowDefinition<*>) {
         list.add(definition)
     }
 
-    fun all(): List<FlowDefinition> {
+    fun all(): List<FlowDefinition<*>> {
         return list
     }
 
-    fun get(name: ElementName): FlowDefinition {
+    fun get(name: ElementName): FlowDefinition<*> {
         val definition = list.find {
             it.name == name
         }
@@ -47,7 +49,7 @@ object FlowDefinitions {
 
 }
 
-interface FlowDefinition: FlowElement {
+interface FlowDefinition<A: Aggregate>: FlowElement {
 
     val children: List<FlowElement>
     val executionType: FlowExecutionType
@@ -60,7 +62,7 @@ interface FlowDefinition: FlowElement {
         children.forEach { child ->
             when(child) {
                 is FlowMessageReactionDefinition -> if (child.messageType.isInstance(message)) patterns.add(child.incoming(message))
-                is FlowDefinition -> patterns.addAll(child.patterns(message))
+                is FlowDefinition<*> -> patterns.addAll(child.patterns(message))
             }
         }
 
@@ -74,7 +76,7 @@ interface FlowDefinition: FlowElement {
 
         children.forEach { child ->
             descendants.add(child)
-            if (child is FlowDefinition) {
+            if (child is FlowDefinition<*>) {
                 descendants.addAll(child.descendants)
             }
             if (child is FlowReactionDefinition && child.action != null) {
@@ -112,6 +114,31 @@ interface FlowDefinition: FlowElement {
 
     fun serialize(messages: List<Message<*>>): String {
         return jacksonObjectMapper().writeValueAsString(messages)
+    }
+
+    fun aggregate(history: Messages): A? {
+
+        fun past(history: Messages, aggregate: A): A? {
+            if (!history.isEmpty()) {
+                val message = history.first()
+                val method = aggregate::class.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == message::class }
+                if (method != null) method.call(aggregate, message)
+                return past(history.subList(1, history.size), aggregate)
+            } else {
+                return aggregate
+            }
+        }
+
+        if (!history.isEmpty()) {
+            val message = history.first()
+            val constructor = aggregateType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == message::class }
+            return if (constructor != null) {
+                past(history.subList(1, history.size), constructor.call(message) as A)
+            } else throw IllegalArgumentException()
+        } else {
+            return null
+        }
+
     }
 
 }

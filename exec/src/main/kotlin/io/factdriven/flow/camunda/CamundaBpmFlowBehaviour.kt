@@ -1,8 +1,8 @@
 package io.factdriven.flow.camunda
 
 import io.factdriven.flow.lang.*
-import io.factdriven.flow.past
 import org.camunda.bpm.engine.ProcessEngine
+import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.camunda.bpm.engine.delegate.JavaDelegate
 import org.camunda.bpm.engine.impl.event.EventType
@@ -21,19 +21,21 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
         val element = flowDefinition.descendantMap[execution.currentActivityId]!!
         val messages = flowDefinition.deserialize(execution.getVariableTyped<JsonValue>("messages", false).valueSerialized!!).toMutableList()
 
-        fun aggregate() = past(messages.map { it.fact }, flowDefinition.aggregateType)!!
+        fun aggregate() = flowDefinition.aggregate(messages.map { it.fact })!!
 
         fun message(element: FlowElement): Message<*>? {
             return when(element) {
                 is FlowActionDefinition -> {
                     val action = element.function
-                    if (action != null) Message.from(action.invoke(aggregate())) else null
+                    val fact = action?.invoke(aggregate())
+                    if (fact != null) Message.from(fact) else null
                 }
                 is FlowMessageReactionDefinition -> {
                     val action = element.action?.function
-                    if (action != null) Message.from(action.invoke(aggregate(), messages.last().fact)) else null
+                    val fact = action?.invoke(aggregate(), messages.last().fact)
+                    if (fact != null) Message.from(fact) else null
                 }
-                is FlowDefinition -> {
+                is FlowDefinition<*> -> {
                     message(element.children.first()) // TODO properly retrieve intent creator
                 }
                 else -> throw IllegalArgumentException()
@@ -45,7 +47,7 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
                 is FlowMessageReactionDefinition -> {
                     element.expected(aggregate())
                 }
-                is FlowDefinition -> {
+                is FlowDefinition<*> -> {
                     pattern(element.children.last())
                 }
                 else -> null
@@ -54,7 +56,7 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
 
         val message = message(element)
         if (message != null) {
-            println("Outgoing $message") // TODO
+            println("Outgoing: ${message.fact}") // TODO
             messages.add(message)
         }
 
@@ -62,7 +64,7 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
 
         execution.variables = mapOf(
             "messages" to SpinValues.jsonValue(flowDefinition.serialize(messages)),
-            "data" to pattern?.hash
+            "message" to pattern?.hash
         )
 
     }
@@ -71,7 +73,7 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
 
 object CamundaBpmFlowExecutor {
 
-    lateinit var engine: ProcessEngine
+    val engine: ProcessEngine = ProcessEngines.getProcessEngines().values.first()
 
     fun <F: Fact> target(message: Message<F>) : List<Message<F>> {
 
@@ -111,7 +113,7 @@ object CamundaBpmFlowExecutor {
 
             with(messages.toMutableList()) {
                 add(message)
-                println("Incoming $message") // TODO
+                println("Incoming: ${message.fact}") // TODO
                 return mapOf(
                     "processDefinitionKey" to flowDefinition.name,
                     "messages" to SpinValues.jsonValue(flowDefinition.serialize(this)).create()

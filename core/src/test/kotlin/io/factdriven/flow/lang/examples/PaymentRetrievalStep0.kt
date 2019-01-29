@@ -78,7 +78,7 @@ class PaymentRetrievalStep0Test {
         val node = flow.children.get(0) as FlowActionDefinition
 
         assertEquals(FlowActionType.Success, node.actionType)
-        assertEquals(PaymentRetrieved::class, node.function!!.invoke(PaymentRetrieval(RetrievePayment()))::class)
+        assertEquals(PaymentRetrieved::class, node.function!!.invoke(PaymentRetrieval(RetrievePayment(payment = 2F)))::class)
 
     }
 
@@ -89,7 +89,7 @@ class PaymentRetrievalStep0Test {
             execute service {}
         }
 
-        val node = flow.children.get(0) as FlowDefinition
+        val node = flow.children.get(0) as FlowDefinition<*>
 
         assertEquals(FlowExecutionType.service, node.executionType)
 
@@ -104,12 +104,12 @@ class PaymentRetrievalStep0Test {
             }
         }
 
-        val parentNode = flow.children.get(0) as FlowDefinition
+        val parentNode = flow.children.get(0) as FlowDefinition<*>
         val node = parentNode.children.get(0)
         val action = node as FlowActionDefinition
 
         assertEquals(FlowActionType.Intent, action.actionType)
-        assertEquals(ChargeCreditCard::class, action.function!!.invoke(PaymentRetrieval(RetrievePayment()))::class)
+        assertEquals(ChargeCreditCard::class, action.function!!.invoke(PaymentRetrieval(RetrievePayment(payment = 2F)))::class)
     }
 
     @Test()
@@ -121,7 +121,7 @@ class PaymentRetrievalStep0Test {
             }
         }
 
-        val parentNode = flow.children.get(0) as FlowDefinition
+        val parentNode = flow.children.get(0) as FlowDefinition<*>
         val node = parentNode.children.get(0) as FlowMessageReactionDefinition
 
         assertEquals(CreditCardCharged::class, node.messageType)
@@ -152,7 +152,7 @@ class PaymentRetrievalStep0Test {
             assertEquals(flow, it.parent)
         }
 
-        val service = flow.children[1] as FlowDefinition
+        val service = flow.children[1] as FlowDefinition<*>
         assertEquals(2, service.children.size)
         service.children.forEach {
             assertEquals(service, it.parent)
