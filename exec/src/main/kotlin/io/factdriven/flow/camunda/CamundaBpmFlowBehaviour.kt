@@ -9,6 +9,7 @@ import org.camunda.bpm.engine.impl.event.EventType
 import org.camunda.spin.impl.json.jackson.JacksonJsonNode
 import org.camunda.spin.plugin.variable.SpinValues
 import org.camunda.spin.plugin.variable.value.JsonValue
+import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
 /**
@@ -17,6 +18,8 @@ import kotlin.reflect.KClass
 const val DEFINITION_NAME_VAR = "name"
 const val MESSAGE_NAME_VAR = "message"
 const val MESSAGES_VAR = "messages"
+
+val log = LoggerFactory.getLogger(CamundaBpmFlowBehaviour::class.java)
 
 object CamundaBpmFlowBehaviour: JavaDelegate {
 
@@ -62,7 +65,7 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
 
         val message = message(element)
         if (message != null) {
-            println("Outgoing: ${message.fact}") // TODO
+            log.debug("Outgoing: ${message.fact}")
             messages.add(message)
         }
 
@@ -119,7 +122,7 @@ object CamundaBpmFlowExecutor {
 
             with(messages.toMutableList()) {
                 add(message)
-                println("Incoming: ${message.fact}") // TODO
+                log.debug("Incoming: ${message.fact}")
                 return mapOf(
                     DEFINITION_NAME_VAR to flowDefinition.name,
                     MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(this)).create()
@@ -176,7 +179,7 @@ object CamundaBpmFlowExecutor {
 
         if (messages != null) {
             val aggregate = flowDefinition.aggregate(flowDefinition.deserialize(messages.unwrap()).map { it.fact })
-            println("  Status: ${aggregate}")
+            log.debug("  Status: ${aggregate}")
             return aggregate
         }
 

@@ -6,6 +6,7 @@ import io.factdriven.flow.camunda.CamundaBpmFlowExecutor.correlate
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
+import org.apache.ibatis.logging.LogFactory
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
@@ -64,6 +65,8 @@ class CamundaBpmExecutionTest {
     }
 
     init {
+
+        LogFactory.useSlf4jLogging();
 
         PaymentRetrieval.init()
 
