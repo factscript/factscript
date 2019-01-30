@@ -7,8 +7,8 @@ import io.factdriven.flow.define
  */
 data class PaymentRetrieval(
 
-    val paymentId: String?,
-    val accountId: String?,
+    val paymentId: String,
+    val accountId: String,
     var total: Float,
     var covered: Float = 0F
 
@@ -20,13 +20,13 @@ data class PaymentRetrieval(
 
     fun apply(command: ChargeCreditCard) {
 
-        pending = command.payment!!
+        pending = command.charge!!
 
     }
 
     fun apply(event: CreditCardCharged) {
 
-        covered += event.payment ?: pending
+        covered += event.charge ?: pending
 
     }
 
@@ -41,13 +41,13 @@ data class PaymentRetrieval(
                 }
 
                 execute service {
-                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, payment = total /*- 1*/) }
+                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, charge = total /*- 1*/ ) }
                     on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
                 }
 
                 /*
                 execute service {
-                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, payment = total - covered) }
+                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, charge = total - covered) }
                     on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
                 }
                 */
@@ -64,9 +64,7 @@ data class PaymentRetrieval(
 
 }
 
-data class RetrievePayment(val reference: String? = null, val accountId: String? = null, val payment: Float)
-data class PaymentRetrievalAccepted(val paymentId: String? = null)
-data class PaymentRetrieved(val paymentId: String? = null, val payment: Float? = null)
+data class RetrievePayment(val reference: String, val accountId: String, val payment: Float)
+data class PaymentRetrievalAccepted(val paymentId: String)
+data class PaymentRetrieved(val paymentId: String, val payment: Float)
 
-data class ChargeCreditCard(val reference: String? = null, val payment: Float? = null)
-data class CreditCardCharged(val reference: String? = null, val payment: Float? = null)

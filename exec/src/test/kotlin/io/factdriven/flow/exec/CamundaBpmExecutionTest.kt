@@ -3,6 +3,7 @@ package io.factdriven.flow.exec
 import io.factdriven.flow.camunda.CamundaBpmFlowBehaviour
 import io.factdriven.flow.camunda.CamundaBpmFlowExecutor
 import io.factdriven.flow.camunda.CamundaBpmFlowExecutor.correlate
+import io.factdriven.flow.camunda.CamundaBpmFlowJobHandler
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
@@ -10,6 +11,8 @@ import org.apache.ibatis.logging.LogFactory
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
+import org.camunda.bpm.engine.impl.jobexecutor.DefaultJobExecutor
+import org.camunda.bpm.engine.impl.test.TestHelper
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
@@ -17,6 +20,7 @@ import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
+import java.lang.Thread.sleep
 
 
 /**
@@ -30,16 +34,6 @@ class CamundaBpmExecutionTest {
     fun testPaymentRetrieval() {
 
         correlate(RetrievePayment(reference = "anOrderId", accountId = "anAccountId", payment = 3F))
-
-        assertEquals(0F, paymentRetrieval().covered)
-
-        correlate(CreditCardCharged(reference = "anOrderId"))
-
-        /*
-        assertEquals(2F, paymentRetrieval().covered)
-
-        correlate(CreditCardCharged(reference = "anOrderId"))
-        */
 
         assertEquals(3F, paymentRetrieval().covered)
 
@@ -56,6 +50,12 @@ class CamundaBpmExecutionTest {
             CamundaBpmFlowExecutor.correlate(it)
         }
 
+        TestHelper.waitForJobExecutorToProcessAllJobs(
+            engine!!.processEngineConfiguration as ProcessEngineConfigurationImpl,
+            60000,
+            250
+        )
+
     }
 
     private fun paymentRetrieval(): PaymentRetrieval {
@@ -69,6 +69,7 @@ class CamundaBpmExecutionTest {
         LogFactory.useSlf4jLogging();
 
         PaymentRetrieval.init()
+        CreditCardCharge.init()
 
         FlowDefinitions.all().forEach { flowDefinition ->
             val bpmn = bpmn(flowDefinition)
@@ -90,6 +91,10 @@ class CamundaBpmExecutionTest {
         if (engine == null) {
             val configuration = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration() as ProcessEngineConfigurationImpl
             configuration.processEnginePlugins = listOf(SpinProcessEnginePlugin())
+            configuration.customJobHandlers = listOf(CamundaBpmFlowJobHandler())
+            //configuration.jobExecutor = DefaultJobExecutor()
+            //configuration.jobExecutor.maxWait = 1000
+            configuration.isJobExecutorActivate = true
             engine = configuration.buildProcessEngine()
         }
         return engine!!

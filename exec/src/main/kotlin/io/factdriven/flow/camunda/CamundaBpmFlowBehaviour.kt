@@ -5,12 +5,25 @@ import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.camunda.bpm.engine.delegate.JavaDelegate
+import org.camunda.bpm.engine.impl.ProcessEngineImpl
+import org.camunda.bpm.engine.impl.context.Context
 import org.camunda.bpm.engine.impl.event.EventType
+import org.camunda.bpm.engine.impl.interceptor.Command
+import org.camunda.bpm.engine.impl.jobexecutor.JobHandler
+import org.camunda.bpm.engine.impl.jobexecutor.JobHandlerConfiguration
 import org.camunda.spin.impl.json.jackson.JacksonJsonNode
 import org.camunda.spin.plugin.variable.SpinValues
 import org.camunda.spin.plugin.variable.value.JsonValue
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
+import org.camunda.bpm.engine.impl.interceptor.CommandContext
+import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity
+import org.camunda.bpm.engine.impl.persistence.entity.JobEntity
+import org.camunda.bpm.engine.test.mock.Mocks
+import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity
+
+
+
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -67,6 +80,10 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
         if (message != null) {
             log.debug("Outgoing: ${message.fact}")
             messages.add(message)
+            (execution.processEngine as ProcessEngineImpl).processEngineConfiguration.commandExecutorTxRequired.execute(
+                CreateCamundaBpmFlowJob(message)
+            )
+            log.debug("> Status: ${aggregate()}")
         }
 
         val pattern = pattern(element)
@@ -84,7 +101,13 @@ object CamundaBpmFlowExecutor {
 
     val engine: ProcessEngine = ProcessEngines.getProcessEngines().values.first()
 
+    fun target(message: String) : List<Message<*>> {
+        return target(FlowDefinitions.deserialize(message))
+    }
+
     fun <F: Fact> target(message: Message<F>) : List<Message<F>> {
+
+        log.debug("Incoming: ${message.fact}")
 
         return FlowDefinitions.all().map { definition ->
 
@@ -109,7 +132,8 @@ object CamundaBpmFlowExecutor {
 
         assert(message.target != null) { "Correlation only works for messages with a specified target!" }
 
-        val flowDefinition = FlowDefinitions.get(message.target!!.first)
+        val flowName = message.target!!.first
+        val flowDefinition = FlowDefinitions.get(flowName)
         val processInstanceId = message.target!!.second
         val correlationHash = message.target!!.third
 
@@ -122,7 +146,7 @@ object CamundaBpmFlowExecutor {
 
             with(messages.toMutableList()) {
                 add(message)
-                log.debug("Incoming: ${message.fact}")
+                log.debug("> Target: ${flowName}")
                 return mapOf(
                     DEFINITION_NAME_VAR to flowDefinition.name,
                     MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(this)).create()
@@ -178,12 +202,71 @@ object CamundaBpmFlowExecutor {
             .singleResult().value as JacksonJsonNode?
 
         if (messages != null) {
-            val aggregate = flowDefinition.aggregate(flowDefinition.deserialize(messages.unwrap()).map { it.fact })
-            log.debug("  Status: ${aggregate}")
-            return aggregate
+            return flowDefinition.aggregate(flowDefinition.deserialize(messages.unwrap()).map { it.fact })
         }
 
         throw IllegalArgumentException()
+
+    }
+
+}
+
+class CamundaBpmFlowJobHandler: JobHandler<CamundaBpmFlowJobHandlerConfiguration> {
+
+    override fun getType(): String {
+        return TYPE
+    }
+
+    override fun execute(
+        configuration: CamundaBpmFlowJobHandlerConfiguration?,
+        execution: ExecutionEntity?,
+        commandContext: CommandContext?,
+        tenantId: String?
+    ) {
+
+        commandContext!!.processEngineConfiguration.commandExecutorSchemaOperations.execute<String> {
+            Mocks.register("start", CamundaBpmFlowBehaviour)
+            CamundaBpmFlowExecutor.target(configuration!!.message).forEach {
+                CamundaBpmFlowExecutor.correlate(it)
+            }
+            ""
+        }
+
+    }
+
+    override fun newConfiguration(canonicalString: String?): CamundaBpmFlowJobHandlerConfiguration {
+        return CamundaBpmFlowJobHandlerConfiguration(canonicalString!!)
+    }
+
+    override fun onDelete(configuration: CamundaBpmFlowJobHandlerConfiguration?, jobEntity: JobEntity?) {
+        //
+    }
+
+    companion object {
+
+        const val TYPE = "flowJobHandler"
+
+    }
+
+}
+
+data class CamundaBpmFlowJobHandlerConfiguration(var message: String = ""): JobHandlerConfiguration {
+
+    override fun toCanonicalString(): String? {
+        return message
+    }
+
+}
+
+class CreateCamundaBpmFlowJob(private val message: Message<*>) : Command<String> {
+
+    override fun execute(commandContext: CommandContext): String {
+
+        val job = MessageEntity()
+        job.jobHandlerType = CamundaBpmFlowJobHandler.TYPE
+        job.jobHandlerConfiguration = CamundaBpmFlowJobHandlerConfiguration(message.toJson())
+        Context.getCommandContext().jobManager.send(job)
+        return job.id
 
     }
 

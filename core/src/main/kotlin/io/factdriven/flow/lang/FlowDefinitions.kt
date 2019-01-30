@@ -2,7 +2,6 @@ package io.factdriven.flow.lang
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberFunctions
 
@@ -68,6 +67,18 @@ object FlowDefinitions {
             it.name == name
         }
         return definition ?: throw IllegalArgumentException()
+    }
+
+    fun deserialize(message: String): Message<*> {
+        val jsonNode = jacksonObjectMapper().readTree(message)
+        val factName = jsonNode.get("name").textValue()
+        val factType = all().find {
+            it.messageType(factName) != null
+        }?.messageType(factName)
+        if (factType != null) {
+            return Message.fromJson(jsonNode, factType)
+        }
+        throw IllegalArgumentException()
     }
 
 }
