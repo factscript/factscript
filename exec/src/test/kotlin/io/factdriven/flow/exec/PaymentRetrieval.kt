@@ -41,16 +41,9 @@ data class PaymentRetrieval(
                 }
 
                 execute service {
-                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, charge = total /*- 1*/ ) }
+                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, charge = total ) }
                     on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
                 }
-
-                /*
-                execute service {
-                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, charge = total - covered) }
-                    on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
-                }
-                */
 
                 create success(PaymentRetrieved::class) by {
                     PaymentRetrieved(paymentId = paymentId, payment = total)

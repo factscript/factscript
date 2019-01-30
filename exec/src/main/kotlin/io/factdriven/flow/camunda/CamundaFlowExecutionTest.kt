@@ -1,9 +1,5 @@
-package io.factdriven.flow.exec
+package io.factdriven.flow.camunda
 
-import io.factdriven.flow.camunda.CamundaBpmFlowBehaviour
-import io.factdriven.flow.camunda.CamundaBpmFlowExecutor
-import io.factdriven.flow.camunda.CamundaBpmFlowExecutor.correlate
-import io.factdriven.flow.camunda.CamundaBpmFlowJobHandler
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
@@ -11,40 +7,21 @@ import org.apache.ibatis.logging.LogFactory
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
-import org.camunda.bpm.engine.impl.jobexecutor.DefaultJobExecutor
 import org.camunda.bpm.engine.impl.test.TestHelper
 import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import java.io.File
-import java.lang.Thread.sleep
+import kotlin.reflect.KClass
 
+open class CamundaFlowExecutionTest {
 
-/**
- * @author Martin Schimak <martin.schimak@plexiti.com>
- */
-class CamundaBpmExecutionTest {
+    private var engine: ProcessEngine? = null
 
-    var id: String? = null
+    protected fun send(message: Message<*>) {
 
-    @Test
-    fun testPaymentRetrieval() {
-
-        correlate(RetrievePayment(reference = "anOrderId", accountId = "anAccountId", payment = 3F))
-
-        assertEquals(3F, paymentRetrieval().covered)
-
-    }
-
-    private fun correlate(fact: Fact) {
-
-        val message = Message.from(fact)
-
-        if (id == null)
-            id = message.id
+        deploy()
 
         CamundaBpmFlowExecutor.target(message).map {
             CamundaBpmFlowExecutor.correlate(it)
@@ -58,42 +35,15 @@ class CamundaBpmExecutionTest {
 
     }
 
-    private fun paymentRetrieval(): PaymentRetrieval {
-
-        return CamundaBpmFlowExecutor.load(id!!, PaymentRetrieval::class)
-
+    protected fun <A: Aggregate> find(id: AggregateId, type: KClass<out A>): A {
+        return CamundaBpmFlowExecutor.load(id, type)
     }
 
-    init {
-
-        LogFactory.useSlf4jLogging();
-
-        PaymentRetrieval.init()
-        CreditCardCharge.init()
-
-        FlowDefinitions.all().forEach { flowDefinition ->
-            val bpmn = bpmn(flowDefinition)
-            engine().repositoryService
-                .createDeployment()
-                .addModelInstance("${flowDefinition.name}.bpmn", bpmn)
-                .name(flowDefinition.name)
-                .deploy()
-            open(bpmn)
-        }
-
-        mock()
-
-    }
-
-    private var engine: ProcessEngine? = null
-
-    private fun engine(): ProcessEngine {
+    protected fun engine(): ProcessEngine {
         if (engine == null) {
             val configuration = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration() as ProcessEngineConfigurationImpl
             configuration.processEnginePlugins = listOf(SpinProcessEnginePlugin())
             configuration.customJobHandlers = listOf(CamundaBpmFlowJobHandler())
-            //configuration.jobExecutor = DefaultJobExecutor()
-            //configuration.jobExecutor.maxWait = 1000
             configuration.isJobExecutorActivate = true
             engine = configuration.buildProcessEngine()
         }
@@ -119,5 +69,32 @@ class CamundaBpmExecutionTest {
         Mocks.register("start", CamundaBpmFlowBehaviour)
 
     }
+
+    fun deploy() {
+
+        if (engine!!.repositoryService.createDeploymentQuery().list().isEmpty()) {
+
+            FlowDefinitions.all().forEach { flowDefinition ->
+                val bpmn = bpmn(flowDefinition)
+                engine().repositoryService
+                    .createDeployment()
+                    .addModelInstance("${flowDefinition.name}.bpmn", bpmn)
+                    .name(flowDefinition.name)
+                    .deploy()
+                open(bpmn)
+            }
+
+        }
+
+    }
+
+    init {
+
+        LogFactory.useSlf4jLogging();
+        engine()
+        mock()
+
+    }
+
 
 }

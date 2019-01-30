@@ -135,7 +135,7 @@ interface FlowMessageCorrelator {
 
     }
 
-    fun correlate(incoming: MessageContainer): Messages {
+    fun send(incoming: MessageContainer): Messages {
         TODO()
     }
 

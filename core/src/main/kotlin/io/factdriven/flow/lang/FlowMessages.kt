@@ -35,6 +35,8 @@ data class Message<F: Fact>(
 
 ) {
 
+    constructor(fact: F): this(UUID.randomUUID().toString(), fact::class.java.simpleName, fact)
+
     fun toJson(): String {
         return jacksonObjectMapper().writeValueAsString(this)
     }
