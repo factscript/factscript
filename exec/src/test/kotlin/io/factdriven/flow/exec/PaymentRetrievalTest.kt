@@ -20,13 +20,13 @@ class PaymentRetrievalTest: CamundaFlowExecutionTest() {
     @Test
     fun testPaymentRetrieval() {
 
-        val message = Message(RetrievePayment(reference = "anOrderId", accountId = "anAccountId", payment = 3F))
+        val message = Message(RetrievePayment(reference = "anOrderId", accountId = "anAccountId", payment = 5F))
 
         send(message)
 
         val payment = find(message.id, PaymentRetrieval::class)
 
-        assertEquals(3F, payment.covered)
+        assertEquals(5F, payment.covered)
 
     }
 

@@ -36,7 +36,7 @@ data class PaymentRetrieval(
 
             define <PaymentRetrieval> {
 
-                on message(RetrievePayment::class) create acceptance(PaymentRetrievalAccepted::class) by {
+                on message(RetrievePayment::class) create progress(PaymentRetrievalAccepted::class) by {
                     PaymentRetrievalAccepted(paymentId = it.reference)
                 }
 

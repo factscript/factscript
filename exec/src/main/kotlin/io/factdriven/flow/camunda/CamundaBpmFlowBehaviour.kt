@@ -101,15 +101,11 @@ object CamundaBpmFlowExecutor {
 
     val engine: ProcessEngine = ProcessEngines.getProcessEngines().values.first()
 
-    fun target(message: String) : List<Message<*>> {
-        return target(FlowDefinitions.deserialize(message))
-    }
-
     fun <F: Fact> target(message: Message<F>) : List<Message<F>> {
 
         log.debug("Incoming: ${message.fact}")
 
-        return FlowDefinitions.all().map { definition ->
+        val targets = FlowDefinitions.all().map { definition ->
 
             definition.patterns(message.fact).map { pattern ->
 
@@ -125,6 +121,11 @@ object CamundaBpmFlowExecutor {
             }.flatten()
 
         }.flatten()
+
+        if (targets.isEmpty()) {
+            log.debug("> Target: None")
+        }
+        return targets
 
     }
 
@@ -146,7 +147,7 @@ object CamundaBpmFlowExecutor {
 
             with(messages.toMutableList()) {
                 add(message)
-                log.debug("> Target: ${flowName}")
+                log.debug("> Target: ${flowDefinition.aggregate(map { it.fact })}")
                 return mapOf(
                     DEFINITION_NAME_VAR to flowDefinition.name,
                     MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(this)).create()
@@ -224,12 +225,14 @@ class CamundaBpmFlowJobHandler: JobHandler<CamundaBpmFlowJobHandlerConfiguration
         tenantId: String?
     ) {
 
-        commandContext!!.processEngineConfiguration.commandExecutorSchemaOperations.execute<String> {
-            Mocks.register("start", CamundaBpmFlowBehaviour)
-            CamundaBpmFlowExecutor.target(configuration!!.message).forEach {
-                CamundaBpmFlowExecutor.correlate(it)
+        Mocks.register("start", CamundaBpmFlowBehaviour)
+        val message = FlowDefinitions.deserialize(configuration!!.message)
+        if (message.target == null) {
+            CamundaBpmFlowExecutor.target(message).forEach {
+                (commandContext!!.processEngineConfiguration.commandExecutorTxRequired.execute(CreateCamundaBpmFlowJob(it)))
             }
-            ""
+        } else {
+            CamundaBpmFlowExecutor.correlate(message)
         }
 
     }

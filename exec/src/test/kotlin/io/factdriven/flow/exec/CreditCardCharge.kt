@@ -1,6 +1,7 @@
 package io.factdriven.flow.exec
 
 import io.factdriven.flow.define
+import org.omg.PortableInterceptor.SUCCESSFUL
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -8,11 +9,16 @@ import io.factdriven.flow.define
 data class CreditCardCharge (
 
     val reference: String,
-    val charge: Float
+    val charge: Float,
+    var successful: Boolean = false
 
 ){
 
     constructor(command: ChargeCreditCard): this(command.reference, command.charge)
+
+    fun apply(event: CreditCardCharged) {
+        successful = true
+    }
 
     companion object {
 
