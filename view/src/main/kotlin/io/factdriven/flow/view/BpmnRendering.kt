@@ -6,6 +6,7 @@ import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
 import org.camunda.bpm.model.bpmn.instance.bpmndi.*
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaExecutionListener
+import org.camunda.bpm.model.bpmn.instance.camunda.CamundaField
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds
 import org.camunda.bpm.model.bpmn.instance.di.Waypoint
 import kotlin.reflect.KClass
@@ -120,6 +121,7 @@ fun transform(container: Container): BpmnModelInstance {
 
 
     val flowNodes = mutableMapOf<Symbol, FlowNode>()
+    val messages = mutableMapOf<String, Message>()
 
     fun createBpmnModelElementInstance(symbol: BpmnSymbol): FlowNode {
 
@@ -132,7 +134,7 @@ fun transform(container: Container): BpmnModelInstance {
         modelElementInstance.addChildElement(extensionElements)
 
         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-            camundaDelegateExpression = "#{start}"
+            camundaClass = "io.factdriven.flow.camunda.CamundaFlowNodeStartListener"
             camundaEvent = "start"
         }
 
@@ -151,11 +153,17 @@ fun transform(container: Container): BpmnModelInstance {
 
                         if (symbol.characteristic == BpmnEventCharacteristic.catching) {
 
-                            with(modelInstance.newInstance(Message::class.java)) {
-                                setAttributeValue("id", symbol.name)
-                                setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(symbol.name).hash else "#{message}")
-                                definitions.addChildElement(this)
-                                messageEventDefinition.message = this
+                            val message = messages[symbol.name]
+                            if (message == null) {
+                                with(modelInstance.newInstance(Message::class.java)) {
+                                    setAttributeValue("id", symbol.name)
+                                    setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(symbol.name).hash else "#{message}")
+                                    definitions.addChildElement(this)
+                                    messages[symbol.name] = this
+                                    messageEventDefinition.message = this
+                                }
+                            } else {
+                                messageEventDefinition.message = message
                             }
 
                         }
@@ -173,12 +181,24 @@ fun transform(container: Container): BpmnModelInstance {
 
                     BpmnTaskType.receive -> {
 
-                        with(modelInstance.newInstance(Message::class.java)) {
-                            setAttributeValue("id", symbol.name)
-                            setAttributeValue("name", "#{message}")
-                            definitions.addChildElement(this)
-                            (modelElementInstance as ReceiveTask).message = this
+                        val message = messages[symbol.name]
+                        if (message == null) {
+                            with(modelInstance.newInstance(Message::class.java)) {
+                                setAttributeValue("id", symbol.name)
+                                setAttributeValue("name", "#{message}")
+                                definitions.addChildElement(this)
+                                messages[symbol.name] = this
+                                (modelElementInstance as ReceiveTask).message = this
+                            }
+                        } else {
+                            (modelElementInstance as ReceiveTask).message = message
                         }
+
+                    }
+
+                    BpmnTaskType.send -> {
+
+                        (modelElementInstance as SendTask).camundaExpression = "#{true}"
 
                     }
 
@@ -226,8 +246,22 @@ fun transform(container: Container): BpmnModelInstance {
 
         val sequenceFlow = modelInstance.newInstance(SequenceFlow::class.java)
 
+        val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
+
+        with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
+            camundaClass = "io.factdriven.flow.camunda.CamundaFlowTransitionListener"
+            camundaEvent = "take"
+            val camundaField = modelInstance.newInstance(CamundaField::class.java)
+            with(camundaField) {
+                camundaName = "target"
+                camundaStringValue = connector.target.id
+            }
+            addChildElement(camundaField)
+        }
+
         with(sequenceFlow) {
             process.addChildElement(this)
+            addChildElement(extensionElements)
             source = flowNodes[connector.source]
             source.outgoing.add(this)
             target = flowNodes[connector.target]

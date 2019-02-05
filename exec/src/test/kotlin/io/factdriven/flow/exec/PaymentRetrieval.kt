@@ -20,7 +20,7 @@ data class PaymentRetrieval(
 
     fun apply(command: ChargeCreditCard) {
 
-        pending = command.charge!!
+        pending = command.charge
 
     }
 

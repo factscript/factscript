@@ -140,6 +140,16 @@ interface FlowDefinition<A: Aggregate>: FlowElement {
 
     }
 
+    fun getChildByActionType(actionType: FlowActionType): FlowElement? {
+        return children.find {
+            when (it) {
+                is FlowActionDefinition -> it.actionType == actionType
+                is FlowReactionDefinition -> it.action?.actionType == actionType
+                else -> false
+            }
+        }
+    }
+
     fun deserialize(stream: String): List<Message<*>> {
         return deserialize(jacksonObjectMapper().readTree(stream))
     }

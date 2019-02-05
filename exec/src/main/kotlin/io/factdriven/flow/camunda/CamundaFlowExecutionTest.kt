@@ -64,12 +64,6 @@ open class CamundaFlowExecutionTest {
         return bpmnModelInstance
     }
 
-    fun mock() {
-
-        Mocks.register("start", CamundaBpmFlowBehaviour)
-
-    }
-
     fun deploy() {
 
         if (engine!!.repositoryService.createDeploymentQuery().list().isEmpty()) {
@@ -92,7 +86,6 @@ open class CamundaFlowExecutionTest {
 
         LogFactory.useSlf4jLogging();
         engine()
-        mock()
 
     }
 

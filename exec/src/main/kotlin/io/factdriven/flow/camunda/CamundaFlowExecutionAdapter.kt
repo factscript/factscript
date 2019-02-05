@@ -4,7 +4,8 @@ import io.factdriven.flow.lang.*
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.delegate.DelegateExecution
-import org.camunda.bpm.engine.delegate.JavaDelegate
+import org.camunda.bpm.engine.delegate.ExecutionListener
+import org.camunda.bpm.engine.delegate.Expression
 import org.camunda.bpm.engine.impl.ProcessEngineImpl
 import org.camunda.bpm.engine.impl.context.Context
 import org.camunda.bpm.engine.impl.event.EventType
@@ -19,31 +20,67 @@ import kotlin.reflect.KClass
 import org.camunda.bpm.engine.impl.interceptor.CommandContext
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity
 import org.camunda.bpm.engine.impl.persistence.entity.JobEntity
-import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity
-
-
+import org.camunda.bpm.model.bpmn.BpmnModelInstance
+import org.camunda.bpm.model.xml.instance.ModelElementInstance
 
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-const val DEFINITION_NAME_VAR = "name"
 const val MESSAGE_NAME_VAR = "message"
 const val MESSAGES_VAR = "messages"
 
-val log = LoggerFactory.getLogger(CamundaBpmFlowBehaviour::class.java)
+val log = LoggerFactory.getLogger(CamundaBpmFlowExecutor::class.java)
 
-object CamundaBpmFlowBehaviour: JavaDelegate {
+class CamundaFlowTransitionListener: ExecutionListener {
 
-    override fun execute(execution: DelegateExecution) {
+    private lateinit var target: Expression
 
-        val definitionName = execution.getVariable(DEFINITION_NAME_VAR) as String
-        val flowDefinition = FlowDefinitions.get(definitionName)
+    override fun notify(execution: DelegateExecution) {
+
+        val bpmnModelInstance = execution.bpmnModelInstance
+        val processElements = bpmnModelInstance.getModelElementsByType(org.camunda.bpm.model.bpmn.instance.Process::class.java)
+        val firstProcessKey = processElements.iterator().next().getAttributeValue("id")
+        val flowDefinition = FlowDefinitions.get(firstProcessKey)
+        val element = flowDefinition.descendantMap[target.getValue(execution).toString()] as FlowElement
+        val messages = flowDefinition.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
+
+        fun aggregate() = flowDefinition.aggregate(messages.map { it.fact })
+
+        fun pattern(element: FlowElement): MessagePattern? {
+            return when (element) {
+                is FlowMessageReactionDefinition -> {
+                    element.expected(aggregate())
+                }
+                is FlowDefinition<*> -> {
+                    val success = element.getChildByActionType(FlowActionType.Success)
+                    if (success != null) pattern(success) else null
+                }
+                else -> null
+            }
+        }
+
+        val pattern = pattern(element)
+
+        execution.setVariable(MESSAGE_NAME_VAR, pattern?.hash)
+
+    }
+
+}
+
+class CamundaFlowNodeStartListener: ExecutionListener {
+
+    override fun notify(execution: DelegateExecution) {
+
+        val bpmnModelInstance = execution.bpmnModelInstance
+        val processElements = bpmnModelInstance.getModelElementsByType(org.camunda.bpm.model.bpmn.instance.Process::class.java)
+        val firstProcessKey = processElements.iterator().next().getAttributeValue("id")
+        val flowDefinition = FlowDefinitions.get(firstProcessKey)
         val element = flowDefinition.descendantMap[execution.currentActivityId]!!
         val messages = flowDefinition.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
-        fun aggregate() = flowDefinition.aggregate(messages.map { it.fact })!!
+        fun aggregate() = flowDefinition.aggregate(messages.map { it.fact })
 
         fun message(element: FlowElement): Message<*>? {
             return when(element) {
@@ -58,21 +95,10 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
                     if (fact != null) Message.from(fact) else null
                 }
                 is FlowDefinition<*> -> {
-                    message(element.children.first()) // TODO properly retrieve intent creator
+                    val intent = element.getChildByActionType(FlowActionType.Intent)
+                    if (intent != null) message(intent) else null
                 }
                 else -> throw IllegalArgumentException()
-            }
-        }
-
-        fun pattern(element: FlowElement): MessagePattern? {
-            return when (element) {
-                is FlowMessageReactionDefinition -> {
-                    element.expected(aggregate())
-                }
-                is FlowDefinition<*> -> {
-                    pattern(element.children.last())
-                }
-                else -> null
             }
         }
 
@@ -86,12 +112,7 @@ object CamundaBpmFlowBehaviour: JavaDelegate {
             log.debug("> Status: ${aggregate()}")
         }
 
-        val pattern = pattern(element)
-
-        execution.variables = mapOf(
-            MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(messages)),
-            MESSAGE_NAME_VAR to pattern?.hash
-        )
+        execution.setVariable(MESSAGES_VAR, SpinValues.jsonValue(flowDefinition.serialize(messages)))
 
     }
 
@@ -148,10 +169,7 @@ object CamundaBpmFlowExecutor {
             with(messages.toMutableList()) {
                 add(message)
                 log.debug("> Target: ${flowDefinition.aggregate(map { it.fact })}")
-                return mapOf(
-                    DEFINITION_NAME_VAR to flowDefinition.name,
-                    MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(this)).create()
-                )
+                return mapOf(MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(this)).create())
             }
 
         }
@@ -225,7 +243,6 @@ class CamundaBpmFlowJobHandler: JobHandler<CamundaBpmFlowJobHandlerConfiguration
         tenantId: String?
     ) {
 
-        Mocks.register("start", CamundaBpmFlowBehaviour)
         val message = FlowDefinitions.deserialize(configuration!!.message)
         if (message.target == null) {
             CamundaBpmFlowExecutor.target(message).forEach {
