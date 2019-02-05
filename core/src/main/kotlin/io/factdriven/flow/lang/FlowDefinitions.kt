@@ -22,7 +22,7 @@ interface FlowElement {
     val id: ElementId
         get() {
             val id = StringBuffer()
-            if (parent != null && parent!!.parent != null) {
+            if (parent != null) {
                 id.append(parent!!.id)
                 id.append("-")
             }
@@ -40,6 +40,10 @@ interface FlowElement {
 
     val name: ElementName
     val parent: FlowDefinition<*>?
+    val root: FlowDefinition<*>
+        get() {
+            return parent ?: this as FlowDefinition<*>
+        }
 
 }
 
@@ -62,11 +66,17 @@ object FlowDefinitions {
         return definition ?: throw IllegalArgumentException()
     }
 
-    fun get(name: ElementName): FlowDefinition<*> {
+    fun getElementById(id: ElementId): FlowElement {
+        val isSubElement = id.contains("-")
+        val definitionId = if (isSubElement) id.substring(0, id.indexOf("-")) else id
         val definition = list.find {
-            it.name == name
+            it.id == definitionId
+        } ?: throw java.lang.IllegalArgumentException()
+        return if (isSubElement) {
+            definition.descendantMap[id] ?: throw java.lang.IllegalArgumentException()
+        } else {
+            definition
         }
-        return definition ?: throw IllegalArgumentException()
     }
 
     fun deserialize(message: String): Message<*> {

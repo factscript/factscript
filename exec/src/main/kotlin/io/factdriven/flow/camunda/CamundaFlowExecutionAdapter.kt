@@ -39,14 +39,10 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val bpmnModelInstance = execution.bpmnModelInstance
-        val processElements = bpmnModelInstance.getModelElementsByType(org.camunda.bpm.model.bpmn.instance.Process::class.java)
-        val firstProcessKey = processElements.iterator().next().getAttributeValue("id")
-        val flowDefinition = FlowDefinitions.get(firstProcessKey)
-        val element = flowDefinition.descendantMap[target.getValue(execution).toString()] as FlowElement
-        val messages = flowDefinition.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
+        val element = FlowDefinitions.getElementById(target.getValue(execution).toString())
+        val messages = element.root.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
-        fun aggregate() = flowDefinition.aggregate(messages.map { it.fact })
+        fun aggregate() = element.root.aggregate(messages.map { it.fact })
 
         fun pattern(element: FlowElement): MessagePattern? {
             return when (element) {
@@ -73,14 +69,10 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val bpmnModelInstance = execution.bpmnModelInstance
-        val processElements = bpmnModelInstance.getModelElementsByType(org.camunda.bpm.model.bpmn.instance.Process::class.java)
-        val firstProcessKey = processElements.iterator().next().getAttributeValue("id")
-        val flowDefinition = FlowDefinitions.get(firstProcessKey)
-        val element = flowDefinition.descendantMap[execution.currentActivityId]!!
-        val messages = flowDefinition.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
+        val element = FlowDefinitions.getElementById(execution.currentActivityId)
+        val messages = element.root.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
-        fun aggregate() = flowDefinition.aggregate(messages.map { it.fact })
+        fun aggregate() = element.root.aggregate(messages.map { it.fact })
 
         fun message(element: FlowElement): Message<*>? {
             return when(element) {
@@ -112,7 +104,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
             log.debug("> Status: ${aggregate()}")
         }
 
-        execution.setVariable(MESSAGES_VAR, SpinValues.jsonValue(flowDefinition.serialize(messages)))
+        execution.setVariable(MESSAGES_VAR, SpinValues.jsonValue(element.root.serialize(messages)))
 
     }
 
@@ -155,7 +147,7 @@ object CamundaBpmFlowExecutor {
         assert(message.target != null) { "Correlation only works for messages with a specified target!" }
 
         val flowName = message.target!!.first
-        val flowDefinition = FlowDefinitions.get(flowName)
+        val flowDefinition = FlowDefinitions.getElementById(flowName) as FlowDefinition<*>
         val processInstanceId = message.target!!.second
         val correlationHash = message.target!!.third
 
