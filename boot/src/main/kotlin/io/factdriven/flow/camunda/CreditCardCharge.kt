@@ -27,7 +27,7 @@ data class CreditCardCharge (
 
                 on message(ChargeCreditCard::class)
 
-                on message(WaitForConfirmation::class) having "reference" match { reference }
+                on message(ConfirmationReceived::class) having "reference" match { reference }
 
                 create success(CreditCardCharged::class) by {
                     CreditCardCharged(reference = reference, charge = charge)
@@ -42,5 +42,5 @@ data class CreditCardCharge (
 
 
 data class ChargeCreditCard(val reference: String, val charge: Float)
-data class WaitForConfirmation(val reference: String)
+data class ConfirmationReceived(val reference: String)
 data class CreditCardCharged(val reference: String, val charge: Float? = null)

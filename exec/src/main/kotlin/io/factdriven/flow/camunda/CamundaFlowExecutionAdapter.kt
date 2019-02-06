@@ -1,12 +1,16 @@
 package io.factdriven.flow.camunda
 
 import io.factdriven.flow.lang.*
+import io.factdriven.flow.view.transform
+import io.factdriven.flow.view.translate
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.camunda.bpm.engine.delegate.ExecutionListener
 import org.camunda.bpm.engine.delegate.Expression
 import org.camunda.bpm.engine.impl.ProcessEngineImpl
+import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
+import org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin
 import org.camunda.bpm.engine.impl.context.Context
 import org.camunda.bpm.engine.impl.event.EventType
 import org.camunda.bpm.engine.impl.interceptor.Command
@@ -21,8 +25,6 @@ import org.camunda.bpm.engine.impl.interceptor.CommandContext
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity
 import org.camunda.bpm.engine.impl.persistence.entity.JobEntity
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity
-import org.camunda.bpm.model.bpmn.BpmnModelInstance
-import org.camunda.bpm.model.xml.instance.ModelElementInstance
 
 
 /**
@@ -280,6 +282,30 @@ class CreateCamundaBpmFlowJob(private val message: Message<*>) : Command<String>
         Context.getCommandContext().jobManager.send(job)
         return job.id
 
+    }
+
+}
+
+class CamundaFlowExecutionPlugin: ProcessEnginePlugin {
+
+    override fun preInit(configuration: ProcessEngineConfigurationImpl) {
+        configuration.customJobHandlers = configuration.customJobHandlers ?: emptyList()
+        configuration.customJobHandlers.add(CamundaBpmFlowJobHandler())
+    }
+
+    override fun postInit(configuration: ProcessEngineConfigurationImpl) {
+        //
+    }
+
+    override fun postProcessEngineBuild(engine: ProcessEngine) {
+        FlowDefinitions.all().forEach { flowDefinition ->
+            val bpmn = transform(translate(flowDefinition))
+            engine.repositoryService
+                .createDeployment()
+                .addModelInstance("${flowDefinition.name}.bpmn", bpmn)
+                .name(flowDefinition.name)
+                .deploy()
+        }
     }
 
 }
