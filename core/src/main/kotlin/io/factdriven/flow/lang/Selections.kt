@@ -3,14 +3,14 @@ package io.factdriven.flow.lang
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class FlowSelections<I: Aggregate> {
+class FlowSelections<I: Entity> {
 
     infix fun one(option: FlowOption<I>.() -> Unit): FlowOption<I> = TODO()
     infix fun many(option: FlowOption<I>.() -> Unit): FlowOption<I> = TODO()
 
 }
 
-class FlowOption<I: Aggregate> {
+class FlowOption<I: Entity> {
 
     fun topic(name: String = ""): FlowOption<I> { TODO() }
 

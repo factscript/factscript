@@ -8,7 +8,6 @@ import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
 import org.camunda.bpm.engine.impl.test.TestHelper
-import org.camunda.bpm.engine.test.mock.Mocks
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin
@@ -35,7 +34,7 @@ open class CamundaFlowExecutionTest {
 
     }
 
-    protected fun <A: Aggregate> find(id: AggregateId, type: KClass<out A>): A {
+    protected fun <A: Entity> find(id: EntityId, type: KClass<out A>): A {
         return CamundaBpmFlowExecutor.load(id, type)
     }
 

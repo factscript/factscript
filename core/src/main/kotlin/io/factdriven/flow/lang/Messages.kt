@@ -2,27 +2,17 @@ package io.factdriven.flow.lang
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.treeToValue
 import java.security.MessageDigest
 import java.math.BigInteger
 import java.util.*
-import kotlin.reflect.KClass
 
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-typealias Fact = Any
-typealias FactType<F> = KClass<out F>
-typealias FactName = String
-
 typealias MessageId = String
-typealias MessageTarget = Triple<AggregateName, AggregateId?, MessagePatternHash>
+typealias MessageTarget = Triple<EntityName, EntityId?, MessagePatternHash>
 
-typealias PropertyName = String
-typealias PropertyValue = Any?
-
-typealias Messages = List<Fact>
 typealias MessagePatterns = Set<MessagePattern>
 typealias MessagePatternHash = String
 
@@ -75,12 +65,12 @@ data class Message<F: Fact>(
 
 data class MessagePattern(
     val name: FactName,
-    val properties: Map<PropertyName, PropertyValue> = emptyMap()
+    val properties: Map<Property, Value> = emptyMap()
 ) {
 
     constructor(
         type: FactType<*>,
-        properties: Map<PropertyName, PropertyValue> = emptyMap()
+        properties: Map<Property, Value> = emptyMap()
     ): this(type.simpleName!!, properties) // TODO simple name is just fallback
 
     val hash: String
@@ -104,12 +94,4 @@ data class MessagePattern(
 
     }
 
-}
-
-fun Fact.getProperty(propertyName: PropertyName): Any? {
-    return javaClass.getDeclaredField(propertyName).let {
-        it.isAccessible = true
-        val value = it.get(this)
-        return@let value;
-    }
 }

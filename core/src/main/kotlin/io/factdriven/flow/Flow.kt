@@ -6,13 +6,13 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-inline fun <reified I: Aggregate> define(name: ElementName = I::class.simpleName!!, type: KClass<I> = I::class, definition: FlowExecution<I>.() -> Unit): FlowDefinition<I> {
+inline fun <reified I: Entity> define(name: ElementName = I::class.simpleName!!, type: KClass<I> = I::class, definition: FlowExecution<I>.() -> Unit): FlowDefinition<I> {
 
     return execute (name, type, definition).asDefinition()
 
 }
 
-inline fun <reified I: Aggregate> execute(name: ElementName = I::class.simpleName!!, type: KClass<I> = I::class, definition: FlowExecution<I>.() -> Unit): FlowExecution<I> {
+inline fun <reified I: Entity> execute(name: ElementName = I::class.simpleName!!, type: KClass<I> = I::class, definition: FlowExecution<I>.() -> Unit): FlowExecution<I> {
 
     val flowExecution = FlowExecutionImpl<I>(null).apply(definition)
     flowExecution.name = name

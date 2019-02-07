@@ -199,7 +199,7 @@ object CamundaBpmFlowExecutor {
 
     }
 
-    fun <A: Aggregate> load(id: AggregateId, type: KClass<A>): A {
+    fun <A: Entity> load(id: EntityId, type: KClass<A>): A {
 
         val flowDefinition = FlowDefinitions.get(type)
 

@@ -8,12 +8,6 @@ import kotlin.reflect.full.memberFunctions
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-typealias Aggregate = Any
-typealias AggregateId = String
-typealias AggregateName = String
-typealias AggregateType = KClass<*>
-typealias AggregateIds = List<AggregateId>
-
 typealias ElementName = String
 typealias ElementId = String
 
@@ -59,7 +53,7 @@ object FlowDefinitions {
         return list
     }
 
-    fun <A: Aggregate> get(type: KClass<A>): FlowDefinition<A> {
+    fun <A: Entity> get(type: KClass<A>): FlowDefinition<A> {
         val definition = list.find {
             it.aggregateType == type
         } as FlowDefinition<A>?
@@ -93,11 +87,11 @@ object FlowDefinitions {
 
 }
 
-interface FlowDefinition<A: Aggregate>: FlowElement {
+interface FlowDefinition<A: Entity>: FlowElement {
 
     val children: List<FlowElement>
     val executionType: FlowExecutionType
-    val aggregateType: AggregateType
+    val aggregateType: EntityType
 
     fun patterns(message: Fact): MessagePatterns {
 
@@ -174,11 +168,11 @@ interface FlowDefinition<A: Aggregate>: FlowElement {
         return jacksonObjectMapper().writeValueAsString(messages)
     }
 
-    fun aggregate(history: Messages): A {
+    fun aggregate(history: Facts): A {
 
         assert(!history.isEmpty())
 
-        fun past(history: Messages, aggregate: A): A {
+        fun past(history: Facts, aggregate: A): A {
             if (!history.isEmpty()) {
                 val message = history.first()
                 val method = aggregate::class.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == message::class }
@@ -203,7 +197,7 @@ interface FlowActionDefinition: FlowElement {
 
     val actionType: FlowActionType
     val messageType: FactType<*>?
-    val function: (Aggregate.() -> Fact)?
+    val function: (Entity.() -> Fact)?
 
 }
 
@@ -211,7 +205,7 @@ interface FlowReactionActionDefinition: FlowElement {
 
     val actionType: FlowActionType
     val messageType: FactType<*>?
-    val function: (Aggregate.(Fact) -> Fact)?
+    val function: (Entity.(Fact) -> Fact)?
 
 }
 
@@ -225,8 +219,8 @@ interface FlowReactionDefinition: FlowElement {
 interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
     val messageType: FactType<*>
-    val propertyNames: List<PropertyName>
-    val propertyValues: List<Aggregate?.() -> Any?>
+    val propertyNames: List<Property>
+    val propertyValues: List<Entity?.() -> Any?>
 
     fun incoming(message: Fact): MessagePattern {
 
@@ -240,7 +234,7 @@ interface FlowMessageReactionDefinition: FlowReactionDefinition {
 
     }
 
-    fun expected(aggregate: Aggregate?): MessagePattern {
+    fun expected(aggregate: Entity?): MessagePattern {
 
         val properties = propertyNames.mapIndexed { propertyIndex, propertyName ->
             propertyName to propertyValues[propertyIndex].invoke(aggregate)

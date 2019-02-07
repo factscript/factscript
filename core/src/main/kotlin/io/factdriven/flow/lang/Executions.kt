@@ -15,7 +15,7 @@ enum class FlowExecutionType {
 
 }
 
-interface FlowExecution<I : Aggregate>: FlowElement, FlowActivities<I> {
+interface FlowExecution<I : Entity>: FlowElement, FlowActivities<I> {
 
     val on: FlowReactions<I>
     val create: FlowAction<I>
@@ -42,7 +42,7 @@ interface FlowExecution<I : Aggregate>: FlowElement, FlowActivities<I> {
 
 }
 
-interface FlowActivities<I: Aggregate> {
+interface FlowActivities<I: Entity> {
 
     operator fun invoke(mitigation: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit
 
@@ -51,13 +51,13 @@ interface FlowActivities<I: Aggregate> {
 
 }
 
-class FlowExecutionImpl<I: Aggregate>(override val parent: FlowDefinition<*>?): FlowDefinition<I>, FlowExecution<I>, FlowActivities<I> {
+class FlowExecutionImpl<I: Entity>(override val parent: FlowDefinition<*>?): FlowDefinition<I>, FlowExecution<I>, FlowActivities<I> {
 
     // Flow Definition
 
     override var executionType = FlowExecutionType.execution
     override val children = mutableListOf<FlowElement>()
-    override lateinit var aggregateType: KClass<out Aggregate>
+    override lateinit var aggregateType: KClass<out Entity>
 
     override var name: String = ""
         get() {
@@ -181,6 +181,6 @@ class FlowReactionActionImpl<IN: Fact, OUT: Fact>(
 
 ): FlowReactionActionDefinition, FlowReactionWithoutAction {
 
-    override var function: (Aggregate.(Fact) -> Fact)? = null
+    override var function: (Entity.(Fact) -> Fact)? = null
 
 }

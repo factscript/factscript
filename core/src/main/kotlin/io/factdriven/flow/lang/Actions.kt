@@ -17,13 +17,13 @@ enum class FlowActionType {
 
 }
 
-interface ClassifiedFlowAction<I: Aggregate, O: Fact> {
+interface ClassifiedFlowAction<I: Entity, O: Fact> {
 
     infix fun by(message: I.() -> O?)
 
 }
 
-interface FlowAction<I: Aggregate> {
+interface FlowAction<I: Entity> {
 
     infix fun intent(id: String)
     infix fun acceptance(id: String)
@@ -43,14 +43,14 @@ interface FlowAction<I: Aggregate> {
 
 }
 
-open class FlowActionImpl<I: Aggregate, O: Fact>(override val parent: FlowDefinition<*>): ClassifiedFlowAction<I, O>, FlowAction<I>, FlowActionDefinition {
+open class FlowActionImpl<I: Entity, O: Fact>(override val parent: FlowDefinition<*>): ClassifiedFlowAction<I, O>, FlowAction<I>, FlowActionDefinition {
 
     // Flow Action Definition
 
     override lateinit var name: ElementName
     override var messageType: FactType<*>? = null
     override var actionType = FlowActionType.Success
-    override var function: (Aggregate.() -> Fact)? = null
+    override var function: (Entity.() -> Fact)? = null
 
     // Flow Action Factories
 
@@ -111,7 +111,7 @@ open class FlowActionImpl<I: Aggregate, O: Fact>(override val parent: FlowDefini
 
     override fun by(message: I.() -> O?) {
         @Suppress("UNCHECKED_CAST")
-        this.function = message as Aggregate.() -> Fact
+        this.function = message as Entity.() -> Fact
     }
 
 }
