@@ -1,5 +1,6 @@
 package io.factdriven.flow.lang
 
+import com.sun.org.apache.xml.internal.serializer.utils.Utils.messages
 import io.factdriven.flow.define
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -148,11 +149,11 @@ class FlowDefinitionTest {
     fun testAggregateWithOneMessage() {
 
         val messages = listOf(
-            RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F)
+            Message(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F))
         )
         val aggregate = flow.aggregate(messages)
 
-        assertEquals("anId", aggregate!!.paymentId)
+        assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
         assertEquals(3F, aggregate.uncovered)
         assertEquals(0F, aggregate.covered)
@@ -163,12 +164,12 @@ class FlowDefinitionTest {
     fun testAggregateWithTwoMessages() {
 
         val messages = listOf(
-            RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F),
-            PaymentRetrieved()
+            Message(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F)),
+            Message(PaymentRetrieved())
         )
         val aggregate = flow.aggregate(messages)
 
-        assertEquals("anId", aggregate!!.paymentId)
+        assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
         assertEquals(0F, aggregate.uncovered)
         assertEquals(3F, aggregate.covered)
@@ -179,13 +180,13 @@ class FlowDefinitionTest {
     fun testAggregateWithThreeMessages() {
 
         val messages = listOf(
-            RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F),
-            PaymentRetrieved(payment = 1F),
-            PaymentRetrieved(payment = 1F)
+            Message(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F)),
+            Message(PaymentRetrieved(payment = 1F)),
+            Message(PaymentRetrieved(payment = 1F))
         )
         val aggregate = flow.aggregate(messages)
 
-        assertEquals("anId", aggregate!!.paymentId)
+        assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
         assertEquals(1F, aggregate.uncovered)
         assertEquals(2F, aggregate.covered)

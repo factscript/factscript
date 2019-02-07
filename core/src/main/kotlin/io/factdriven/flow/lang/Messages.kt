@@ -10,6 +10,7 @@ import java.util.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+typealias Messages = List<Message<*>>
 typealias MessageId = String
 typealias MessageTarget = Triple<EntityName, EntityId?, MessagePatternHash>
 

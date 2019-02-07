@@ -168,15 +168,15 @@ interface FlowDefinition<A: Entity>: FlowElement {
         return jacksonObjectMapper().writeValueAsString(messages)
     }
 
-    fun aggregate(history: Facts): A {
+    fun aggregate(history: Messages): A {
 
         assert(!history.isEmpty())
 
-        fun past(history: Facts, aggregate: A): A {
+        fun past(history: Messages, aggregate: A): A {
             if (!history.isEmpty()) {
                 val message = history.first()
-                val method = aggregate::class.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == message::class }
-                if (method != null) method.call(aggregate, message)
+                val method = aggregate::class.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == message.fact::class }
+                if (method != null) method.call(aggregate, message.fact)
                 return past(history.subList(1, history.size), aggregate)
             } else {
                 return aggregate
@@ -184,9 +184,9 @@ interface FlowDefinition<A: Entity>: FlowElement {
         }
 
         val message = history.first()
-        val constructor = aggregateType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == message::class }
+        val constructor = aggregateType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == message.fact::class }
         return if (constructor != null) {
-            past(history.subList(1, history.size), constructor.call(message) as A)
+            past(history.subList(1, history.size), constructor.call(message.fact) as A)
         } else throw IllegalArgumentException()
 
     }
@@ -227,7 +227,7 @@ interface FlowMessageReactionDefinition: FlowReactionDefinition {
         assert(messageType.isInstance(message))
 
         val properties = propertyNames.map { propertyName ->
-            propertyName to message.getProperty(propertyName)
+            propertyName to message.getValue(propertyName)
         }.toMap()
 
         return MessagePattern(messageType, properties)

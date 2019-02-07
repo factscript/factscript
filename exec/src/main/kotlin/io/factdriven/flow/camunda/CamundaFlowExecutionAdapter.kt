@@ -44,7 +44,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
         val element = FlowDefinitions.getElementById(target.getValue(execution).toString())
         val messages = element.root.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
-        fun aggregate() = element.root.aggregate(messages.map { it.fact })
+        fun aggregate() = element.root.aggregate(messages)
 
         fun pattern(element: FlowElement): MessagePattern? {
             return when (element) {
@@ -74,7 +74,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
         val element = FlowDefinitions.getElementById(execution.currentActivityId)
         val messages = element.root.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
-        fun aggregate() = element.root.aggregate(messages.map { it.fact })
+        fun aggregate() = element.root.aggregate(messages)
 
         fun message(element: FlowElement): Message<*>? {
             return when(element) {
@@ -162,7 +162,7 @@ object CamundaBpmFlowExecutor {
 
             with(messages.toMutableList()) {
                 add(message)
-                log.debug("> Target: ${flowDefinition.aggregate(map { it.fact })}")
+                log.debug("> Target: ${flowDefinition.aggregate(this)}")
                 return mapOf(MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(this)).create())
             }
 
@@ -215,7 +215,7 @@ object CamundaBpmFlowExecutor {
             .singleResult().value as JacksonJsonNode?
 
         if (messages != null) {
-            return flowDefinition.aggregate(flowDefinition.deserialize(messages.unwrap()).map { it.fact })
+            return flowDefinition.aggregate(flowDefinition.deserialize(messages.unwrap()))
         }
 
         throw IllegalArgumentException()
