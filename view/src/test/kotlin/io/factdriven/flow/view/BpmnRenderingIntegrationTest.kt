@@ -1,7 +1,7 @@
 package io.factdriven.flow.view
 
-import io.factdriven.flow.execute
-import io.factdriven.flow.lang.FlowExecution
+import io.factdriven.flow.define
+import io.factdriven.flow.lang.DefinedFlow
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -14,26 +14,26 @@ class BpmnRenderingIntegrationTest {
     @Test
     fun testPaymentRetrievalVersion1() {
 
-            val process = execute <PaymentRetrieval> {
+            val process = define <PaymentRetrieval> {
 
-                on message (RetrievePayment::class) create acceptance (PaymentRetrievalAccepted::class) by {
+                on message (RetrievePayment::class) create progress(PaymentRetrievalAccepted::class) by {
                     PaymentRetrievalAccepted(paymentId = it.id)
                 }
 
                 execute service {
-                    create intent (ChargeCreditCard::class) by { ChargeCreditCard() }
+                    create intention (ChargeCreditCard::class) by { ChargeCreditCard() }
                     on message CreditCardCharged::class create success()
                 }
 
                 create progress ("PaymentCovered")
 
                 execute service {
-                    create intent (ChargeCreditCard::class) by { ChargeCreditCard() }
+                    create intention (ChargeCreditCard::class) by { ChargeCreditCard() }
                     on message CreditCardCharged::class create success()
                 }
 
                 execute service {
-                    create intent (NotifyCustomer::class) by { NotifyCustomer() }
+                    create intention (NotifyCustomer::class) by { NotifyCustomer() }
                 }
 
                 execute service {
@@ -47,9 +47,8 @@ class BpmnRenderingIntegrationTest {
         render(process)
     }
 
-    fun render(flow: FlowExecution<*>) {
+    fun render(flow: DefinedFlow<*>) {
         val container = translate(flow)
-        val symbols = container.symbols
         val bpmnModelInstance = transform(container)
         Bpmn.validateModel(bpmnModelInstance);
         val file = File.createTempFile("./bpmn-model-api-", ".bpmn")

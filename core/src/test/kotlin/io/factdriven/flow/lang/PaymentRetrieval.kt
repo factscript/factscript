@@ -34,12 +34,12 @@ class PaymentRetrieval(command: RetrievePayment) {
 
             define <PaymentRetrieval> {
 
-                on message(RetrievePayment::class) create acceptance(PaymentRetrievalAccepted::class) by {
+                on message(RetrievePayment::class) create this.progress(PaymentRetrievalAccepted::class) by {
                     PaymentRetrievalAccepted(paymentId = it.id)
                 }
 
                 execute service {
-                    create intent(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, payment = uncovered) }
+                    create intention(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, payment = uncovered) }
                     on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
                 }
 

@@ -25,7 +25,7 @@ data class CreditCardCharge (
 
             define <CreditCardCharge> {
 
-                on message(ChargeCreditCard::class) create acceptance()
+                on message(ChargeCreditCard::class) create progress()
 
                 on message(ConfirmationReceived::class) having "reference" match { reference } create progress()
 

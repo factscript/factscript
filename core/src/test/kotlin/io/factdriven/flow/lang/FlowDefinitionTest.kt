@@ -1,8 +1,6 @@
 package io.factdriven.flow.lang
 
-import com.sun.org.apache.xml.internal.serializer.utils.Utils.messages
 import io.factdriven.flow.define
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -13,11 +11,11 @@ class FlowDefinitionTest {
 
     private val flow = define <PaymentRetrieval> {
 
-        on message (RetrievePayment::class) create acceptance(PaymentRetrievalAccepted::class) by { PaymentRetrievalAccepted() }
+        on message (RetrievePayment::class) create this.progress(PaymentRetrievalAccepted::class) by { PaymentRetrievalAccepted() }
 
         execute service {
 
-            create intent ChargeCreditCard::class by { ChargeCreditCard() }
+            create intention ChargeCreditCard::class by { ChargeCreditCard() }
             on message (CreditCardCharged::class) having "reference" match { paymentId }
 
         }
@@ -64,8 +62,8 @@ class FlowDefinitionTest {
         assertEquals("PaymentRetrieval", flow.id)
         assertEquals("PaymentRetrieval-RetrievePayment-1", flow.children[0].id)
         assertEquals("PaymentRetrieval-ChargeCreditCard-1", flow.children[1].id)
-        assertEquals("PaymentRetrieval-ChargeCreditCard-1-ChargeCreditCard-1", (flow.children[1] as FlowDefinition<*>).children[0].id)
-        assertEquals("PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1", (flow.children[1] as FlowDefinition<*>).children[1].id)
+        assertEquals("PaymentRetrieval-ChargeCreditCard-1-ChargeCreditCard-1", (flow.children[1] as DefinedFlow<*>).children[0].id)
+        assertEquals("PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1", (flow.children[1] as DefinedFlow<*>).children[1].id)
         assertEquals("PaymentRetrieval-PaymentRetrieved-1", flow.children[2].id)
 
     }
@@ -98,7 +96,7 @@ class FlowDefinitionTest {
     fun testExpectedPatternForRetrievePayment() {
 
         val aggregate = null
-        val retrievePayment = flow.descendantMap["PaymentRetrieval-RetrievePayment-1"] as FlowMessageReactionDefinition
+        val retrievePayment = flow.descendantMap["PaymentRetrieval-RetrievePayment-1"] as DefinedMessageReaction
 
         assertEquals(MessagePattern(RetrievePayment::class), retrievePayment.expected(aggregate))
 
@@ -108,7 +106,7 @@ class FlowDefinitionTest {
     fun testExpectedPatternForCreditCardCharged() {
 
         val aggregate = PaymentRetrieval(RetrievePayment(id = "anId", payment = 2F))
-        val retrievePayment = flow.descendantMap["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"] as FlowMessageReactionDefinition
+        val retrievePayment = flow.descendantMap["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"] as DefinedMessageReaction
 
         assertEquals(MessagePattern(CreditCardCharged::class, mapOf("reference" to "anId")), retrievePayment.expected(aggregate))
 

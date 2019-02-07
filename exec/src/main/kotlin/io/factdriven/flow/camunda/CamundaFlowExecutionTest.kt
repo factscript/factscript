@@ -1,5 +1,6 @@
 package io.factdriven.flow.camunda
 
+import io.factdriven.flow.Flows
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
@@ -56,7 +57,7 @@ open class CamundaFlowExecutionTest {
             Runtime.getRuntime().exec("open " + file.absoluteFile);
     }
 
-    fun bpmn(flow: FlowDefinition<*>): BpmnModelInstance {
+    fun bpmn(flow: DefinedFlow<*>): BpmnModelInstance {
         val container = translate(flow)
         val bpmnModelInstance = transform(container)
         Bpmn.validateModel(bpmnModelInstance);
@@ -67,7 +68,7 @@ open class CamundaFlowExecutionTest {
 
         if (engine!!.repositoryService.createDeploymentQuery().list().isEmpty()) {
 
-            FlowDefinitions.all().forEach { flowDefinition ->
+            Flows.all().forEach { flowDefinition ->
                 val bpmn = bpmn(flowDefinition)
                 engine().repositoryService
                     .createDeployment()

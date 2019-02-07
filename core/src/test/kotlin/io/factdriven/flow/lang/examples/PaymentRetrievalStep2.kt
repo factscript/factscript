@@ -6,12 +6,12 @@ import io.factdriven.flow.lang.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-val flow2 = execute<PaymentRetrieval> {
-    on message RetrievePayment::class create acceptance(PaymentRetrievalAccepted::class) by {
+val flow2 = define<PaymentRetrieval> {
+    on message RetrievePayment::class create this.progress(PaymentRetrievalAccepted::class) by {
         PaymentRetrievalAccepted(paymentId = it.accountId)
     }
     execute service {
-        create intent WithdrawAmount::class by {
+        create intention WithdrawAmount::class by {
             WithdrawAmount(
                 reference = paymentId,
                 payment = uncovered
@@ -22,7 +22,7 @@ val flow2 = execute<PaymentRetrieval> {
     select one {
         topic("Payment covered?")
         given("No") { uncovered!! > 0 } execute service {
-            create intent ChargeCreditCard::class by {
+            create intention ChargeCreditCard::class by {
                 ChargeCreditCard(
                     reference = paymentId,
                     payment = uncovered

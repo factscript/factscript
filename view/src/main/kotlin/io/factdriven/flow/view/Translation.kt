@@ -5,15 +5,15 @@ import io.factdriven.flow.lang.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-fun translate(execution: FlowExecution<*>): Container {
+fun translate(execution: Flow<*>): Container {
     return translate(execution.asDefinition())
 }
 
-fun translate(definition: FlowDefinition<*>): Container {
+fun translate(definition: DefinedFlow<*>): Container {
 
-    fun translate(element: FlowElement, parent: Container): Element {
+    fun translate(element: Node, parent: Container): Element {
         return when(element) {
-            is FlowReactionDefinition -> {
+            is DefinedReaction -> {
                 BpmnEventSymbol(
                     element.id,
                     element.name,
@@ -22,9 +22,9 @@ fun translate(definition: FlowDefinition<*>): Container {
                     BpmnEventCharacteristic.catching
                 )
             }
-            is FlowDefinition<*> -> {
-                when (element.executionType) {
-                    FlowExecutionType.execution -> {
+            is DefinedFlow<*> -> {
+                when (element.classifier) {
+                    FlowClassifier.Execution -> {
                         val sequence = Sequence(element.id, element.name, parent)
                         element.children.forEach { translate(it, sequence) }
                         sequence
@@ -43,7 +43,7 @@ fun translate(definition: FlowDefinition<*>): Container {
                     }
                 }
             }
-            is FlowActionDefinition -> {
+            is DefinedAction -> {
                 BpmnEventSymbol(
                     element.id,
                     element.name,

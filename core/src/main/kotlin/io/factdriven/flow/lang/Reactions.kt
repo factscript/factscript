@@ -6,23 +6,23 @@ import kotlin.reflect.full.memberProperties
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-enum class FlowReactionType {
+enum class ReactionClassifier {
 
     Message
 
 }
 
-class FlowReactions<I: Entity>(val parent: FlowDefinition<*>) {
+class ReactionOptions<I: Entity>(val parent: DefinedFlow<*>) {
 
     infix fun <M: Any> message(type: KClass<M>): FlowMessageReaction<I, M> {
 
         val reaction = FlowMessageReactionImpl<I, M, Any>(parent, type)
-        (parent.children as MutableList).add(reaction as FlowElement) // TODO clean
+        (parent.children as MutableList).add(reaction as Node) // TODO clean
         return reaction
 
     }
 
-    infix fun compensation(execution: FlowExecution<I>.() -> Unit): FlowExecution<I> {
+    infix fun compensation(execution: Flow<I>.() -> Unit): Flow<I> {
         TODO()
     }
 
@@ -40,10 +40,10 @@ interface FlowReaction<I: Entity, IN: Fact> {
 
     infix fun <OUT: Fact> create(action: FlowReactionActionImpl<IN, OUT>): ActionableFlowReaction<I, IN, OUT>
     infix fun create(action: FlowReactionWithoutAction): FlowReactionWithoutAction
-    infix fun execute(execution: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit
+    infix fun execute(execution: Flow<I>.() -> Unit): Flow<I>.() -> Unit
 
-    fun asDefinition(): FlowReactionDefinition {
-        return this as FlowReactionDefinition
+    fun asDefinition(): DefinedReaction {
+        return this as DefinedReaction
     }
 
 }
@@ -53,8 +53,8 @@ interface FlowMessageReaction<I: Entity, M: Fact> : FlowReaction<I, M> {
     infix fun having(property: String): MatchableFlowMessageReaction<I, M>
     infix fun supporting(assertion: I.(M) -> Boolean): FlowMessageReaction<I, M>
 
-    override fun asDefinition(): FlowMessageReactionDefinition {
-        return this as FlowMessageReactionDefinition
+    override fun asDefinition(): DefinedMessageReaction {
+        return this as DefinedMessageReaction
     }
 
 }
@@ -71,11 +71,11 @@ interface ActionableFlowReaction<I: Entity, IN: Fact, OUT: Fact> {
 
 }
 
-abstract class FlowReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val parent: FlowDefinition<*>, override var name: String): FlowReactionDefinition, FlowReaction<I, IN>, ActionableFlowReaction<I, IN, OUT> {
+abstract class FlowReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val parent: DefinedFlow<*>, override var name: String): DefinedReaction, FlowReaction<I, IN>, ActionableFlowReaction<I, IN, OUT> {
 
     // Flow Reaction Definition
 
-    override var reactionType = FlowReactionType.Message
+    override var classifier = ReactionClassifier.Message
     override var action: FlowReactionActionImpl<*, *>? = null
 
     // Flow Reaction Action Factory
@@ -90,7 +90,7 @@ abstract class FlowReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val par
         return action
     }
 
-    override fun execute(execution: FlowExecution<I>.() -> Unit): FlowExecution<I>.() -> Unit {
+    override fun execute(execution: Flow<I>.() -> Unit): Flow<I>.() -> Unit {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -101,27 +101,27 @@ abstract class FlowReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val par
 
 }
 
-class FlowMessageReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val parent: FlowDefinition<*>, override val messageType: KClass<IN>): FlowMessageReactionDefinition, FlowReactionImpl<I, IN, OUT>(parent, messageType.simpleName!!), FlowMessageReaction<I, IN>, MatchableFlowMessageReaction<I, IN> {
+class FlowMessageReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val parent: DefinedFlow<*>, override val factType: KClass<IN>): DefinedMessageReaction, FlowReactionImpl<I, IN, OUT>(parent, factType.simpleName!!), FlowMessageReaction<I, IN>, MatchableFlowMessageReaction<I, IN> {
 
-    override val propertyNames = mutableListOf<Property>()
-    override val propertyValues = mutableListOf<Entity?.() -> Any?>()
+    override val properties = mutableListOf<Property>()
+    override val values = mutableListOf<Entity?.() -> Fact?>()
 
     init {
-        reactionType = FlowReactionType.Message
+        classifier = ReactionClassifier.Message
     }
 
     // Message Patterns Refiner
 
     override fun having(property: String): MatchableFlowMessageReaction<I, IN> {
-        assert(messageType.java.kotlin.memberProperties.find { it.name == property } != null)
-            { "Message actionType '${messageType.simpleName}' does not have property '${property}'!" }
-        propertyNames.add(property)
+        assert(factType.java.kotlin.memberProperties.find { it.name == property } != null)
+            { "Message actionType '${factType.simpleName}' does not have property '${property}'!" }
+        properties.add(property)
         return this
     }
 
     override fun match(value: I.() -> Any?): FlowMessageReaction<I, IN> {
         @Suppress("UNCHECKED_CAST")
-        propertyValues.add(value as Entity?.() -> Any?)
+        values.add(value as Entity?.() -> Any?)
         return this
     }
 

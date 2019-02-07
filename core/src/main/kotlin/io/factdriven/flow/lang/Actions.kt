@@ -1,115 +1,107 @@
 package io.factdriven.flow.lang
 
-import kotlin.reflect.KClass
-
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-enum class FlowActionType {
+enum class ActionClassifier {
 
-    Acceptance,
+    Intention,
     Progress,
     Success,
-    Fix,
     Failure,
-    Intent
+    Fix
 
 }
 
-interface ClassifiedFlowAction<I: Entity, O: Fact> {
+interface ClassifiedAction<ENTITY: Entity, FACT: Fact> {
 
-    infix fun by(message: I.() -> O?)
+    infix fun by(message: ENTITY.() -> FACT?)
 
 }
 
-interface FlowAction<I: Entity> {
+interface Action<ENTITY: Entity> {
 
-    infix fun intent(id: String)
-    infix fun acceptance(id: String)
-    infix fun progress(id: String)
-    infix fun success(id: String)
-    infix fun failure(id: String)
+    infix fun intention(type: FactName)
+    infix fun progress(type: FactName)
+    infix fun success(type: FactName)
+    infix fun failure(type: FactName)
 
-    infix fun <O: Fact> intent(type: KClass<O>): ClassifiedFlowAction<I, O>
-    infix fun <O: Fact> acceptance(type: KClass<O>): ClassifiedFlowAction<I, O>
-    infix fun <O: Fact> progress(type: KClass<O>): ClassifiedFlowAction<I, O>
-    infix fun <O: Fact> success(type: KClass<O>): ClassifiedFlowAction<I, O>
-    infix fun <O: Fact> failure(type: KClass<O>): ClassifiedFlowAction<I, O>
+    infix fun <FACT: Fact> intention(type: FactType<FACT>): ClassifiedAction<ENTITY, FACT>
+    infix fun <FACT: Fact> progress(type: FactType<FACT>): ClassifiedAction<ENTITY, FACT>
+    infix fun <FACT: Fact> success(type: FactType<FACT>): ClassifiedAction<ENTITY, FACT>
+    infix fun <FACT: Fact> failure(type: FactType<FACT>): ClassifiedAction<ENTITY, FACT>
 
-    fun asDefinition(): FlowActionDefinition {
-        return this as FlowActionDefinition
+    fun asDefinition(): DefinedAction {
+        return this as DefinedAction
     }
 
 }
 
-open class FlowActionImpl<I: Entity, O: Fact>(override val parent: FlowDefinition<*>): ClassifiedFlowAction<I, O>, FlowAction<I>, FlowActionDefinition {
+open class ActionImpl<ENTITY: Entity, FACT: Fact> :
+    Action<ENTITY>,
+    ClassifiedAction<ENTITY, FACT>,
+    DefinedAction
+{
 
-    // Flow Action Definition
+    internal constructor(parent: DefinedFlow<*>) {
+        this.parent = parent
+    }
 
-    override lateinit var name: ElementName
-    override var messageType: FactType<*>? = null
-    override var actionType = FlowActionType.Success
+    override val parent: DefinedFlow<*>
+    override var factType: FactType<*>? = null
+    override lateinit var name: FactName
+    override lateinit var classifier: ActionClassifier
     override var function: (Entity.() -> Fact)? = null
 
     // Flow Action Factories
 
-    override infix fun intent(name: String) {
-        this.actionType = FlowActionType.Intent
+    override infix fun intention(name: NodeName) {
+        this.classifier = ActionClassifier.Intention
         this.name = name
     }
 
-    override infix fun <O: Fact> intent(type: KClass<O>): ClassifiedFlowAction<I, O> {
-        this.messageType = type
-        intent(type.simpleName!!)
-        return this as ClassifiedFlowAction<I, O>
-    }
-
-    override infix fun acceptance(name: String) {
-        this.actionType = FlowActionType.Acceptance
-        this.name = name
-    }
-
-    override infix fun <O: Fact> acceptance(type: KClass<O>): ClassifiedFlowAction<I, O> {
-        this.messageType = type
-        acceptance(type.simpleName!!)
-        return this as ClassifiedFlowAction<I, O>
+    @SuppressWarnings("unchecked")
+    override infix fun <FACT: Fact> intention(type: FactType<FACT>): ClassifiedAction<ENTITY, FACT> {
+        this.factType = type
+        intention(type.simpleName!!)
+        return this as ClassifiedAction<ENTITY, FACT>
     }
 
     override infix fun progress(name: String) {
-        this.actionType = FlowActionType.Progress
+        this.classifier = ActionClassifier.Progress
         this.name = name
     }
 
-    override infix fun <O: Fact> progress(type: KClass<O>): ClassifiedFlowAction<I, O> {
-        this.messageType = type
+    override infix fun <O: Fact> progress(type: FactType<O>): ClassifiedAction<ENTITY, O> {
+        this.factType = type
         progress(type.simpleName!!)
-        return this as ClassifiedFlowAction<I, O>
+        return this as ClassifiedAction<ENTITY, O>
     }
 
     override infix fun success(name: String) {
-        this.actionType = FlowActionType.Success
+        this.classifier = ActionClassifier.Success
         this.name = name
     }
 
-    override infix fun <O: Fact> success(type: KClass<O>): ClassifiedFlowAction<I, O> {
-        this.messageType = type
+    override infix fun <O: Fact> success(type: FactType<O>): ClassifiedAction<ENTITY, O> {
+        this.factType = type
         success(type.simpleName!!)
-        return this as ClassifiedFlowAction<I, O>
+        return this as ClassifiedAction<ENTITY, O>
     }
 
     override infix fun failure(name: String) {
-        this.actionType = FlowActionType.Failure
+        this.classifier = ActionClassifier.Failure
         this.name = name
     }
 
-    override infix fun <O: Fact> failure(type: KClass<O>): ClassifiedFlowAction<I, O> {
-        this.messageType = type
+    override infix fun <O: Fact> failure(type: FactType<O>): ClassifiedAction<ENTITY, O> {
+        this.factType = type
         failure(type.simpleName!!)
-        return this as ClassifiedFlowAction<I, O>
+        return this as ClassifiedAction<ENTITY, O>
     }
 
-    override fun by(message: I.() -> O?) {
+    override fun by(message: ENTITY.() -> FACT?) {
         @Suppress("UNCHECKED_CAST")
         this.function = message as Entity.() -> Fact
     }

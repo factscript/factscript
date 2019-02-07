@@ -2,18 +2,17 @@ package io.factdriven.flow.lang
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlin.reflect.KClass
 import kotlin.reflect.full.memberFunctions
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-typealias ElementName = String
-typealias ElementId = String
+typealias NodeName = String
+typealias NodeId = String
 
-interface FlowElement {
+interface Node {
 
-    val id: ElementId
+    val id: NodeId
         get() {
             val id = StringBuffer()
             if (parent != null) {
@@ -32,66 +31,20 @@ interface FlowElement {
             return id.toString()
         }
 
-    val name: ElementName
-    val parent: FlowDefinition<*>?
-    val root: FlowDefinition<*>
+    val name: FactName
+    val parent: DefinedFlow<*>?
+    val root: DefinedFlow<*>
         get() {
-            return parent ?: this as FlowDefinition<*>
+            return parent ?: this as DefinedFlow<*>
         }
 
 }
 
-object FlowDefinitions {
+interface DefinedFlow<ENTITY: Entity>: Node {
 
-    private val list = mutableListOf<FlowDefinition<*>>()
-
-    fun add(definition: FlowDefinition<*>) {
-        list.add(definition)
-    }
-
-    fun all(): List<FlowDefinition<*>> {
-        return list
-    }
-
-    fun <A: Entity> get(type: KClass<A>): FlowDefinition<A> {
-        val definition = list.find {
-            it.aggregateType == type
-        } as FlowDefinition<A>?
-        return definition ?: throw IllegalArgumentException()
-    }
-
-    fun getElementById(id: ElementId): FlowElement {
-        val isSubElement = id.contains("-")
-        val definitionId = if (isSubElement) id.substring(0, id.indexOf("-")) else id
-        val definition = list.find {
-            it.id == definitionId
-        } ?: throw java.lang.IllegalArgumentException()
-        return if (isSubElement) {
-            definition.descendantMap[id] ?: throw java.lang.IllegalArgumentException()
-        } else {
-            definition
-        }
-    }
-
-    fun deserialize(message: String): Message<*> {
-        val jsonNode = jacksonObjectMapper().readTree(message)
-        val factName = jsonNode.get("name").textValue()
-        val factType = all().find {
-            it.messageType(factName) != null
-        }?.messageType(factName)
-        if (factType != null) {
-            return Message.fromJson(jsonNode, factType)
-        }
-        throw IllegalArgumentException()
-    }
-
-}
-
-interface FlowDefinition<A: Entity>: FlowElement {
-
-    val children: List<FlowElement>
-    val executionType: FlowExecutionType
-    val aggregateType: EntityType
+    val children: List<Node>
+    val classifier: FlowClassifier
+    val entityType: EntityType
 
     fun patterns(message: Fact): MessagePatterns {
 
@@ -99,8 +52,8 @@ interface FlowDefinition<A: Entity>: FlowElement {
 
         children.forEach { child ->
             when(child) {
-                is FlowMessageReactionDefinition -> if (child.messageType.isInstance(message)) patterns.add(child.incoming(message))
-                is FlowDefinition<*> -> patterns.addAll(child.patterns(message))
+                is DefinedMessageReaction -> if (child.factType.isInstance(message)) patterns.add(child.incoming(message))
+                is DefinedFlow<*> -> patterns.addAll(child.patterns(message))
             }
         }
 
@@ -108,16 +61,16 @@ interface FlowDefinition<A: Entity>: FlowElement {
 
     }
 
-    val descendants: List<FlowElement> get() {
+    val descendants: List<Node> get() {
 
-        val descendants = mutableListOf<FlowElement>()
+        val descendants = mutableListOf<Node>()
 
         children.forEach { child ->
             descendants.add(child)
-            if (child is FlowDefinition<*>) {
+            if (child is DefinedFlow<*>) {
                 descendants.addAll(child.descendants)
             }
-            if (child is FlowReactionDefinition && child.action != null) {
+            if (child is DefinedReaction && child.action != null) {
                 descendants.add(child.action!!)
             }
         }
@@ -126,17 +79,17 @@ interface FlowDefinition<A: Entity>: FlowElement {
 
     }
 
-    val childrenMap: Map<ElementId, FlowElement> get() = children.map { it.id to it }.toMap()
+    val childrenMap: Map<NodeId, Node> get() = children.map { it.id to it }.toMap()
 
-    val descendantMap: Map<ElementId, FlowElement> get() = descendants.map { it.id to it }.toMap()
+    val descendantMap: Map<NodeId, Node> get() = descendants.map { it.id to it }.toMap()
 
     fun messageType(messageName: FactName): FactType<*>? {
 
         descendants.forEach {
             when(it) {
-                is FlowActionDefinition -> if (it.name == messageName && it.messageType != null) return it.messageType
-                is FlowReactionActionDefinition -> if (it.name == messageName && it.messageType != null) return it.messageType
-                is FlowMessageReactionDefinition -> if (it.name == messageName) return it.messageType
+                is DefinedAction -> if (it.name == messageName && it.factType != null) return it.factType
+                is DefinedReactionAction -> if (it.name == messageName && it.factType != null) return it.factType
+                is DefinedMessageReaction -> if (it.name == messageName) return it.factType
             }
         }
 
@@ -144,11 +97,11 @@ interface FlowDefinition<A: Entity>: FlowElement {
 
     }
 
-    fun getChildByActionType(actionType: FlowActionType): FlowElement? {
+    fun getChildByActionType(actionClassifier: ActionClassifier): Node? {
         return children.find {
             when (it) {
-                is FlowActionDefinition -> it.actionType == actionType
-                is FlowReactionDefinition -> it.action?.actionType == actionType
+                is DefinedAction -> it.classifier == actionClassifier
+                is DefinedReaction -> it.action?.classifier == actionClassifier
                 else -> false
             }
         }
@@ -168,11 +121,11 @@ interface FlowDefinition<A: Entity>: FlowElement {
         return jacksonObjectMapper().writeValueAsString(messages)
     }
 
-    fun aggregate(history: Messages): A {
+    fun aggregate(history: Messages): ENTITY {
 
         assert(!history.isEmpty())
 
-        fun past(history: Messages, aggregate: A): A {
+        fun past(history: Messages, aggregate: ENTITY): ENTITY {
             if (!history.isEmpty()) {
                 val message = history.first()
                 val method = aggregate::class.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == message.fact::class }
@@ -184,63 +137,63 @@ interface FlowDefinition<A: Entity>: FlowElement {
         }
 
         val message = history.first()
-        val constructor = aggregateType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == message.fact::class }
+        val constructor = entityType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == message.fact::class }
         return if (constructor != null) {
-            past(history.subList(1, history.size), constructor.call(message.fact) as A)
+            past(history.subList(1, history.size), constructor.call(message.fact) as ENTITY)
         } else throw IllegalArgumentException()
 
     }
 
 }
 
-interface FlowActionDefinition: FlowElement {
+interface DefinedAction: Node {
 
-    val actionType: FlowActionType
-    val messageType: FactType<*>?
+    val classifier: ActionClassifier
+    val factType: FactType<*>?
     val function: (Entity.() -> Fact)?
 
 }
 
-interface FlowReactionActionDefinition: FlowElement {
+interface DefinedReactionAction: Node {
 
-    val actionType: FlowActionType
-    val messageType: FactType<*>?
+    val classifier: ActionClassifier
+    val factType: FactType<*>?
     val function: (Entity.(Fact) -> Fact)?
 
 }
 
-interface FlowReactionDefinition: FlowElement {
+interface DefinedReaction: Node {
 
-    val reactionType: FlowReactionType
-    val action: FlowReactionActionDefinition?
+    val classifier: ReactionClassifier
+    val action: DefinedReactionAction?
 
 }
 
-interface FlowMessageReactionDefinition: FlowReactionDefinition {
+interface DefinedMessageReaction: DefinedReaction {
 
-    val messageType: FactType<*>
-    val propertyNames: List<Property>
-    val propertyValues: List<Entity?.() -> Any?>
+    val factType: FactType<*>
+    val properties: List<Property>
+    val values: List<Entity?.() -> Fact?>
 
     fun incoming(message: Fact): MessagePattern {
 
-        assert(messageType.isInstance(message))
+        assert(factType.isInstance(message))
 
-        val properties = propertyNames.map { propertyName ->
+        val properties = properties.map { propertyName ->
             propertyName to message.getValue(propertyName)
         }.toMap()
 
-        return MessagePattern(messageType, properties)
+        return MessagePattern(factType, properties)
 
     }
 
     fun expected(aggregate: Entity?): MessagePattern {
 
-        val properties = propertyNames.mapIndexed { propertyIndex, propertyName ->
-            propertyName to propertyValues[propertyIndex].invoke(aggregate)
+        val properties = properties.mapIndexed { propertyIndex, propertyName ->
+            propertyName to values[propertyIndex].invoke(aggregate)
         }.toMap()
 
-        return MessagePattern(messageType, properties)
+        return MessagePattern(factType, properties)
 
     }
 

@@ -1,5 +1,6 @@
 package io.factdriven.flow.camunda
 
+import io.factdriven.flow.Flows
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
@@ -42,18 +43,18 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val element = FlowDefinitions.getElementById(target.getValue(execution).toString())
+        val element = Flows.getElementById(target.getValue(execution).toString())
         val messages = element.root.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
         fun aggregate() = element.root.aggregate(messages)
 
-        fun pattern(element: FlowElement): MessagePattern? {
+        fun pattern(element: Node): MessagePattern? {
             return when (element) {
-                is FlowMessageReactionDefinition -> {
+                is DefinedMessageReaction -> {
                     element.expected(aggregate())
                 }
-                is FlowDefinition<*> -> {
-                    val success = element.getChildByActionType(FlowActionType.Success)
+                is DefinedFlow<*> -> {
+                    val success = element.getChildByActionType(ActionClassifier.Success)
                     if (success != null) pattern(success) else null
                 }
                 else -> null
@@ -72,25 +73,25 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val element = FlowDefinitions.getElementById(execution.currentActivityId)
+        val element = Flows.getElementById(execution.currentActivityId)
         val messages = element.root.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
         fun aggregate() = element.root.aggregate(messages)
 
-        fun message(element: FlowElement): Message<*>? {
+        fun message(element: Node): Message<*>? {
             return when(element) {
-                is FlowActionDefinition -> {
+                is DefinedAction -> {
                     val action = element.function
                     val fact = action?.invoke(aggregate())
                     if (fact != null) Message(fact) else null
                 }
-                is FlowMessageReactionDefinition -> {
+                is DefinedMessageReaction -> {
                     val action = element.action?.function
                     val fact = action?.invoke(aggregate(), messages.last().fact)
                     if (fact != null) Message(fact) else null
                 }
-                is FlowDefinition<*> -> {
-                    val intent = element.getChildByActionType(FlowActionType.Intent)
+                is DefinedFlow<*> -> {
+                    val intent = element.getChildByActionType(ActionClassifier.Intention)
                     if (intent != null) message(intent) else null
                 }
                 else -> throw IllegalArgumentException()
@@ -121,7 +122,7 @@ object CamundaBpmFlowExecutor {
 
         log.debug("Incoming: ${message.fact}")
 
-        val targets = FlowDefinitions.all().map { definition ->
+        val targets = Flows.all().map { definition ->
 
             definition.patterns(message.fact).map { pattern ->
 
@@ -151,7 +152,7 @@ object CamundaBpmFlowExecutor {
         assert(message.target != null) { "Correlation only works for messages with a specified target!" }
 
         val flowName = message.target!!.first
-        val flowDefinition = FlowDefinitions.getElementById(flowName) as FlowDefinition<*>
+        val flowDefinition = Flows.getElementById(flowName) as DefinedFlow<*>
         val businessKey = message.target!!.second
         val correlationHash = message.target!!.third
         val processInstanceId = businessKey?.let { engine.runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult()?.id }
@@ -204,7 +205,7 @@ object CamundaBpmFlowExecutor {
 
     fun <A: Entity> load(id: EntityId, type: KClass<A>): A {
 
-        val flowDefinition = FlowDefinitions.get(type)
+        val flowDefinition = Flows.get(type)
 
         val processInstance =
             engine.historyService.createHistoricProcessInstanceQuery()
@@ -240,7 +241,7 @@ class CamundaBpmFlowJobHandler: JobHandler<CamundaBpmFlowJobHandlerConfiguration
         tenantId: String?
     ) {
 
-        val message = FlowDefinitions.deserialize(configuration!!.message)
+        val message = Flows.deserialize(configuration!!.message)
         if (message.target == null) {
             CamundaBpmFlowExecutor.target(message).forEach {
                 (commandContext!!.processEngineConfiguration.commandExecutorTxRequired.execute(CreateCamundaBpmFlowJob(it)))
@@ -301,7 +302,7 @@ class CamundaFlowExecutionPlugin: ProcessEnginePlugin {
     }
 
     override fun postProcessEngineBuild(engine: ProcessEngine) {
-        FlowDefinitions.all().forEach { flowDefinition ->
+        Flows.all().forEach { flowDefinition ->
             val bpmn = transform(translate(flowDefinition))
             engine.repositoryService
                 .createDeployment()
