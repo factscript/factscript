@@ -81,12 +81,12 @@ class CamundaFlowNodeStartListener: ExecutionListener {
                 is FlowActionDefinition -> {
                     val action = element.function
                     val fact = action?.invoke(aggregate())
-                    if (fact != null) Message.from(fact) else null
+                    if (fact != null) Message(fact) else null
                 }
                 is FlowMessageReactionDefinition -> {
                     val action = element.action?.function
                     val fact = action?.invoke(aggregate(), messages.last().fact)
-                    if (fact != null) Message.from(fact) else null
+                    if (fact != null) Message(fact) else null
                 }
                 is FlowDefinition<*> -> {
                     val intent = element.getChildByActionType(FlowActionType.Intent)

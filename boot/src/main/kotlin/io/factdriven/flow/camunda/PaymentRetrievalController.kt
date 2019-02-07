@@ -23,7 +23,7 @@ class PaymentRetrievalController {
     }
 
     private fun send(fact: Fact): Message<*> {
-        val message = Message.from(fact)
+        val message = Message(fact)
         CamundaBpmFlowExecutor.target(message).map {
             CamundaBpmFlowExecutor.correlate(it)
         }

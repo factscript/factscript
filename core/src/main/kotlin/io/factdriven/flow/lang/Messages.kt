@@ -31,19 +31,11 @@ data class Message<F: Fact>(
         return jacksonObjectMapper().writeValueAsString(this)
     }
 
-    fun toJsonNode(): JsonNode {
-        return jacksonObjectMapper().valueToTree(this)
-    }
-
     fun target(to: MessageTarget): Message<F> {
         return Message(id, name, fact, to)
     }
 
     companion object {
-
-        fun <F: Fact> from(fact: F): Message<F> {
-            return Message(UUID.randomUUID().toString(), fact::class.java.simpleName, fact)
-        }
 
         fun <F: Fact> fromJson(json: String, factType: FactType<F>): Message<F> {
             val mapper = jacksonObjectMapper()
