@@ -25,6 +25,7 @@ import org.camunda.bpm.engine.impl.interceptor.CommandContext
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity
 import org.camunda.bpm.engine.impl.persistence.entity.JobEntity
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity
+import org.slf4j.Logger
 
 
 /**
@@ -33,7 +34,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity
 const val MESSAGE_NAME_VAR = "message"
 const val MESSAGES_VAR = "messages"
 
-val log = LoggerFactory.getLogger(CamundaBpmFlowExecutor::class.java)
+val log: Logger = LoggerFactory.getLogger(CamundaBpmFlowExecutor::class.java)
 
 class CamundaFlowTransitionListener: ExecutionListener {
 
@@ -126,10 +127,11 @@ object CamundaBpmFlowExecutor {
 
                 listOf(
                     engine.externalTaskService.fetchAndLock(Int.MAX_VALUE, pattern.hash).topic(pattern.hash, Long.MAX_VALUE).execute().map { task ->
-                        message.target(MessageTarget(definition.name, task.processInstanceId, pattern.hash))
+                        message.target(MessageTarget(definition.name, task.businessKey, pattern.hash))
                     },
                     engine.runtimeService.createEventSubscriptionQuery().eventType(EventType.MESSAGE.name()).eventName(pattern.hash).list().map { subscription ->
-                        message.target(MessageTarget(definition.name, subscription.processInstanceId, pattern.hash))
+                        val businessKey = subscription.processInstanceId?.let { engine.runtimeService.createProcessInstanceQuery().processInstanceId(subscription.processInstanceId).singleResult()?.businessKey }
+                        message.target(MessageTarget(definition.name, businessKey, pattern.hash))
                     }
                 ).flatten()
 
@@ -150,8 +152,9 @@ object CamundaBpmFlowExecutor {
 
         val flowName = message.target!!.first
         val flowDefinition = FlowDefinitions.getElementById(flowName) as FlowDefinition<*>
-        val processInstanceId = message.target!!.second
+        val businessKey = message.target!!.second
         val correlationHash = message.target!!.third
+        val processInstanceId = businessKey?.let { engine.runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult()?.id }
 
         fun variables(): Map<String, Any> {
 

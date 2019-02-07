@@ -10,7 +10,7 @@ import java.util.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-typealias Messages = List<Message<*>>
+typealias Messages = List<Message<out Fact>>
 typealias MessageId = String
 typealias MessageTarget = Triple<EntityName, EntityId?, MessagePatternHash>
 
@@ -29,7 +29,7 @@ data class Message<F: Fact>(
     constructor(fact: F): this(UUID.randomUUID().toString(), fact::class.java.simpleName, fact)
 
     fun toJson(): String {
-        return jacksonObjectMapper().writeValueAsString(this)
+        return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
     }
 
     fun target(to: MessageTarget): Message<F> {
