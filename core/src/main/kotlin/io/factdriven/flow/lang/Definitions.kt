@@ -35,7 +35,7 @@ interface Node {
     val parent: DefinedFlow<*>?
     val root: DefinedFlow<*>
         get() {
-            return parent ?: this as DefinedFlow<*>
+            return parent?.root ?: this as DefinedFlow<*>
         }
 
 }
@@ -44,7 +44,7 @@ interface DefinedFlow<ENTITY: Entity>: Node {
 
     val children: List<Node>
     val classifier: FlowClassifier
-    val entityType: EntityType
+    val entityType: EntityType<ENTITY>
 
     fun patterns(message: Fact): MessagePatterns {
 
@@ -119,29 +119,6 @@ interface DefinedFlow<ENTITY: Entity>: Node {
 
     fun serialize(messages: List<Message<*>>): String {
         return jacksonObjectMapper().writeValueAsString(messages)
-    }
-
-    fun aggregate(history: Messages): ENTITY {
-
-        assert(!history.isEmpty())
-
-        fun past(history: Messages, aggregate: ENTITY): ENTITY {
-            if (!history.isEmpty()) {
-                val message = history.first()
-                val method = aggregate::class.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == message.fact::class }
-                if (method != null) method.call(aggregate, message.fact)
-                return past(history.subList(1, history.size), aggregate)
-            } else {
-                return aggregate
-            }
-        }
-
-        val message = history.first()
-        val constructor = entityType.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == message.fact::class }
-        return if (constructor != null) {
-            past(history.subList(1, history.size), constructor.call(message.fact) as ENTITY)
-        } else throw IllegalArgumentException()
-
     }
 
 }

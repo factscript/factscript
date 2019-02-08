@@ -149,7 +149,7 @@ class FlowDefinitionTest {
         val messages = listOf(
             Message(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F))
         )
-        val aggregate = flow.aggregate(messages)
+        val aggregate = apply(messages, flow.entityType)
 
         assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
@@ -165,7 +165,7 @@ class FlowDefinitionTest {
             Message(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F)),
             Message(PaymentRetrieved())
         )
-        val aggregate = flow.aggregate(messages)
+        val aggregate = apply(messages, flow.entityType)
 
         assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
@@ -182,7 +182,7 @@ class FlowDefinitionTest {
             Message(PaymentRetrieved(payment = 1F)),
             Message(PaymentRetrieved(payment = 1F))
         )
-        val aggregate = flow.aggregate(messages)
+        val aggregate = apply(messages, flow.entityType)
 
         assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)

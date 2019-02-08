@@ -68,7 +68,7 @@ class FlowImpl<ENTITY: Entity> :
 
     override var classifier = FlowClassifier.Execution
     override val children: MutableList<Node>
-    override lateinit var entityType: KClass<out Entity>
+    override lateinit var entityType: EntityType<ENTITY>
 
     override var name: String = ""
         get() {
