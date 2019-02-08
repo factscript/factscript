@@ -73,14 +73,16 @@ data class Message<F: Fact>(
 }
 
 data class MessagePattern(
+    val entityType: EntityType<*>,
     val name: FactName,
     val properties: Map<Property, Value> = emptyMap()
 ) {
 
     constructor(
+        entityType: EntityType<*>,
         type: FactType<*>,
         properties: Map<Property, Value> = emptyMap()
-    ): this(type.simpleName!!, properties) // TODO simple name is just fallback
+    ): this(entityType, type.simpleName!!, properties) // TODO simple name is just fallback
 
     val hash: String
 

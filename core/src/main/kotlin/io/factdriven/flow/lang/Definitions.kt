@@ -97,7 +97,7 @@ interface MessageReaction: Reaction {
                 propertyName to message.fact.getValue(propertyName)
             }.toMap()
 
-            return MessagePattern(type, properties)
+            return MessagePattern(root.type, type, properties)
         } else {
             return null
         }
@@ -110,7 +110,7 @@ interface MessageReaction: Reaction {
             propertyName to values[propertyIndex].invoke(aggregate)
         }.toMap()
 
-        return MessagePattern(type, properties)
+        return MessagePattern(root.type, type, properties)
 
     }
 

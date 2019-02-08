@@ -101,21 +101,17 @@ object CamundaBpmFlowExecutor {
 
         log.debug("Incoming: ${message.fact}")
 
-        val targets = Flows.all.map { definition ->
+        val targets = Flows.match(message).map { pattern ->
 
-            definition.match(message).map { pattern ->
-
-                listOf(
-                    engine.externalTaskService.fetchAndLock(Int.MAX_VALUE, pattern.hash).topic(pattern.hash, Long.MAX_VALUE).execute().map { task ->
-                        message.target(MessageTarget(definition.name, task.businessKey, pattern.hash))
-                    },
-                    engine.runtimeService.createEventSubscriptionQuery().eventType(EventType.MESSAGE.name()).eventName(pattern.hash).list().map { subscription ->
-                        val businessKey = subscription.processInstanceId?.let { engine.runtimeService.createProcessInstanceQuery().processInstanceId(subscription.processInstanceId).singleResult()?.businessKey }
-                        message.target(MessageTarget(definition.name, businessKey, pattern.hash))
-                    }
-                ).flatten()
-
-            }.flatten()
+            listOf(
+                engine.externalTaskService.fetchAndLock(Int.MAX_VALUE, pattern.hash).topic(pattern.hash, Long.MAX_VALUE).execute().map { task ->
+                    message.target(MessageTarget(pattern.entityType.simpleName!!, task.businessKey, pattern.hash))
+                },
+                engine.runtimeService.createEventSubscriptionQuery().eventType(EventType.MESSAGE.name()).eventName(pattern.hash).list().map { subscription ->
+                    val businessKey = subscription.processInstanceId?.let { engine.runtimeService.createProcessInstanceQuery().processInstanceId(subscription.processInstanceId).singleResult()?.businessKey }
+                    message.target(MessageTarget(pattern.entityType.simpleName!!, businessKey, pattern.hash))
+                }
+            ).flatten()
 
         }.flatten()
 

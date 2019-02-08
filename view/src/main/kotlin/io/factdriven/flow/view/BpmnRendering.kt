@@ -157,7 +157,7 @@ fun transform(container: Container): BpmnModelInstance {
                             if (message == null) {
                                 with(modelInstance.newInstance(Message::class.java)) {
                                     setAttributeValue("id", symbol.name)
-                                    setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(symbol.name).hash else "#{message}")
+                                    setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) MessagePattern(Any::class, symbol.name).hash else "#{message}")
                                     definitions.addChildElement(this)
                                     messages[symbol.name] = this
                                     messageEventDefinition.message = this

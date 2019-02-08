@@ -31,7 +31,7 @@ class FlowDefinitionTest {
         val patterns: MessagePatterns = flow.match(incoming)
 
         assertEquals (1, patterns.size)
-        assertEquals (MessagePattern(type = CreditCardCharged::class, properties = mapOf("reference" to "value")), patterns.iterator().next())
+        assertEquals (MessagePattern(PaymentRetrieval::class, type = CreditCardCharged::class, properties = mapOf("reference" to "value")), patterns.iterator().next())
 
     }
 
@@ -42,7 +42,7 @@ class FlowDefinitionTest {
         val patterns: MessagePatterns = flow.match(incoming)
 
         assertEquals (1, patterns.size)
-        assertEquals (MessagePattern(type = RetrievePayment::class), patterns.iterator().next())
+        assertEquals (MessagePattern(PaymentRetrieval::class, type = RetrievePayment::class), patterns.iterator().next())
 
     }
 
@@ -89,7 +89,7 @@ class FlowDefinitionTest {
         val aggregate = null
         val retrievePayment = flow.nodes["PaymentRetrieval-RetrievePayment-1"] as MessageReaction
 
-        assertEquals(MessagePattern(RetrievePayment::class), retrievePayment.expected(aggregate))
+        assertEquals(MessagePattern(PaymentRetrieval::class, RetrievePayment::class), retrievePayment.expected(aggregate))
 
     }
 
@@ -99,7 +99,7 @@ class FlowDefinitionTest {
         val aggregate = PaymentRetrieval(RetrievePayment(id = "anId", payment = 2F))
         val retrievePayment = flow.nodes["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"] as MessageReaction
 
-        assertEquals(MessagePattern(CreditCardCharged::class, mapOf("reference" to "anId")), retrievePayment.expected(aggregate))
+        assertEquals(MessagePattern(PaymentRetrieval::class, CreditCardCharged::class, mapOf("reference" to "anId")), retrievePayment.expected(aggregate))
 
     }
 
