@@ -89,7 +89,7 @@ class FlowDefinitionTest {
         val aggregate = null
         val retrievePayment = flow.nodes["PaymentRetrieval-RetrievePayment-1"] as MessageReaction
 
-        assertEquals(MessagePattern(PaymentRetrieval::class, RetrievePayment::class), retrievePayment.match(aggregate))
+        assertEquals(MessagePattern(PaymentRetrieval::class, RetrievePayment::class), retrievePayment.match(aggregate).first())
 
     }
 
@@ -99,7 +99,7 @@ class FlowDefinitionTest {
         val aggregate = PaymentRetrieval(RetrievePayment(id = "anId", payment = 2F))
         val retrievePayment = flow.nodes["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"] as MessageReaction
 
-        assertEquals(MessagePattern(PaymentRetrieval::class, CreditCardCharged::class, mapOf("reference" to "anId")), retrievePayment.match(aggregate))
+        assertEquals(MessagePattern(PaymentRetrieval::class, CreditCardCharged::class, mapOf("reference" to "anId")), retrievePayment.match(aggregate).firstOrNull())
 
     }
 
@@ -115,7 +115,7 @@ class FlowDefinitionTest {
         )
 
         val serialized = original.toJson()
-        val deserialised = fromJson(serialized)
+        val deserialised = Messages.fromJson(serialized)
 
         assertEquals(original, deserialised)
 
@@ -127,7 +127,7 @@ class FlowDefinitionTest {
         val messages = listOf(
             Message(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F))
         )
-        val aggregate = apply(messages, flow.type)
+        val aggregate = flow.type.apply(messages)
 
         assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
@@ -143,7 +143,7 @@ class FlowDefinitionTest {
             Message(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F)),
             Message(PaymentRetrieved())
         )
-        val aggregate = apply(messages, flow.type)
+        val aggregate = flow.type.apply(messages)
 
         assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
@@ -160,7 +160,7 @@ class FlowDefinitionTest {
             Message(PaymentRetrieved(payment = 1F)),
             Message(PaymentRetrieved(payment = 1F))
         )
-        val aggregate = apply(messages, flow.type)
+        val aggregate = flow.type.apply(messages)
 
         assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)

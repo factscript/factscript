@@ -14,19 +14,19 @@ data class PaymentRetrieval(
 
 ) {
 
-    constructor(command: RetrievePayment): this(command.reference, command.accountId, command.payment)
+    constructor(fact: RetrievePayment): this(fact.reference, fact.accountId, fact.payment)
 
     var pending = 0F
 
-    fun apply(command: ChargeCreditCard) {
+    fun apply(fact: ChargeCreditCard) {
 
-        pending = command.charge
+        pending = fact.charge
 
     }
 
-    fun apply(event: CreditCardCharged) {
+    fun apply(fact: CreditCardCharged) {
 
-        covered += event.charge ?: pending
+        covered += fact.charge ?: pending
 
     }
 
@@ -36,7 +36,7 @@ data class PaymentRetrieval(
 
             define <PaymentRetrieval> {
 
-                on message(RetrievePayment::class) create this.progress(PaymentRetrievalAccepted::class) by {
+                on message(RetrievePayment::class) create progress(PaymentRetrievalAccepted::class) by {
                     PaymentRetrievalAccepted(paymentId = it.reference)
                 }
 

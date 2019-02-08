@@ -10,25 +10,30 @@ import java.util.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-typealias Messages = List<Message<out Fact>>
 typealias MessageId = String
 typealias MessageTarget = Triple<EntityName, EntityId?, MessagePatternHash>
 
-typealias MessagePatterns = Set<MessagePattern>
+typealias MessagePatterns = List<MessagePattern>
 typealias MessagePatternHash = String
 
-fun fromJson(messages: String): Messages {
-    return fromJson(jacksonObjectMapper().readTree(messages))
+fun List<Message<out Fact>>.toJson(): String {
+    return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
 }
 
-fun fromJson(messages: JsonNode): Messages {
-    return messages.map {
-        Message.fromJson(it, FactTypes.get(it.get("name").textValue()))
+interface Messages {
+
+    companion object {
+
+        fun fromJson(messages: String): List<Message<out Fact>> {
+            return fromJson(jacksonObjectMapper().readTree(messages))
+        }
+
+        fun fromJson(messages: JsonNode): List<Message<out Fact>> {
+            return if (messages.isArray) messages.map { Message.fromJson(it) } else listOf(Message.fromJson(messages))
+        }
+
     }
-}
 
-fun Messages.toJson(): String {
-    return jacksonObjectMapper().writeValueAsString(this)
 }
 
 data class Message<F: Fact>(
@@ -52,10 +57,6 @@ data class Message<F: Fact>(
 
     companion object {
 
-        fun fromJson(json: String): Message<*> {
-            return fromJson(jacksonObjectMapper().readTree(json))
-        }
-
         inline fun <reified FACT: Fact> fromJson(json: String, factType: FactType<FACT> = FACT::class): Message<FACT> {
             @Suppress("UNCHECKED_CAST")
             return fromJson(jacksonObjectMapper().readTree(json), factType) as Message<FACT>
@@ -72,7 +73,7 @@ data class Message<F: Fact>(
 
 }
 
-data class MessagePattern(
+class MessagePattern(
     val entityType: EntityType<*>,
     val name: FactName,
     val properties: Map<Property, Value> = emptyMap()
@@ -82,7 +83,7 @@ data class MessagePattern(
         entityType: EntityType<*>,
         type: FactType<*>,
         properties: Map<Property, Value> = emptyMap()
-    ): this(entityType, type.simpleName!!, properties) // TODO simple name is just fallback
+    ): this(entityType, type.simpleName!!, properties)
 
     val hash: String
 
@@ -96,13 +97,25 @@ data class MessagePattern(
 
     companion object {
 
-        val digest = MessageDigest.getInstance("MD5")
+        private val digest = MessageDigest.getInstance("MD5")
 
         private fun hash(input: String): String {
             val bytes = digest.digest(input.toByteArray())
             return String.format("%0" + (bytes.size shl 1) + "x", BigInteger(1, bytes))
         }
 
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as MessagePattern
+        if (hash != other.hash) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return hash.hashCode()
     }
 
 }

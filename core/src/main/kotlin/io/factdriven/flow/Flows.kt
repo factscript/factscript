@@ -26,12 +26,11 @@ object Flows {
     }
 
     fun get(id: NodeId): Flow<*> {
-        val isSubElement = id.contains("-")
-        val flowId = if (isSubElement) id.substring(0, id.indexOf("-")) else id
+        val flowId = if (id.contains("-")) id.substring(0, id.indexOf("-")) else id
         return all.find { it.id == flowId } ?: throw IllegalArgumentException()
     }
 
-    fun <FACT: Fact> match(message: Message<FACT>): List<MessagePattern> {
+    fun <FACT: Fact> match(message: Message<FACT>): MessagePatterns {
         return all.map { it.match(message) }.flatten()
     }
 

@@ -15,6 +15,8 @@ interface Node {
     val parent: Flow<*>?
     val root: Flow<*> get() = parent?.root ?: this as Flow<*>
 
+    fun match(message: Message<*>): MessagePatterns = emptyList()
+
 }
 
 interface Flow<ENTITY: Entity>: Node {
@@ -25,19 +27,8 @@ interface Flow<ENTITY: Entity>: Node {
     val classifier: FlowClassifier
     val type: EntityType<ENTITY>
 
-    fun match(message: Message<*>): MessagePatterns {
-
-        val patterns = mutableSetOf<MessagePattern>()
-
-        children.forEach { child ->
-            when(child) {
-                is MessageReaction -> child.match(message)?.let { patterns.add(it) }
-                is Flow<*> -> patterns.addAll(child.match(message))
-            }
-        }
-
-        return patterns
-
+    override fun match(message: Message<*>): MessagePatterns {
+        return mutableListOf<MessagePattern>().let { children.forEach { child -> it.addAll(child.match(message)) }; it }
     }
 
     fun getNode(classifier: ActionClassifier): Node? {
@@ -89,28 +80,25 @@ interface MessageReaction: Reaction {
     val properties: List<Property>
     val values: List<Entity?.() -> Fact?>
 
-    fun match(message: Message<*>): MessagePattern? {
+    override fun match(message: Message<*>): MessagePatterns {
 
-        if (type.isInstance(message.fact)) {
-
-            val properties = properties.map { propertyName ->
-                propertyName to message.fact.getValue(propertyName)
-            }.toMap()
-
-            return MessagePattern(root.type, type, properties)
+        return if (type.isInstance(message.fact)) {
+            listOf(MessagePattern(root.type, type, properties.map {
+                propertyName -> propertyName to message.fact.getValue(propertyName)
+            }.toMap()))
         } else {
-            return null
+            emptyList()
         }
 
     }
 
-    fun match(any: Entity?): MessagePattern {
+    fun match(any: Entity?): MessagePatterns {
 
         val properties = properties.mapIndexed { propertyIndex, propertyName ->
             propertyName to values[propertyIndex].invoke(any)
         }.toMap()
 
-        return MessagePattern(root.type, type, properties)
+        return listOf(MessagePattern(root.type, type, properties))
 
     }
 

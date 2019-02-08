@@ -30,7 +30,7 @@ class MessagePatternTest {
         val pattern2 = MessagePattern(PaymentRetrieval::class, type = PaymentRetrieved::class, properties = mapOf("key" to "123"))
         val pattern3 = MessagePattern(PaymentRetrieval::class, type = PaymentRetrieved::class, properties = mapOf("key" to "321"))
 
-        assertNotEquals(pattern1, pattern2)
+        assertEquals(pattern1, pattern2)
         assertEquals(pattern1.hash, pattern2.hash)
         assertNotEquals(pattern1.hash, pattern3.hash)
 

@@ -13,9 +13,9 @@ data class CreditCardCharge (
 
 ){
 
-    constructor(command: ChargeCreditCard): this(command.reference, command.charge)
+    constructor(fact: ChargeCreditCard): this(fact.reference, fact.charge)
 
-    fun apply(event: CreditCardCharged) {
+    fun apply(fact: CreditCardCharged) {
         successful = true
     }
 

@@ -3,7 +3,6 @@ package io.factdriven.flow.camunda
 import io.factdriven.flow.Flows
 import io.factdriven.flow.lang.ActionClassifier
 import io.factdriven.flow.lang.MessageReaction
-import io.factdriven.flow.lang.apply
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
@@ -30,6 +29,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity
 import org.camunda.bpm.engine.impl.persistence.entity.JobEntity
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity
 import org.slf4j.Logger
+import sun.plugin2.util.PojoUtil.toJson
 
 
 /**
@@ -46,11 +46,11 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val messages = fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
+        val messages = Messages.fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
         fun pattern(node: Node): MessagePattern? {
             return when (node) {
-                is MessageReaction -> node.match(apply(messages, node.root.type))
+                is MessageReaction -> node.match(node.root.type.apply(messages)).firstOrNull()
                 is Flow<*> -> node.getNode(ActionClassifier.Success)?.let { pattern(it) }
                 else -> null
             }
@@ -67,8 +67,8 @@ class CamundaFlowNodeStartListener: ExecutionListener {
     override fun notify(execution: DelegateExecution) {
 
         val node = Flow.getNode(execution.currentActivityId)
-        val messages = fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
-        fun aggregate() = apply(messages, node.root.type)
+        val messages = Messages.fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
+        fun aggregate() = node.root.type.apply(messages)
         fun command() = (execution.processEngine as ProcessEngineImpl).processEngineConfiguration.commandExecutorTxRequired
 
         fun message(node: Node): Message<*>? {
@@ -134,12 +134,12 @@ object CamundaBpmFlowExecutor {
         fun variables(): Map<String, Any> {
 
             val messages = processInstanceId?.let { pid ->
-                engine.runtimeService.getVariableTyped<JsonValue>(pid, MESSAGES_VAR, false)?.valueSerialized?.let { fromJson(it) }
+                engine.runtimeService.getVariableTyped<JsonValue>(pid, MESSAGES_VAR, false)?.valueSerialized?.let { Messages.fromJson(it) }
             } ?: emptyList()
 
             with(messages.toMutableList()) {
                 add(message)
-                log.debug("> Target: ${apply(this, flowDefinition.type)}")
+                log.debug("> Target: ${flowDefinition.type.apply(this)}")
                 return mapOf(MESSAGES_VAR to SpinValues.jsonValue(toJson()).create())
             }
 
@@ -189,7 +189,7 @@ object CamundaBpmFlowExecutor {
             .disableCustomObjectDeserialization()
             .singleResult().value as JacksonJsonNode?
 
-        return messages?.let { apply (fromJson(messages.unwrap()), type) } ?: throw IllegalArgumentException()
+        return messages?.let { type.apply(Messages.fromJson(messages.unwrap())) } ?: throw IllegalArgumentException()
 
     }
 
@@ -208,7 +208,7 @@ class CamundaBpmFlowJobHandler: JobHandler<CamundaBpmFlowJobHandlerConfiguration
         tenantId: String?
     ) {
 
-        val message = Message.fromJson(configuration!!.message)
+        val message = Messages.fromJson(configuration!!.message)[0]
         if (message.target == null) {
             CamundaBpmFlowExecutor.target(message).forEach {
                 (commandContext!!.processEngineConfiguration.commandExecutorTxRequired.execute(CreateCamundaBpmFlowJob(it)))
