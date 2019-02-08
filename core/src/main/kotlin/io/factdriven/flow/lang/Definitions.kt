@@ -40,11 +40,11 @@ interface Flow<ENTITY: Entity>: Node {
 
     }
 
-    fun getChildByActionType(actionClassifier: ActionClassifier): Node? {
+    fun getNode(classifier: ActionClassifier): Node? {
         return children.find {
             when (it) {
-                is Action -> it.classifier == actionClassifier
-                is Reaction -> it.action?.classifier == actionClassifier
+                is Action -> it.classifier == classifier
+                is Reaction -> it.action?.classifier == classifier
                 else -> false
             }
         }
@@ -52,7 +52,7 @@ interface Flow<ENTITY: Entity>: Node {
 
     companion object {
 
-        fun node(id: NodeId): Node {
+        fun getNode(id: NodeId): Node {
             return Flows.get(id).nodes[id] ?: throw java.lang.IllegalArgumentException()
         }
 
@@ -104,10 +104,10 @@ interface MessageReaction: Reaction {
 
     }
 
-    fun expected(aggregate: Entity?): MessagePattern {
+    fun match(any: Entity?): MessagePattern {
 
         val properties = properties.mapIndexed { propertyIndex, propertyName ->
-            propertyName to values[propertyIndex].invoke(aggregate)
+            propertyName to values[propertyIndex].invoke(any)
         }.toMap()
 
         return MessagePattern(root.type, type, properties)

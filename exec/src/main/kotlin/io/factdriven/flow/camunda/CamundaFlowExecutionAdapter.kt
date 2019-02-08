@@ -3,7 +3,6 @@ package io.factdriven.flow.camunda
 import io.factdriven.flow.Flows
 import io.factdriven.flow.lang.ActionClassifier
 import io.factdriven.flow.lang.MessageReaction
-import io.factdriven.flow.lang.UnclassifiedFlow
 import io.factdriven.flow.lang.apply
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
@@ -51,13 +50,13 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
         fun pattern(node: Node): MessagePattern? {
             return when (node) {
-                is MessageReaction -> node.expected(apply(messages, node.root.type))
-                is Flow<*> -> node.getChildByActionType(ActionClassifier.Success)?.let { pattern(it) }
+                is MessageReaction -> node.match(apply(messages, node.root.type))
+                is Flow<*> -> node.getNode(ActionClassifier.Success)?.let { pattern(it) }
                 else -> null
             }
         }
 
-        pattern(Flow.node(target.getValue(execution).toString()))?.hash?.let { execution.setVariable(MESSAGE_NAME_VAR, it) }
+        pattern(Flow.getNode(target.getValue(execution).toString()))?.hash?.let { execution.setVariable(MESSAGE_NAME_VAR, it) }
 
     }
 
@@ -67,7 +66,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val node = Flow.node(execution.currentActivityId)
+        val node = Flow.getNode(execution.currentActivityId)
         val messages = fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
         fun aggregate() = apply(messages, node.root.type)
         fun command() = (execution.processEngine as ProcessEngineImpl).processEngineConfiguration.commandExecutorTxRequired
@@ -76,7 +75,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
             return when(node) {
                 is Action -> node.function?.invoke(aggregate())?. let { Message(it) }
                 is MessageReaction -> node.action?.function?.invoke(aggregate(), messages.last().fact)?.let { Message(it) }
-                is Flow<*> -> node.getChildByActionType(ActionClassifier.Intention)?.let { message(it) }
+                is Flow<*> -> node.getNode(ActionClassifier.Intention)?.let { message(it) }
                 else -> throw IllegalArgumentException()
             }
         }
