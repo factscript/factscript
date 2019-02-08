@@ -37,9 +37,9 @@ class PaymentRetrievalStep0Test {
             on message RetrievePayment::class
         }
 
-        val node = flow.children[0] as DefinedMessageReaction
+        val node = flow.children[0] as MessageReaction
 
-        assertEquals(RetrievePayment::class, node.factType)
+        assertEquals(RetrievePayment::class, node.type)
 
     }
 
@@ -52,7 +52,7 @@ class PaymentRetrievalStep0Test {
 
         val node = flow.children.get(0)
 
-        assertTrue(node is DefinedAction)
+        assertTrue(node is Action)
 
     }
 
@@ -63,7 +63,7 @@ class PaymentRetrievalStep0Test {
             create success "PaymentRetrieved"
         }
 
-        val node = flow.children.get(0) as DefinedAction
+        val node = flow.children.get(0) as Action
 
         assertEquals(null, node.function)
     }
@@ -75,7 +75,7 @@ class PaymentRetrievalStep0Test {
             create success (PaymentRetrieved::class) by { PaymentRetrieved() }
         }
 
-        val node = flow.children.get(0) as DefinedAction
+        val node = flow.children.get(0) as Action
 
         assertEquals(ActionClassifier.Success, node.classifier)
         assertEquals(PaymentRetrieved::class, node.function!!.invoke(PaymentRetrieval(RetrievePayment(payment = 2F)))::class)
@@ -89,7 +89,7 @@ class PaymentRetrievalStep0Test {
             execute service {}
         }
 
-        val node = flow.children.get(0) as DefinedFlow<*>
+        val node = flow.children.get(0) as Flow<*>
 
         assertEquals(FlowClassifier.Service, node.classifier)
 
@@ -104,9 +104,9 @@ class PaymentRetrievalStep0Test {
             }
         }
 
-        val parentNode = flow.children.get(0) as DefinedFlow<*>
+        val parentNode = flow.children.get(0) as Flow<*>
         val node = parentNode.children.get(0)
-        val action = node as DefinedAction
+        val action = node as Action
 
         assertEquals(ActionClassifier.Intention, action.classifier)
         assertEquals(ChargeCreditCard::class, action.function!!.invoke(PaymentRetrieval(RetrievePayment(payment = 2F)))::class)
@@ -121,10 +121,10 @@ class PaymentRetrievalStep0Test {
             }
         }
 
-        val parentNode = flow.children.get(0) as DefinedFlow<*>
-        val node = parentNode.children.get(0) as DefinedMessageReaction
+        val parentNode = flow.children.get(0) as Flow<*>
+        val node = parentNode.children.get(0) as MessageReaction
 
-        assertEquals(CreditCardCharged::class, node.factType)
+        assertEquals(CreditCardCharged::class, node.type)
         assertEquals(ActionClassifier.Success, node.action!!.classifier)
     }
 
@@ -152,7 +152,7 @@ class PaymentRetrievalStep0Test {
             assertEquals(flow, it.parent)
         }
 
-        val service = flow.children[1] as DefinedFlow<*>
+        val service = flow.children[1] as Flow<*>
         assertEquals(2, service.children.size)
         service.children.forEach {
             assertEquals(service, it.parent)

@@ -12,9 +12,9 @@ enum class ReactionClassifier {
 
 }
 
-class ReactionOptions<I: Entity>(val parent: DefinedFlow<*>) {
+class ReactionOptions<I: Entity>(val parent: Flow<*>) {
 
-    infix fun <M: Any> message(type: KClass<M>): FlowMessageReaction<I, M> {
+    infix fun <M: Any> message(type: KClass<M>): UnclassifiedFlowMessageReaction<I, M> {
 
         val reaction = FlowMessageReactionImpl<I, M, Any>(parent, type)
         (parent.children as MutableList).add(reaction as Node) // TODO clean
@@ -22,46 +22,46 @@ class ReactionOptions<I: Entity>(val parent: DefinedFlow<*>) {
 
     }
 
-    infix fun compensation(execution: Flow<I>.() -> Unit): Flow<I> {
+    infix fun compensation(execution: UnclassifiedFlow<I>.() -> Unit): UnclassifiedFlow<I> {
         TODO()
     }
 
-    infix fun timeout(timer: String): FlowReaction<I, Any> {
+    infix fun timeout(timer: String): UnclassifiedFlowReaction<I, Any> {
         TODO()
     }
 
-    infix fun timeout(timer: () -> String): FlowReaction<I, Any> {
+    infix fun timeout(timer: () -> String): UnclassifiedFlowReaction<I, Any> {
         TODO()
     }
 
 }
 
-interface FlowReaction<I: Entity, IN: Fact> {
+interface UnclassifiedFlowReaction<I: Entity, IN: Fact> {
 
     infix fun <OUT: Fact> create(action: FlowReactionActionImpl<IN, OUT>): ActionableFlowReaction<I, IN, OUT>
     infix fun create(action: FlowReactionWithoutAction): FlowReactionWithoutAction
-    infix fun execute(execution: Flow<I>.() -> Unit): Flow<I>.() -> Unit
+    infix fun execute(execution: UnclassifiedFlow<I>.() -> Unit): UnclassifiedFlow<I>.() -> Unit
 
-    fun asDefinition(): DefinedReaction {
-        return this as DefinedReaction
+    fun asDefinition(): Reaction {
+        return this as Reaction
     }
 
 }
 
-interface FlowMessageReaction<I: Entity, M: Fact> : FlowReaction<I, M> {
+interface UnclassifiedFlowMessageReaction<I: Entity, M: Fact> : UnclassifiedFlowReaction<I, M> {
 
     infix fun having(property: String): MatchableFlowMessageReaction<I, M>
-    infix fun supporting(assertion: I.(M) -> Boolean): FlowMessageReaction<I, M>
+    infix fun supporting(assertion: I.(M) -> Boolean): UnclassifiedFlowMessageReaction<I, M>
 
-    override fun asDefinition(): DefinedMessageReaction {
-        return this as DefinedMessageReaction
+    override fun asDefinition(): MessageReaction {
+        return this as MessageReaction
     }
 
 }
 
 interface MatchableFlowMessageReaction<I: Entity, M: Fact> {
 
-    infix fun match(value: I.() -> Any?): FlowMessageReaction<I, M>
+    infix fun match(value: I.() -> Any?): UnclassifiedFlowMessageReaction<I, M>
 
 }
 
@@ -71,14 +71,14 @@ interface ActionableFlowReaction<I: Entity, IN: Fact, OUT: Fact> {
 
 }
 
-abstract class FlowReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val parent: DefinedFlow<*>, override var name: String): DefinedReaction, FlowReaction<I, IN>, ActionableFlowReaction<I, IN, OUT> {
+abstract class FlowReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val parent: Flow<*>, override var name: String): Reaction, UnclassifiedFlowReaction<I, IN>, ActionableFlowReaction<I, IN, OUT> {
 
-    // Flow Reaction Definition
+    // UnclassifiedFlow Reaction Definition
 
     override var classifier = ReactionClassifier.Message
     override var action: FlowReactionActionImpl<*, *>? = null
 
-    // Flow Reaction Action Factory
+    // UnclassifiedFlow Reaction Action Factory
 
     override infix fun <OUT: Fact> create(action: FlowReactionActionImpl<IN, OUT>): ActionableFlowReaction<I, IN, OUT> {
         this.action = action
@@ -90,7 +90,7 @@ abstract class FlowReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val par
         return action
     }
 
-    override fun execute(execution: Flow<I>.() -> Unit): Flow<I>.() -> Unit {
+    override fun execute(execution: UnclassifiedFlow<I>.() -> Unit): UnclassifiedFlow<I>.() -> Unit {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
@@ -101,32 +101,32 @@ abstract class FlowReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val par
 
 }
 
-class FlowMessageReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val parent: DefinedFlow<*>, override val factType: KClass<IN>): DefinedMessageReaction, FlowReactionImpl<I, IN, OUT>(parent, factType.simpleName!!), FlowMessageReaction<I, IN>, MatchableFlowMessageReaction<I, IN> {
+class FlowMessageReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val parent: Flow<*>, override val type: KClass<IN>): MessageReaction, FlowReactionImpl<I, IN, OUT>(parent, type.simpleName!!), UnclassifiedFlowMessageReaction<I, IN>, MatchableFlowMessageReaction<I, IN> {
 
     override val properties = mutableListOf<Property>()
     override val values = mutableListOf<Entity?.() -> Fact?>()
 
     init {
         classifier = ReactionClassifier.Message
-        FactTypes.add(factType)
+        FactTypes.add(type)
     }
 
     // Message Patterns Refiner
 
     override fun having(property: String): MatchableFlowMessageReaction<I, IN> {
-        assert(factType.java.kotlin.memberProperties.find { it.name == property } != null)
-            { "Message actionType '${factType.simpleName}' does not have property '${property}'!" }
+        assert(type.java.kotlin.memberProperties.find { it.name == property } != null)
+            { "Message actionType '${type.simpleName}' does not have property '${property}'!" }
         properties.add(property)
         return this
     }
 
-    override fun match(value: I.() -> Any?): FlowMessageReaction<I, IN> {
+    override fun match(value: I.() -> Any?): UnclassifiedFlowMessageReaction<I, IN> {
         @Suppress("UNCHECKED_CAST")
         values.add(value as Entity?.() -> Any?)
         return this
     }
 
-    override infix fun supporting(assertion: I.(IN) -> Boolean): FlowMessageReaction<I, IN> {
+    override infix fun supporting(assertion: I.(IN) -> Boolean): UnclassifiedFlowMessageReaction<I, IN> {
         TODO()
     }
 

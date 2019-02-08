@@ -6,11 +6,11 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-inline fun <reified ENTITY: Entity> define(name: NodeName = ENTITY::class.simpleName!!, type: KClass<ENTITY> = ENTITY::class, definition: Flow<ENTITY>.() -> Unit): DefinedFlow<ENTITY> {
+inline fun <reified ENTITY: Entity> define(name: NodeName = ENTITY::class.simpleName!!, type: KClass<ENTITY> = ENTITY::class, definition: UnclassifiedFlow<ENTITY>.() -> Unit): Flow<ENTITY> {
 
     val flowExecution = FlowImpl<ENTITY>(null).apply(definition)
     flowExecution.name = name
-    flowExecution.entityType = type
+    flowExecution.type = type
     (Flows.all as MutableList).add(flowExecution)
     return flowExecution
 
@@ -18,17 +18,21 @@ inline fun <reified ENTITY: Entity> define(name: NodeName = ENTITY::class.simple
 
 object Flows {
 
-    val all: List<DefinedFlow<*>> = mutableListOf()
+    val all: List<Flow<*>> = mutableListOf()
 
-    inline fun <reified ENTITY: Entity> get(type: EntityType<ENTITY> = ENTITY::class): DefinedFlow<ENTITY> {
+    inline fun <reified ENTITY: Entity> get(type: EntityType<ENTITY> = ENTITY::class): Flow<ENTITY> {
         @Suppress("UNCHECKED_CAST")
-        return all.find { it.entityType == type } as DefinedFlow<ENTITY>? ?: throw IllegalArgumentException()
+        return all.find { it.type == type } as Flow<ENTITY>? ?: throw IllegalArgumentException()
     }
 
-    fun get(id: NodeId): DefinedFlow<*> {
+    fun get(id: NodeId): Flow<*> {
         val isSubElement = id.contains("-")
         val flowId = if (isSubElement) id.substring(0, id.indexOf("-")) else id
         return all.find { it.id == flowId } ?: throw IllegalArgumentException()
+    }
+
+    fun <FACT: Fact> match(message: Message<FACT>): List<MessagePattern> {
+        return all.map { it.match(message) }.flatten()
     }
 
 }

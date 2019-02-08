@@ -1,6 +1,10 @@
 package io.factdriven.flow.camunda
 
 import io.factdriven.flow.Flows
+import io.factdriven.flow.lang.ActionClassifier
+import io.factdriven.flow.lang.MessageReaction
+import io.factdriven.flow.lang.UnclassifiedFlow
+import io.factdriven.flow.lang.apply
 import io.factdriven.flow.lang.*
 import io.factdriven.flow.view.transform
 import io.factdriven.flow.view.translate
@@ -47,8 +51,8 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
         fun pattern(node: Node): MessagePattern? {
             return when (node) {
-                is DefinedMessageReaction -> node.expected(apply(messages, node.root.entityType))
-                is DefinedFlow<*> -> node.getChildByActionType(ActionClassifier.Success)?.let { pattern(it) }
+                is MessageReaction -> node.expected(apply(messages, node.root.type))
+                is Flow<*> -> node.getChildByActionType(ActionClassifier.Success)?.let { pattern(it) }
                 else -> null
             }
         }
@@ -65,14 +69,14 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
         val node = Flow.node(execution.currentActivityId)
         val messages = fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
-        fun aggregate() = apply(messages, node.root.entityType)
+        fun aggregate() = apply(messages, node.root.type)
         fun command() = (execution.processEngine as ProcessEngineImpl).processEngineConfiguration.commandExecutorTxRequired
 
         fun message(node: Node): Message<*>? {
             return when(node) {
-                is DefinedAction -> node.function?.invoke(aggregate())?. let { Message(it) }
-                is DefinedMessageReaction -> node.action?.function?.invoke(aggregate(), messages.last().fact)?.let { Message(it) }
-                is DefinedFlow<*> -> node.getChildByActionType(ActionClassifier.Intention)?.let { message(it) }
+                is Action -> node.function?.invoke(aggregate())?. let { Message(it) }
+                is MessageReaction -> node.action?.function?.invoke(aggregate(), messages.last().fact)?.let { Message(it) }
+                is Flow<*> -> node.getChildByActionType(ActionClassifier.Intention)?.let { message(it) }
                 else -> throw IllegalArgumentException()
             }
         }
@@ -99,7 +103,7 @@ object CamundaBpmFlowExecutor {
 
         val targets = Flows.all.map { definition ->
 
-            definition.patterns(message.fact).map { pattern ->
+            definition.match(message).map { pattern ->
 
                 listOf(
                     engine.externalTaskService.fetchAndLock(Int.MAX_VALUE, pattern.hash).topic(pattern.hash, Long.MAX_VALUE).execute().map { task ->
@@ -124,10 +128,10 @@ object CamundaBpmFlowExecutor {
 
     fun correlate(message: Message<*>) {
 
-        assert(message.target != null) { "Correlation only works for messages with a specified target!" }
+        assert(message.target != null) { "Correlation only works for messages with a specified match!" }
 
         val flowName = message.target!!.first
-        val flowDefinition = Flow.node(flowName) as DefinedFlow<*>
+        val flowDefinition = Flows.get(flowName)
         val businessKey = message.target!!.second
         val correlationHash = message.target!!.third
         val processInstanceId = businessKey?.let { engine.runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult()?.id }
@@ -140,7 +144,7 @@ object CamundaBpmFlowExecutor {
 
             with(messages.toMutableList()) {
                 add(message)
-                log.debug("> Target: ${apply(this, flowDefinition.entityType)}")
+                log.debug("> Target: ${apply(this, flowDefinition.type)}")
                 return mapOf(MESSAGES_VAR to SpinValues.jsonValue(toJson()).create())
             }
 

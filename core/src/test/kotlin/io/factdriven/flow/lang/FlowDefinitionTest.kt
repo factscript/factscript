@@ -27,8 +27,8 @@ class FlowDefinitionTest {
     @Test
     fun testMessagePatternCreditCardCharged() {
 
-        val incoming = CreditCardCharged(reference = "value")
-        val patterns: MessagePatterns = flow.patterns(incoming)
+        val incoming = Message(CreditCardCharged(reference = "value"))
+        val patterns: MessagePatterns = flow.match(incoming)
 
         assertEquals (1, patterns.size)
         assertEquals (MessagePattern(type = CreditCardCharged::class, properties = mapOf("reference" to "value")), patterns.iterator().next())
@@ -38,8 +38,8 @@ class FlowDefinitionTest {
     @Test
     fun testMessagePatternRetrievePayment() {
 
-        val incoming = RetrievePayment(payment = 1F)
-        val patterns: MessagePatterns = flow.patterns(incoming)
+        val incoming = Message(RetrievePayment(payment = 1F))
+        val patterns: MessagePatterns = flow.match(incoming)
 
         assertEquals (1, patterns.size)
         assertEquals (MessagePattern(type = RetrievePayment::class), patterns.iterator().next())
@@ -49,8 +49,8 @@ class FlowDefinitionTest {
     @Test
     fun testMessagePatternPaymentRetrieved() {
 
-        val incoming = PaymentRetrieved(paymentId = "id")
-        val patterns: MessagePatterns = flow.patterns(incoming)
+        val incoming = Message(PaymentRetrieved(paymentId = "id"))
+        val patterns: MessagePatterns = flow.match(incoming)
 
         assertEquals (0, patterns.size)
 
@@ -62,18 +62,9 @@ class FlowDefinitionTest {
         assertEquals("PaymentRetrieval", flow.id)
         assertEquals("PaymentRetrieval-RetrievePayment-1", flow.children[0].id)
         assertEquals("PaymentRetrieval-ChargeCreditCard-1", flow.children[1].id)
-        assertEquals("PaymentRetrieval-ChargeCreditCard-1-ChargeCreditCard-1", (flow.children[1] as DefinedFlow<*>).children[0].id)
-        assertEquals("PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1", (flow.children[1] as DefinedFlow<*>).children[1].id)
+        assertEquals("PaymentRetrieval-ChargeCreditCard-1-ChargeCreditCard-1", (flow.children[1] as Flow<*>).children[0].id)
+        assertEquals("PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1", (flow.children[1] as Flow<*>).children[1].id)
         assertEquals("PaymentRetrieval-PaymentRetrieved-1", flow.children[2].id)
-
-    }
-
-    @Test
-    fun testDescendants() {
-
-        val descendants = flow.descendants
-
-        assertEquals(7, descendants.size)
 
     }
 
@@ -96,7 +87,7 @@ class FlowDefinitionTest {
     fun testExpectedPatternForRetrievePayment() {
 
         val aggregate = null
-        val retrievePayment = flow.nodes["PaymentRetrieval-RetrievePayment-1"] as DefinedMessageReaction
+        val retrievePayment = flow.nodes["PaymentRetrieval-RetrievePayment-1"] as MessageReaction
 
         assertEquals(MessagePattern(RetrievePayment::class), retrievePayment.expected(aggregate))
 
@@ -106,22 +97,9 @@ class FlowDefinitionTest {
     fun testExpectedPatternForCreditCardCharged() {
 
         val aggregate = PaymentRetrieval(RetrievePayment(id = "anId", payment = 2F))
-        val retrievePayment = flow.nodes["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"] as DefinedMessageReaction
+        val retrievePayment = flow.nodes["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"] as MessageReaction
 
         assertEquals(MessagePattern(CreditCardCharged::class, mapOf("reference" to "anId")), retrievePayment.expected(aggregate))
-
-    }
-
-    @Test
-    fun testMessageClass() {
-
-        assertEquals(RetrievePayment::class, flow.messageType("RetrievePayment"))
-        assertEquals(PaymentRetrievalAccepted::class, flow.messageType("PaymentRetrievalAccepted"))
-        assertEquals(ChargeCreditCard::class, flow.messageType("ChargeCreditCard"))
-        assertEquals(CreditCardCharged::class, flow.messageType("CreditCardCharged"))
-        assertEquals(PaymentRetrieved::class, flow.messageType("PaymentRetrieved"))
-
-        assertEquals(null, flow.messageType("NonExistingMessageName"))
 
     }
 
@@ -149,7 +127,7 @@ class FlowDefinitionTest {
         val messages = listOf(
             Message(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F))
         )
-        val aggregate = apply(messages, flow.entityType)
+        val aggregate = apply(messages, flow.type)
 
         assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
@@ -165,7 +143,7 @@ class FlowDefinitionTest {
             Message(RetrievePayment(id = "anId", accountId = "anAccountId", payment = 3F)),
             Message(PaymentRetrieved())
         )
-        val aggregate = apply(messages, flow.entityType)
+        val aggregate = apply(messages, flow.type)
 
         assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)
@@ -182,7 +160,7 @@ class FlowDefinitionTest {
             Message(PaymentRetrieved(payment = 1F)),
             Message(PaymentRetrieved(payment = 1F))
         )
-        val aggregate = apply(messages, flow.entityType)
+        val aggregate = apply(messages, flow.type)
 
         assertEquals("anId", aggregate.paymentId)
         assertEquals("anAccountId", aggregate.accountId)

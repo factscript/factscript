@@ -20,7 +20,7 @@ interface ClassifiedAction<ENTITY: Entity, FACT: Fact> {
 
 }
 
-interface Action<ENTITY: Entity> {
+interface UnclassifiedAction<ENTITY: Entity> {
 
     infix fun intention(type: FactName)
     infix fun progress(type: FactName)
@@ -32,30 +32,30 @@ interface Action<ENTITY: Entity> {
     infix fun <FACT: Fact> success(type: FactType<FACT>): ClassifiedAction<ENTITY, FACT>
     infix fun <FACT: Fact> failure(type: FactType<FACT>): ClassifiedAction<ENTITY, FACT>
 
-    fun asDefinition(): DefinedAction {
-        return this as DefinedAction
+    fun asDefinition(): Action {
+        return this as Action
     }
 
 }
 
 open class ActionImpl<ENTITY: Entity, FACT: Fact> :
-    Action<ENTITY>,
+    UnclassifiedAction<ENTITY>,
     ClassifiedAction<ENTITY, FACT>,
-    DefinedAction
+    Action
 {
 
-    internal constructor(parent: DefinedFlow<*>) {
+    internal constructor(parent: Flow<*>) {
         this.parent = parent
     }
 
-    override val parent: DefinedFlow<*>
-    override var factType: FactType<*>? = null
+    override val parent: Flow<*>
+    override var type: FactType<*>? = null
         set(value) { field = value?.let { FactTypes.add(it); it } }
     override lateinit var name: FactName
     override lateinit var classifier: ActionClassifier
     override var function: (Entity.() -> Fact)? = null
 
-    // Flow Action Factories
+    // UnclassifiedFlow Action Factories
 
     override infix fun intention(name: NodeName) {
         this.classifier = ActionClassifier.Intention
@@ -64,7 +64,7 @@ open class ActionImpl<ENTITY: Entity, FACT: Fact> :
 
     @SuppressWarnings("unchecked")
     override infix fun <FACT: Fact> intention(type: FactType<FACT>): ClassifiedAction<ENTITY, FACT> {
-        this.factType = type
+        this.type = type
         intention(type.simpleName!!)
         return this as ClassifiedAction<ENTITY, FACT>
     }
@@ -75,7 +75,7 @@ open class ActionImpl<ENTITY: Entity, FACT: Fact> :
     }
 
     override infix fun <O: Fact> progress(type: FactType<O>): ClassifiedAction<ENTITY, O> {
-        this.factType = type
+        this.type = type
         progress(type.simpleName!!)
         return this as ClassifiedAction<ENTITY, O>
     }
@@ -86,7 +86,7 @@ open class ActionImpl<ENTITY: Entity, FACT: Fact> :
     }
 
     override infix fun <O: Fact> success(type: FactType<O>): ClassifiedAction<ENTITY, O> {
-        this.factType = type
+        this.type = type
         success(type.simpleName!!)
         return this as ClassifiedAction<ENTITY, O>
     }
@@ -97,7 +97,7 @@ open class ActionImpl<ENTITY: Entity, FACT: Fact> :
     }
 
     override infix fun <O: Fact> failure(type: FactType<O>): ClassifiedAction<ENTITY, O> {
-        this.factType = type
+        this.type = type
         failure(type.simpleName!!)
         return this as ClassifiedAction<ENTITY, O>
     }

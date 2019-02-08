@@ -16,8 +16,8 @@ class FlowOption<I: Entity> {
 
     fun given(name: String = "", condition: I.() -> Boolean): FlowOption<I> { TODO() }
 
-    infix fun execute(definition: Flow<I>.() -> Unit): Flow<I> = TODO()
+    infix fun execute(definition: UnclassifiedFlow<I>.() -> Unit): UnclassifiedFlow<I> = TODO()
 
-    infix fun execute(definition: FlowOptions<I>): Flow<I> = TODO()
+    infix fun execute(definition: FlowOptions<I>): UnclassifiedFlow<I> = TODO()
 
 }

@@ -1,8 +1,6 @@
 package io.factdriven.flow.lang
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlin.reflect.full.memberFunctions
+import io.factdriven.flow.Flows
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -12,48 +10,29 @@ typealias NodeId = String
 
 interface Node {
 
-    val id: NodeId
-        get() {
-            val id = StringBuffer()
-            if (parent != null) {
-                id.append(parent!!.id)
-                id.append("-")
-            }
-            id.append(name)
-            if (parent != null) {
-                id.append("-")
-                val idx = parent!!.children.indexOf(this)
-                val counter = parent!!.children.count {
-                    it.name == name && parent!!.children.indexOf(it) <= idx
-                }
-                id.append(counter)
-            }
-            return id.toString()
-        }
-
     val name: FactName
-    val parent: DefinedFlow<*>?
-    val root: DefinedFlow<*>
-        get() {
-            return parent?.root ?: this as DefinedFlow<*>
-        }
+    val id: NodeId get() = id()
+    val parent: Flow<*>?
+    val root: Flow<*> get() = parent?.root ?: this as Flow<*>
 
 }
 
-interface DefinedFlow<ENTITY: Entity>: Node {
+interface Flow<ENTITY: Entity>: Node {
 
     val children: List<Node>
-    val classifier: FlowClassifier
-    val entityType: EntityType<ENTITY>
+    val nodes: Map<NodeId, Node> get() = nodes()
 
-    fun patterns(message: Fact): MessagePatterns {
+    val classifier: FlowClassifier
+    val type: EntityType<ENTITY>
+
+    fun match(message: Message<*>): MessagePatterns {
 
         val patterns = mutableSetOf<MessagePattern>()
 
         children.forEach { child ->
             when(child) {
-                is DefinedMessageReaction -> if (child.factType.isInstance(message)) patterns.add(child.incoming(message))
-                is DefinedFlow<*> -> patterns.addAll(child.patterns(message))
+                is MessageReaction -> child.match(message)?.let { patterns.add(it) }
+                is Flow<*> -> patterns.addAll(child.match(message))
             }
         }
 
@@ -61,93 +40,67 @@ interface DefinedFlow<ENTITY: Entity>: Node {
 
     }
 
-    val descendants: List<Node> get() {
-
-        val descendants = mutableSetOf<Node>()
-
-        descendants.add(this)
-        children.forEach { child ->
-            when(child) {
-                is DefinedFlow<*> -> descendants.addAll(child.descendants)
-                else -> {
-                    descendants.add(child)
-                    if (child is DefinedReaction) child.action?.let { descendants.add(it) }
-                }
-            }
-        }
-
-        return descendants.toList()
-
-    }
-
-    val childrenMap: Map<NodeId, Node> get() = children.map { it.id to it }.toMap()
-
-    val nodes: Map<NodeId, Node> get() = descendants.map { it.id to it }.toMap()
-
-    fun messageType(messageName: FactName): FactType<*>? {
-
-        descendants.forEach {
-            when(it) {
-                is DefinedAction -> if (it.name == messageName && it.factType != null) return it.factType
-                is DefinedReactionAction -> if (it.name == messageName && it.factType != null) return it.factType
-                is DefinedMessageReaction -> if (it.name == messageName) return it.factType
-            }
-        }
-
-        return null
-
-    }
-
     fun getChildByActionType(actionClassifier: ActionClassifier): Node? {
         return children.find {
             when (it) {
-                is DefinedAction -> it.classifier == actionClassifier
-                is DefinedReaction -> it.action?.classifier == actionClassifier
+                is Action -> it.classifier == actionClassifier
+                is Reaction -> it.action?.classifier == actionClassifier
                 else -> false
             }
         }
     }
 
+    companion object {
+
+        fun node(id: NodeId): Node {
+            return Flows.get(id).nodes[id] ?: throw java.lang.IllegalArgumentException()
+        }
+
+    }
+
 }
 
-interface DefinedAction: Node {
+interface Action: Node {
 
     val classifier: ActionClassifier
-    val factType: FactType<*>?
+    val type: FactType<*>?
     val function: (Entity.() -> Fact)?
 
 }
 
-interface DefinedReactionAction: Node {
+interface ReactionAction: Node {
 
     val classifier: ActionClassifier
-    val factType: FactType<*>?
+    val type: FactType<*>?
     val function: (Entity.(Fact) -> Fact)?
 
 }
 
-interface DefinedReaction: Node {
+interface Reaction: Node {
 
     val classifier: ReactionClassifier
-    val action: DefinedReactionAction?
+    val action: ReactionAction?
 
 }
 
-interface DefinedMessageReaction: DefinedReaction {
+interface MessageReaction: Reaction {
 
-    val factType: FactType<*>
+    val type: FactType<*>
     val properties: List<Property>
     val values: List<Entity?.() -> Fact?>
 
-    fun incoming(message: Fact): MessagePattern {
+    fun match(message: Message<*>): MessagePattern? {
 
-        assert(factType.isInstance(message))
+        if (type.isInstance(message.fact)) {
 
-        val properties = properties.map { propertyName ->
-            propertyName to message.getValue(propertyName)
-        }.toMap()
+            val properties = properties.map { propertyName ->
+                propertyName to message.fact.getValue(propertyName)
+            }.toMap()
 
-        return MessagePattern(factType, properties)
+            return MessagePattern(type, properties)
+        } else {
+            return null
+        }
 
     }
 
@@ -157,8 +110,46 @@ interface DefinedMessageReaction: DefinedReaction {
             propertyName to values[propertyIndex].invoke(aggregate)
         }.toMap()
 
-        return MessagePattern(factType, properties)
+        return MessagePattern(type, properties)
 
     }
+
+}
+
+private fun Node.id(): NodeId {
+    val id = StringBuffer()
+    if (parent != null) {
+        id.append(parent!!.id)
+        id.append("-")
+    }
+    id.append(name)
+    if (parent != null) {
+        id.append("-")
+        val idx = parent!!.children.indexOf(this)
+        val counter = parent!!.children.count {
+            it.name == name && parent!!.children.indexOf(it) <= idx
+        }
+        id.append(counter)
+    }
+    return id.toString()
+}
+
+
+private fun Flow<*>.nodes(): Map<NodeId, Node> {
+
+    val descendants = mutableMapOf<NodeId, Node>()
+
+    descendants[id] = this
+    children.forEach { child ->
+        when(child) {
+            is Flow<*> -> descendants.putAll(child.nodes())
+            else -> {
+                descendants[child.id] = child
+                if (child is Reaction) child.action?.let { descendants[it.id] = it }
+            }
+        }
+    }
+
+    return descendants
 
 }

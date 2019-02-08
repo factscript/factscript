@@ -15,13 +15,13 @@ enum class FlowClassifier {
 
 }
 
-interface Flow<ENTITY : Entity>:
+interface UnclassifiedFlow<ENTITY : Entity>:
     Node,
     FlowOptions<ENTITY>
 {
 
     val on: ReactionOptions<ENTITY>
-    val create: Action<ENTITY>
+    val create: UnclassifiedAction<ENTITY>
     val execute: FlowOptions<ENTITY>
     val select: SelectOptions<ENTITY>
 
@@ -37,46 +37,38 @@ interface Flow<ENTITY : Entity>:
     fun <IN: Fact, OUT: Fact> fix(type: FactType<OUT>): FlowReactionActionImpl<IN, OUT>
     fun <IN: Fact, OUT: Fact> failure(type: FactType<OUT>): FlowReactionActionImpl<IN, OUT>
 
-    fun asDefinition(): DefinedFlow<ENTITY> {
-        return this as DefinedFlow<ENTITY>
-    }
-
-    companion object {
-
-        fun node(id: NodeId): Node {
-            return Flows.get(id).nodes[id] ?: throw java.lang.IllegalArgumentException()
-        }
-
+    fun asDefinition(): Flow<ENTITY> {
+        return this as Flow<ENTITY>
     }
 
 }
 
 interface FlowOptions<ENTITY: Entity> {
 
-    operator fun invoke(mitigation: Flow<ENTITY>.() -> Unit): Flow<ENTITY>.() -> Unit
-    infix fun service(service: Flow<ENTITY>.() -> Unit): Flow<ENTITY>.() -> Unit
-    infix fun mitigation(mitigation: Flow<ENTITY>.() -> Unit): Flow<ENTITY>.() -> Unit
+    operator fun invoke(mitigation: UnclassifiedFlow<ENTITY>.() -> Unit): UnclassifiedFlow<ENTITY>.() -> Unit
+    infix fun service(service: UnclassifiedFlow<ENTITY>.() -> Unit): UnclassifiedFlow<ENTITY>.() -> Unit
+    infix fun mitigation(mitigation: UnclassifiedFlow<ENTITY>.() -> Unit): UnclassifiedFlow<ENTITY>.() -> Unit
 
 }
 
 class FlowImpl<ENTITY: Entity> :
-    Flow<ENTITY>,
+    UnclassifiedFlow<ENTITY>,
     FlowOptions<ENTITY>,
-    DefinedFlow<ENTITY>
+    Flow<ENTITY>
 {
 
-    // Flow Definition
+    // UnclassifiedFlow Definition
 
-    override val parent: DefinedFlow<*>?
+    override val parent: Flow<*>?
 
-    constructor(parent: DefinedFlow<*>?) {
+    constructor(parent: Flow<*>?) {
         this.parent = parent
         this.children = mutableListOf<Node>()
     }
 
     override var classifier = FlowClassifier.Execution
     override val children: MutableList<Node>
-    override lateinit var entityType: EntityType<ENTITY>
+    override lateinit var type: EntityType<ENTITY>
 
     override var name: String = ""
         get() {
@@ -86,23 +78,23 @@ class FlowImpl<ENTITY: Entity> :
             }
         }
 
-    val actions: List<Action<ENTITY>> get() {
+    val actions: List<UnclassifiedAction<ENTITY>> get() {
         @Suppress("UNCHECKED_CAST")
-        return children.filter { it is Action<*> } as List<Action<ENTITY>>
+        return children.filter { it is UnclassifiedAction<*> } as List<UnclassifiedAction<ENTITY>>
     }
 
-    val reactions: List<FlowReaction<ENTITY, *>> get() {
+    val reactions: List<UnclassifiedFlowReaction<ENTITY, *>> get() {
         @Suppress("UNCHECKED_CAST")
-        return children.filter { it is FlowReaction<*, *> } as List<FlowReaction<ENTITY, *>>
+        return children.filter { it is UnclassifiedFlowReaction<*, *> } as List<UnclassifiedFlowReaction<ENTITY, *>>
     }
 
-    // Basic Flow Execution<
+    // Basic UnclassifiedFlow Execution<
     override val on: ReactionOptions<ENTITY>
         get() {
             return ReactionOptions(this)
         }
 
-    override val create: Action<ENTITY>
+    override val create: UnclassifiedAction<ENTITY>
         get() {
             val node = ActionImpl<ENTITY, Any>(this)
             children.add(node)
@@ -118,20 +110,20 @@ class FlowImpl<ENTITY: Entity> :
 
     override val select: SelectOptions<ENTITY> get() = TODO()
 
-    // Sub Flow Execution Factories
+    // Sub UnclassifiedFlow Execution Factories
 
-    override infix fun service(service: Flow<ENTITY>.() -> Unit): Flow<ENTITY>.() -> Unit {
+    override infix fun service(service: UnclassifiedFlow<ENTITY>.() -> Unit): UnclassifiedFlow<ENTITY>.() -> Unit {
         classifier = FlowClassifier.Service
         this.apply(service)
         return service
     }
 
-    override fun invoke(execution: Flow<ENTITY>.() -> Unit): Flow<ENTITY>.() -> Unit {
+    override fun invoke(execution: UnclassifiedFlow<ENTITY>.() -> Unit): UnclassifiedFlow<ENTITY>.() -> Unit {
         this.apply(execution)
         return execution
     }
 
-    override infix fun mitigation(mitigation: Flow<ENTITY>.() -> Unit): Flow<ENTITY>.() -> Unit {
+    override infix fun mitigation(mitigation: UnclassifiedFlow<ENTITY>.() -> Unit): UnclassifiedFlow<ENTITY>.() -> Unit {
         classifier = FlowClassifier.Mitigation
         this.apply(mitigation)
         return mitigation
@@ -185,18 +177,18 @@ interface FlowReactionWithoutAction
 
 class FlowReactionActionImpl<IN: Fact, OUT: Fact>(
 
-    override val parent: DefinedFlow<*>,
+    override val parent: Flow<*>,
     override val classifier: ActionClassifier = ActionClassifier.Success,
-    override var factType: FactType<*>? = null,
-    override val name: String = factType?.simpleName ?: ""
+    override var type: FactType<*>? = null,
+    override val name: String = type?.simpleName ?: ""
 
-): DefinedReactionAction,
+): ReactionAction,
     FlowReactionWithoutAction
 
 {
 
     init {
-        factType?.let { FactTypes.add(it)}
+        type?.let { FactTypes.add(it)}
     }
 
     override var function: (Entity.(Fact) -> Fact)? = null

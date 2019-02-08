@@ -57,7 +57,7 @@ open class CamundaFlowExecutionTest {
             Runtime.getRuntime().exec("open " + file.absoluteFile);
     }
 
-    fun bpmn(flow: DefinedFlow<*>): BpmnModelInstance {
+    fun bpmn(flow: Flow<*>): BpmnModelInstance {
         val container = translate(flow)
         val bpmnModelInstance = transform(container)
         Bpmn.validateModel(bpmnModelInstance);
