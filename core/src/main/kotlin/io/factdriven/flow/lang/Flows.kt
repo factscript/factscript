@@ -1,6 +1,6 @@
 package io.factdriven.flow.lang
 
-import kotlin.reflect.KClass
+import io.factdriven.flow.Flows
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -39,6 +39,14 @@ interface Flow<ENTITY : Entity>:
 
     fun asDefinition(): DefinedFlow<ENTITY> {
         return this as DefinedFlow<ENTITY>
+    }
+
+    companion object {
+
+        fun node(id: NodeId): Node {
+            return Flows.get(id).nodes[id] ?: throw java.lang.IllegalArgumentException()
+        }
+
     }
 
 }

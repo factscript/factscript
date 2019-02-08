@@ -43,25 +43,17 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val element = Flows.getElementById(target.getValue(execution).toString())
         val messages = fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
-        fun pattern(element: Node): MessagePattern? {
-            return when (element) {
-                is DefinedMessageReaction -> {
-                    element.expected(apply(messages, element.root.entityType))
-                }
-                is DefinedFlow<*> -> {
-                    val success = element.getChildByActionType(ActionClassifier.Success)
-                    if (success != null) pattern(success) else null
-                }
+        fun pattern(node: Node): MessagePattern? {
+            return when (node) {
+                is DefinedMessageReaction -> node.expected(apply(messages, node.root.entityType))
+                is DefinedFlow<*> -> node.getChildByActionType(ActionClassifier.Success)?.let { pattern(it) }
                 else -> null
             }
         }
 
-        val pattern = pattern(element)
-
-        execution.setVariable(MESSAGE_NAME_VAR, pattern?.hash)
+        pattern(Flow.node(target.getValue(execution).toString()))?.hash?.let { execution.setVariable(MESSAGE_NAME_VAR, it) }
 
     }
 
@@ -71,42 +63,27 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val element = Flows.getElementById(execution.currentActivityId)
+        val node = Flow.node(execution.currentActivityId)
         val messages = fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
+        fun aggregate() = apply(messages, node.root.entityType)
+        fun command() = (execution.processEngine as ProcessEngineImpl).processEngineConfiguration.commandExecutorTxRequired
 
-        fun aggregate() = apply(messages, element.root.entityType)
-
-        fun message(element: Node): Message<*>? {
-            return when(element) {
-                is DefinedAction -> {
-                    val action = element.function
-                    val fact = action?.invoke(aggregate())
-                    if (fact != null) Message(fact) else null
-                }
-                is DefinedMessageReaction -> {
-                    val action = element.action?.function
-                    val fact = action?.invoke(aggregate(), messages.last().fact)
-                    if (fact != null) Message(fact) else null
-                }
-                is DefinedFlow<*> -> {
-                    val intent = element.getChildByActionType(ActionClassifier.Intention)
-                    if (intent != null) message(intent) else null
-                }
+        fun message(node: Node): Message<*>? {
+            return when(node) {
+                is DefinedAction -> node.function?.invoke(aggregate())?. let { Message(it) }
+                is DefinedMessageReaction -> node.action?.function?.invoke(aggregate(), messages.last().fact)?.let { Message(it) }
+                is DefinedFlow<*> -> node.getChildByActionType(ActionClassifier.Intention)?.let { message(it) }
                 else -> throw IllegalArgumentException()
             }
         }
 
-        val message = message(element)
-        if (message != null) {
-            log.debug("Outgoing: ${message.fact}")
-            messages.add(message)
-            (execution.processEngine as ProcessEngineImpl).processEngineConfiguration.commandExecutorTxRequired.execute(
-                CreateCamundaBpmFlowJob(message)
-            )
+        message(node)?.let {
+            messages.add(it)
+            execution.setVariable(MESSAGES_VAR, SpinValues.jsonValue(messages.toJson()))
+            command().execute(CreateCamundaBpmFlowJob(it))
+            log.debug("Outgoing: ${it.fact}")
             log.debug("> Status: ${aggregate()}")
         }
-
-        execution.setVariable(MESSAGES_VAR, SpinValues.jsonValue(messages.toJson()))
 
     }
 
@@ -114,13 +91,13 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
 object CamundaBpmFlowExecutor {
 
-    val engine: ProcessEngine = ProcessEngines.getProcessEngines().values.first()
+    private val engine: ProcessEngine = ProcessEngines.getProcessEngines().values.first()
 
     fun <F: Fact> target(message: Message<F>) : List<Message<F>> {
 
         log.debug("Incoming: ${message.fact}")
 
-        val targets = Flows.all().map { definition ->
+        val targets = Flows.all.map { definition ->
 
             definition.patterns(message.fact).map { pattern ->
 
@@ -150,7 +127,7 @@ object CamundaBpmFlowExecutor {
         assert(message.target != null) { "Correlation only works for messages with a specified target!" }
 
         val flowName = message.target!!.first
-        val flowDefinition = Flows.getElementById(flowName) as DefinedFlow<*>
+        val flowDefinition = Flow.node(flowName) as DefinedFlow<*>
         val businessKey = message.target!!.second
         val correlationHash = message.target!!.third
         val processInstanceId = businessKey?.let { engine.runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult()?.id }
@@ -232,7 +209,7 @@ class CamundaBpmFlowJobHandler: JobHandler<CamundaBpmFlowJobHandlerConfiguration
         tenantId: String?
     ) {
 
-        val message = Flows.deserialize(configuration!!.message)
+        val message = Message.fromJson(configuration!!.message)
         if (message.target == null) {
             CamundaBpmFlowExecutor.target(message).forEach {
                 (commandContext!!.processEngineConfiguration.commandExecutorTxRequired.execute(CreateCamundaBpmFlowJob(it)))
@@ -293,7 +270,7 @@ class CamundaFlowExecutionPlugin: ProcessEnginePlugin {
     }
 
     override fun postProcessEngineBuild(engine: ProcessEngine) {
-        Flows.all().forEach { flowDefinition ->
+        Flows.all.forEach { flowDefinition ->
             val bpmn = transform(translate(flowDefinition))
             engine.repositoryService
                 .createDeployment()

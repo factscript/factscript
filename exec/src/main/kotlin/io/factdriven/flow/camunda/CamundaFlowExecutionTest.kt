@@ -68,7 +68,7 @@ open class CamundaFlowExecutionTest {
 
         if (engine!!.repositoryService.createDeploymentQuery().list().isEmpty()) {
 
-            Flows.all().forEach { flowDefinition ->
+            Flows.all.forEach { flowDefinition ->
                 val bpmn = bpmn(flowDefinition)
                 engine().repositoryService
                     .createDeployment()

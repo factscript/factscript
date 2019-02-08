@@ -52,11 +52,16 @@ data class Message<F: Fact>(
 
     companion object {
 
-        inline fun <reified FACT: Fact> fromJson(json: String, factType: FactType<FACT> = FACT::class): Message<FACT> {
-            return fromJson(jacksonObjectMapper().readTree(json), factType)
+        fun fromJson(json: String): Message<*> {
+            return fromJson(jacksonObjectMapper().readTree(json))
         }
 
-        fun <FACT: Fact> fromJson(json: JsonNode, factType: FactType<FACT> = FactTypes.get(json.get("name").textValue()) as FactType<FACT>): Message<FACT> {
+        inline fun <reified FACT: Fact> fromJson(json: String, factType: FactType<FACT> = FACT::class): Message<FACT> {
+            @Suppress("UNCHECKED_CAST")
+            return fromJson(jacksonObjectMapper().readTree(json), factType) as Message<FACT>
+        }
+
+        fun fromJson(json: JsonNode, factType: FactType<*> = FactTypes.get(json.get("name").textValue())): Message<*> {
             val mapper = jacksonObjectMapper()
             mapper.registerSubtypes(factType.java)
             val type = mapper.typeFactory.constructParametricType(Message::class.java, factType.java)

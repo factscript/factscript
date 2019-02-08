@@ -73,17 +73,17 @@ class FlowDefinitionTest {
 
         val descendants = flow.descendants
 
-        assertEquals(6, descendants.size)
+        assertEquals(7, descendants.size)
 
     }
 
     @Test
     fun testDescendantsMap() {
 
-        val element1 = flow.descendantMap["PaymentRetrieval-RetrievePayment-1"]
-        val element2 = flow.descendantMap["PaymentRetrieval-ChargeCreditCard-1"]
-        val element22 = flow.descendantMap["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"]
-        val doesNotExist = flow.descendantMap["doesNotExist"]
+        val element1 = flow.nodes["PaymentRetrieval-RetrievePayment-1"]
+        val element2 = flow.nodes["PaymentRetrieval-ChargeCreditCard-1"]
+        val element22 = flow.nodes["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"]
+        val doesNotExist = flow.nodes["doesNotExist"]
 
         assertEquals("PaymentRetrieval-RetrievePayment-1", element1?.id)
         assertEquals("PaymentRetrieval-ChargeCreditCard-1", element2?.id)
@@ -96,7 +96,7 @@ class FlowDefinitionTest {
     fun testExpectedPatternForRetrievePayment() {
 
         val aggregate = null
-        val retrievePayment = flow.descendantMap["PaymentRetrieval-RetrievePayment-1"] as DefinedMessageReaction
+        val retrievePayment = flow.nodes["PaymentRetrieval-RetrievePayment-1"] as DefinedMessageReaction
 
         assertEquals(MessagePattern(RetrievePayment::class), retrievePayment.expected(aggregate))
 
@@ -106,7 +106,7 @@ class FlowDefinitionTest {
     fun testExpectedPatternForCreditCardCharged() {
 
         val aggregate = PaymentRetrieval(RetrievePayment(id = "anId", payment = 2F))
-        val retrievePayment = flow.descendantMap["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"] as DefinedMessageReaction
+        val retrievePayment = flow.nodes["PaymentRetrieval-ChargeCreditCard-1-CreditCardCharged-1"] as DefinedMessageReaction
 
         assertEquals(MessagePattern(CreditCardCharged::class, mapOf("reference" to "anId")), retrievePayment.expected(aggregate))
 

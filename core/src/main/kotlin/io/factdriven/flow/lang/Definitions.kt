@@ -63,25 +63,26 @@ interface DefinedFlow<ENTITY: Entity>: Node {
 
     val descendants: List<Node> get() {
 
-        val descendants = mutableListOf<Node>()
+        val descendants = mutableSetOf<Node>()
 
+        descendants.add(this)
         children.forEach { child ->
-            descendants.add(child)
-            if (child is DefinedFlow<*>) {
-                descendants.addAll(child.descendants)
-            }
-            if (child is DefinedReaction && child.action != null) {
-                descendants.add(child.action!!)
+            when(child) {
+                is DefinedFlow<*> -> descendants.addAll(child.descendants)
+                else -> {
+                    descendants.add(child)
+                    if (child is DefinedReaction) child.action?.let { descendants.add(it) }
+                }
             }
         }
 
-        return descendants
+        return descendants.toList()
 
     }
 
     val childrenMap: Map<NodeId, Node> get() = children.map { it.id to it }.toMap()
 
-    val descendantMap: Map<NodeId, Node> get() = descendants.map { it.id to it }.toMap()
+    val nodes: Map<NodeId, Node> get() = descendants.map { it.id to it }.toMap()
 
     fun messageType(messageName: FactName): FactType<*>? {
 
