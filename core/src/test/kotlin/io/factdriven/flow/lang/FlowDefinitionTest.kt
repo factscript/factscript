@@ -136,8 +136,8 @@ class FlowDefinitionTest {
             Message(PaymentRetrieved(paymentId = "anId"))
         )
 
-        val serialized = flow.serialize(original)
-        val deserialised = flow.deserialize(serialized)
+        val serialized = original.toJson()
+        val deserialised = fromJson(serialized)
 
         assertEquals(original, deserialised)
 

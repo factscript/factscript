@@ -107,20 +107,6 @@ interface DefinedFlow<ENTITY: Entity>: Node {
         }
     }
 
-    fun deserialize(stream: String): List<Message<*>> {
-        return deserialize(jacksonObjectMapper().readTree(stream))
-    }
-
-    fun deserialize(stream: JsonNode): List<Message<*>> {
-        return stream.map {
-            Message.fromJson(it, messageType(it.get("name").textValue())!!)
-        }
-    }
-
-    fun serialize(messages: List<Message<*>>): String {
-        return jacksonObjectMapper().writeValueAsString(messages)
-    }
-
 }
 
 interface DefinedAction: Node {

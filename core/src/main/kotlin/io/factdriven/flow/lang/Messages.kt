@@ -17,6 +17,20 @@ typealias MessageTarget = Triple<EntityName, EntityId?, MessagePatternHash>
 typealias MessagePatterns = Set<MessagePattern>
 typealias MessagePatternHash = String
 
+fun fromJson(messages: String): Messages {
+    return fromJson(jacksonObjectMapper().readTree(messages))
+}
+
+fun fromJson(messages: JsonNode): Messages {
+    return messages.map {
+        Message.fromJson(it, FactTypes.get(it.get("name").textValue()))
+    }
+}
+
+fun Messages.toJson(): String {
+    return jacksonObjectMapper().writeValueAsString(this)
+}
+
 data class Message<F: Fact>(
 
     val id: MessageId,
@@ -38,14 +52,11 @@ data class Message<F: Fact>(
 
     companion object {
 
-        fun <F: Fact> fromJson(json: String, factType: FactType<F>): Message<F> {
-            val mapper = jacksonObjectMapper()
-            mapper.registerSubtypes(factType.java)
-            val type = mapper.typeFactory.constructParametricType(Message::class.java, factType.java)
-            return mapper.readValue(json, type)
+        inline fun <reified FACT: Fact> fromJson(json: String, factType: FactType<FACT> = FACT::class): Message<FACT> {
+            return fromJson(jacksonObjectMapper().readTree(json), factType)
         }
 
-        fun <F: Fact> fromJson(json: JsonNode, factType: FactType<F>): Message<F> {
+        fun <FACT: Fact> fromJson(json: JsonNode, factType: FactType<FACT> = FactTypes.get(json.get("name").textValue()) as FactType<FACT>): Message<FACT> {
             val mapper = jacksonObjectMapper()
             mapper.registerSubtypes(factType.java)
             val type = mapper.typeFactory.constructParametricType(Message::class.java, factType.java)

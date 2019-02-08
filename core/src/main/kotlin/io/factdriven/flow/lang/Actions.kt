@@ -50,6 +50,7 @@ open class ActionImpl<ENTITY: Entity, FACT: Fact> :
 
     override val parent: DefinedFlow<*>
     override var factType: FactType<*>? = null
+        set(value) { field = value?.let { FactTypes.add(it); it } }
     override lateinit var name: FactName
     override lateinit var classifier: ActionClassifier
     override var function: (Entity.() -> Fact)? = null

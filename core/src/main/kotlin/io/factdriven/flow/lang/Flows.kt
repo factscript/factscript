@@ -187,6 +187,10 @@ class FlowReactionActionImpl<IN: Fact, OUT: Fact>(
 
 {
 
+    init {
+        factType?.let { FactTypes.add(it)}
+    }
+
     override var function: (Entity.(Fact) -> Fact)? = null
 
 }

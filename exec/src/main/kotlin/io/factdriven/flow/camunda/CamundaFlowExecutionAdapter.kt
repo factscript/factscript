@@ -44,7 +44,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
     override fun notify(execution: DelegateExecution) {
 
         val element = Flows.getElementById(target.getValue(execution).toString())
-        val messages = element.root.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
+        val messages = fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
         fun pattern(element: Node): MessagePattern? {
             return when (element) {
@@ -72,7 +72,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
     override fun notify(execution: DelegateExecution) {
 
         val element = Flows.getElementById(execution.currentActivityId)
-        val messages = element.root.deserialize(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
+        val messages = fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
 
         fun aggregate() = apply(messages, element.root.entityType)
 
@@ -106,7 +106,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
             log.debug("> Status: ${aggregate()}")
         }
 
-        execution.setVariable(MESSAGES_VAR, SpinValues.jsonValue(element.root.serialize(messages)))
+        execution.setVariable(MESSAGES_VAR, SpinValues.jsonValue(messages.toJson()))
 
     }
 
@@ -157,15 +157,14 @@ object CamundaBpmFlowExecutor {
 
         fun variables(): Map<String, Any> {
 
-            val messages = if (processInstanceId != null) {
-                val serialised = engine.runtimeService.getVariableTyped<JsonValue>(processInstanceId, MESSAGES_VAR, false)?.valueSerialized
-                if (serialised != null) flowDefinition.deserialize(serialised) else emptyList()
-            } else emptyList()
+            val messages = processInstanceId?.let { pid ->
+                engine.runtimeService.getVariableTyped<JsonValue>(pid, MESSAGES_VAR, false)?.valueSerialized?.let { fromJson(it) }
+            } ?: emptyList()
 
             with(messages.toMutableList()) {
                 add(message)
                 log.debug("> Target: ${apply(this, flowDefinition.entityType)}")
-                return mapOf(MESSAGES_VAR to SpinValues.jsonValue(flowDefinition.serialize(this)).create())
+                return mapOf(MESSAGES_VAR to SpinValues.jsonValue(toJson()).create())
             }
 
         }
@@ -214,7 +213,7 @@ object CamundaBpmFlowExecutor {
             .disableCustomObjectDeserialization()
             .singleResult().value as JacksonJsonNode?
 
-        return messages?.let { apply (Flows.get(type).deserialize(messages.unwrap()), type) } ?: throw IllegalArgumentException()
+        return messages?.let { apply (fromJson(messages.unwrap()), type) } ?: throw IllegalArgumentException()
 
     }
 

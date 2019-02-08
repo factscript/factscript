@@ -108,6 +108,7 @@ class FlowMessageReactionImpl<I: Entity, IN: Fact, OUT: Fact>(override val paren
 
     init {
         classifier = ReactionClassifier.Message
+        FactTypes.add(factType)
     }
 
     // Message Patterns Refiner

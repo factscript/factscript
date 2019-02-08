@@ -26,7 +26,7 @@ class MessageTest {
         val fact = RetrievePayment(payment = 3F, accountId = "abc")
         val expected = Message(fact)
         val json = expected.toJson()
-        val actual = Message.fromJson(json, RetrievePayment::class)
+        val actual = Message.fromJson<RetrievePayment>(json)
 
         assertEquals(expected, actual)
 

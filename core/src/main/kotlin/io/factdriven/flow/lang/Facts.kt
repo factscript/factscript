@@ -19,3 +19,17 @@ fun Fact.getValue(property: Property): Value {
         it.get(this)
     }
 }
+
+object FactTypes {
+
+    private val types = mutableMapOf<FactName, FactType<*>>()
+
+    fun add(type: FactType<*>) {
+        type.simpleName?.let { types[it] = type } ?: throw IllegalArgumentException()
+    }
+
+    fun get(type: FactName): FactType<*> {
+        return types[type] ?: throw IllegalArgumentException()
+    }
+
+}
