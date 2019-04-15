@@ -29,7 +29,6 @@ import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity
 import org.camunda.bpm.engine.impl.persistence.entity.JobEntity
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity
 import org.slf4j.Logger
-import sun.plugin2.util.PojoUtil.toJson
 
 
 /**
