@@ -29,27 +29,41 @@ version '1.0.0-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+def isEe = project.hasProperty("buildProfile") ? buildProfile == "ee" : false
+
 repositories {
     mavenCentral()
-    maven {
-        credentials {
-            username = camundaUser
-            password = camundaPassword
+    if (isEe) {
+        maven {
+            credentials {
+                username = camundaUser
+                password = camundaPassword
+            }
+            url "https://app.camunda.com/nexus/content/repositories/camunda-bpm-ee"
         }
-        url "https://app.camunda.com/nexus/content/repositories/camunda-bpm-ee"
     }
 }
 
 dependencies {
-
-    // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-bom
-    implementation group: 'org.camunda.bpm', name: 'camunda-bom', version: '7.10.0-ee', ext: 'pom'
-
     compile project(':exec')
 
-    // https://mvnrepository.com/artifact/org.camunda.bpm.springboot/camunda-bpm-spring-boot-starter-webapp-ee
-    compile group: 'org.camunda.bpm.springboot', name: 'camunda-bpm-spring-boot-starter-webapp-ee', version: '3.2.1'
+    if (isEe){
+        println "using ee dependencies"
 
+        // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-bom
+        implementation group: 'org.camunda.bpm', name: 'camunda-bom', version: '7.10.0-ee', ext: 'pom'
+
+        // https://mvnrepository.com/artifact/org.camunda.bpm.springboot/camunda-bpm-spring-boot-starter-webapp-ee
+        compile group: 'org.camunda.bpm.springboot', name: 'camunda-bpm-spring-boot-starter-webapp-ee', version: '3.2.1'
+    } else {
+        println "using ce dependencies"
+
+        // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-bom
+        implementation group: 'org.camunda.bpm', name: 'camunda-bom', version: '7.10.0', ext: 'pom'
+
+        // https://mvnrepository.com/artifact/org.camunda.bpm.springboot/camunda-bpm-spring-boot-starter-webapp
+        compile group: 'org.camunda.bpm.springboot', name: 'camunda-bpm-spring-boot-starter-webapp', version: '3.2.1'
+    }
     // https://mvnrepository.com/artifact/com.h2database/h2
     compile group: 'com.h2database', name: 'h2', version: '1.4.197'
 
