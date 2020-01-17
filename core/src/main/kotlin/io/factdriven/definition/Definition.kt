@@ -9,7 +9,7 @@ import kotlin.reflect.KClass
 interface Node {
 
     val entityType: KClass<*>
-    val children: List<Node>
+    val children: List<Child>
 
     fun getCatching(type: KClass<*>): Catching {
         val catching = children.find { it is Catching && it.catchingType == type } as Catching?
@@ -33,7 +33,7 @@ interface Child: Node {
 
 abstract class NodeImpl(override val entityType: KClass<*>): Node {
 
-    override val children: MutableList<Node> = mutableListOf()
+    override val children: MutableList<Child> = mutableListOf()
 
 }
 
