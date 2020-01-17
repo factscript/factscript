@@ -8,11 +8,15 @@ import kotlin.reflect.KClass
 interface Catching: Child {
 
     val catchingType: KClass<*>
+    val catchingProperties: List<String>
+    val matchingValues: List<Any.() -> Any?>
 
 }
 
-open class CatchingImpl<T: Any>(override val parent: Node): Catching, ChildImpl(parent) {
+open class CatchingImpl(override val parent: Node): Catching, ChildImpl(parent) {
 
     override lateinit var catchingType: KClass<*>
+    override val catchingProperties = mutableListOf<String>()
+    override val matchingValues = mutableListOf<Any.() -> Any?>()
 
 }

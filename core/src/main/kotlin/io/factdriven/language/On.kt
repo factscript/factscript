@@ -18,7 +18,7 @@ interface OnCommand<T: Any> {
 
 }
 
-class OnImpl<T: Any>(override val parent: Node): On<T>, CatchingImpl<T>(parent) {
+class OnImpl<T: Any>(override val parent: Node): On<T>, CatchingImpl(parent) {
 
     override fun <M : Any> command(type: KClass<M>) {
         this.catchingType = type

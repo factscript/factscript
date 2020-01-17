@@ -8,7 +8,6 @@ import java.util.*
  */
 class PaymentRetrieval(fact: RetrievePayment) {
 
-    var id = UUID.randomUUID().toString()
     val amount = fact.amount
 
     companion object {
