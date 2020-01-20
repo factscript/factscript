@@ -1,4 +1,4 @@
-package io.factdriven.definition
+package io.factdriven.def
 
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass

@@ -1,6 +1,6 @@
 package io.factdriven.view
 
-import io.factdriven.definition.*
+import io.factdriven.def.*
 import io.factdriven.flow.view.*
 
 /**

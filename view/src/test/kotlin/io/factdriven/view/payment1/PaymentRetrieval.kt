@@ -1,7 +1,6 @@
-package io.factdriven.language.examples.payment1
+package io.factdriven.view.payment1
 
-import io.factdriven.language.define
-import java.util.*
+import io.factdriven.lang.define
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

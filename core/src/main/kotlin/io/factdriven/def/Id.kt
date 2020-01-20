@@ -1,4 +1,4 @@
-package io.factdriven.definition
+package io.factdriven.def
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

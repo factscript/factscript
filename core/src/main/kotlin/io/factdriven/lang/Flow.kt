@@ -1,7 +1,7 @@
-package io.factdriven.language
+package io.factdriven.lang
 
-import io.factdriven.definition.Definition
-import io.factdriven.definition.DefinitionImpl
+import io.factdriven.def.Definition
+import io.factdriven.def.DefinitionImpl
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance

@@ -1,9 +1,6 @@
-package io.factdriven.language.examples.creditcard1
+package io.factdriven.view.creditcard1
 
-import io.factdriven.language.define
-import io.factdriven.language.examples.payment1.PaymentRetrieval
-import io.factdriven.language.examples.payment1.PaymentRetrieved
-import io.factdriven.language.examples.payment1.RetrievePayment
+import io.factdriven.lang.define
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

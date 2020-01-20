@@ -1,6 +1,4 @@
-package io.factdriven.language
-
-import io.factdriven.definition.Throwing
+package io.factdriven.lang
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

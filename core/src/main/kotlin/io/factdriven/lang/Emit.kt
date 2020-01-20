@@ -1,7 +1,7 @@
-package io.factdriven.language
+package io.factdriven.lang
 
-import io.factdriven.definition.Node
-import io.factdriven.definition.ThrowingImpl
+import io.factdriven.def.Node
+import io.factdriven.def.ThrowingImpl
 import kotlin.reflect.KClass
 
 /**

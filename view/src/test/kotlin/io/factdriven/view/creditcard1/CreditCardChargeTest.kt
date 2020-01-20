@@ -1,8 +1,7 @@
-package io.factdriven.language.examples.creditcard1
+package io.factdriven.view.creditcard1
 
-import io.factdriven.language.Flow
+import io.factdriven.lang.Flow
 import io.factdriven.view.render
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**
