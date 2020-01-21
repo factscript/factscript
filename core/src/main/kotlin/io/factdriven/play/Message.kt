@@ -2,6 +2,7 @@ package io.factdriven.play
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.factdriven.def.Fact
 import java.util.*
 
 
@@ -17,7 +18,7 @@ data class Message (
 
 ) {
 
-    constructor(body: Fact<*>, source: Endpoint? = null): this(UUID.randomUUID().toString(), body, source)
+    constructor(fact: Fact<*>, source: Endpoint? = null): this(UUID.randomUUID().toString(), fact, source)
 
     constructor(message: Message, target: Endpoint): this(message.id, message.fact, message.sender, target)
 

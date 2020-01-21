@@ -1,4 +1,4 @@
-package io.factdriven.play
+package io.factdriven.def
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull

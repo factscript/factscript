@@ -1,4 +1,4 @@
-package io.factdriven.play
+package io.factdriven.def
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.JsonNode
@@ -25,7 +25,7 @@ data class Fact<F: Any> (
         return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
     }
 
-    internal val type: KClass<*> @JsonIgnore get() {
+    val type: KClass<*> @JsonIgnore get() {
         return getType(name)
     }
 

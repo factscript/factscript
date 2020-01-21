@@ -1,5 +1,6 @@
 package io.factdriven.play
 
+import io.factdriven.def.Fact
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -33,7 +34,9 @@ class MessageTest {
     @Test
     fun testJsonList() {
 
-        val messages = listOf(Message(Fact(SomeFact("value1"))), Message(Fact(SomeFact("value2"))))
+        val messages = listOf(Message(Fact(SomeFact("value1"))), Message(
+            Fact(SomeFact("value2"))
+        ))
         assertEquals(messages, Message.list.fromJson(messages.toJson()))
 
     }
