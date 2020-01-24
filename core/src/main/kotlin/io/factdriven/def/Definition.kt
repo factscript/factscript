@@ -1,10 +1,8 @@
 package io.factdriven.def
 
-import io.factdriven.lang.Flow
-import io.factdriven.play.Handling
-import io.factdriven.play.Message
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
+import kotlin.reflect.full.companionObjectInstance
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -55,7 +53,7 @@ interface Definition: Node {
 
         fun getDefinitionByType(entityType: KClass<*>): Definition {
             return all[entityType] ?: {
-                Flow.init(entityType)
+                init(entityType)
                 all[entityType] ?: throw IllegalArgumentException("Flow '${entityType.simpleName}' is not defined!")
             }.invoke()
         }
@@ -63,6 +61,11 @@ interface Definition: Node {
         fun getNodeById(id: String): Node {
             return getDefinitionById(id).getNodeById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
         }
+
+        fun init(entityType: KClass<*>) {
+            entityType.companionObjectInstance
+        }
+
 
     }
 

@@ -10,6 +10,10 @@ import java.lang.IllegalArgumentException
  */
 class DefinitionTest {
 
+    init {
+        Definition.init(PaymentRetrieval::class)
+    }
+
     @Test
     fun testRegister() {
         assertEquals(1, Definition.all.size)
@@ -30,7 +34,6 @@ class DefinitionTest {
 
     @Test
     fun testGetNodeById() {
-        Definition.getDefinitionByType(PaymentRetrieval::class) // init
         assertThrows<IllegalArgumentException> { Definition.getNodeById("Any") }
         assertThrows<IllegalArgumentException> { Definition.getNodeById("PaymentRetrieval-RetrievePayment-0") }
         assertTrue(Definition.getNodeById("PaymentRetrieval-RetrievePayment-1") is Catching)

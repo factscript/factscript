@@ -23,10 +23,6 @@ interface Flow<T:Any>: Api<T>, Execution<T> {
             return definition
         }
 
-        fun init(entityType: KClass<*>) {
-            entityType.companionObjectInstance
-        }
-
     }
 
 }

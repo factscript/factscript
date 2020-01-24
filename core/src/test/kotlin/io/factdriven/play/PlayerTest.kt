@@ -50,7 +50,6 @@ class PlayerTest {
     fun testRepository() {
 
         val message = Message(Fact(SomeFact("someValue")))
-        var result: Message? = null
 
         val repository = object: Repository {
             override fun load(id: String): List<Message> {
