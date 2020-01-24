@@ -1,6 +1,5 @@
 package io.factdriven.play
 
-import io.factdriven.def.Fact
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -44,6 +43,23 @@ class PlayerTest {
         Player.publish(message)
 
         Assertions.assertEquals(result, message)
+
+    }
+
+    @Test
+    fun testRepository() {
+
+        val message = Message(Fact(SomeFact("someValue")))
+        var result: Message? = null
+
+        val repository = object: Repository {
+            override fun load(id: String): List<Message> {
+                return listOf(message)
+            }
+        }
+        Player.register(repository)
+
+        Assertions.assertEquals(message, Player.load(message.id).first())
 
     }
 

@@ -1,5 +1,8 @@
 package io.factdriven.def
 
+import io.factdriven.lang.Flow
+import io.factdriven.play.Handling
+import io.factdriven.play.Message
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 
@@ -21,9 +24,49 @@ interface Node {
         return throwing ?: throw IllegalArgumentException("Node throwing ${type.simpleName} not defined!")
     }
 
+    fun getNodeById(id: String): Node? {
+        if (this.id == id)
+            return this
+        children.forEach {
+            val node = it.getNodeById(id)
+            if (node != null)
+                return node
+        }
+        return null
+    }
+
 }
 
-interface Definition: Node
+interface Definition: Node {
+
+    companion object {
+
+        val all: Map<KClass<*>, Definition> = mutableMapOf()
+
+        fun register(definition: Definition) {
+            (all as MutableMap<KClass<*>, Definition>)[definition.entityType] = definition
+        }
+
+        fun getDefinitionById(id: String): Definition {
+            val definitionId = if (id.contains("-")) id.substring(0, id.indexOf("-")) else id
+            val entityType = all.keys.find { it.simpleName == definitionId }
+            return if (entityType != null) getDefinitionByType(entityType) else throw IllegalArgumentException("Flow '${definitionId}' is not defined!")
+        }
+
+        fun getDefinitionByType(entityType: KClass<*>): Definition {
+            return all[entityType] ?: {
+                Flow.init(entityType)
+                all[entityType] ?: throw IllegalArgumentException("Flow '${entityType.simpleName}' is not defined!")
+            }.invoke()
+        }
+
+        fun getNodeById(id: String): Node {
+            return getDefinitionById(id).getNodeById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
+        }
+
+    }
+
+}
 
 interface Child: Node {
 

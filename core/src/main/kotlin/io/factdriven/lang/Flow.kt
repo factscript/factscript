@@ -2,6 +2,7 @@ package io.factdriven.lang
 
 import io.factdriven.def.Definition
 import io.factdriven.def.DefinitionImpl
+import io.factdriven.def.Node
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
@@ -16,18 +17,9 @@ interface Flow<T:Any>: Api<T>, Execution<T> {
 
     companion object {
 
-        val all: Map<KClass<*>, Definition> = mutableMapOf()
-
-        fun get(entityType: KClass<*>): Definition {
-            return all[entityType] ?: {
-                init(entityType)
-                all[entityType] ?: throw IllegalArgumentException("Flow for entity type ${entityType.simpleName} is not defined!")
-            }.invoke()
-        }
-
         inline fun <reified T: Any> define(type: KClass<T> = T::class, flow: Flow<T>.() -> Unit): Flow<T> {
             val definition = FlowImpl(type).apply(flow)
-            (all as MutableMap)[definition.entityType] = definition
+            Definition.register(definition)
             return definition
         }
 

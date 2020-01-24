@@ -1,6 +1,5 @@
 package io.factdriven.play
 
-import io.factdriven.def.Fact
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -38,6 +37,35 @@ class MessageTest {
             Fact(SomeFact("value2"))
         ))
         assertEquals(messages, Message.list.fromJson(messages.toJson()))
+
+    }
+
+}
+
+class ApplyMessagesToClassTest {
+
+    data class SomeFact(val property: String)
+    data class SomeOtherFact(val property: String)
+
+    data class SomeClass(val someFact: SomeFact) {
+
+        val someProperty = someFact.property
+        var someOtherProperty: String? = null
+
+        fun apply(someOtherFact: SomeOtherFact) {
+            someOtherProperty = someOtherFact.property
+        }
+
+    }
+
+    @Test
+    fun testApplyTo() {
+
+        val messages = listOf(Message(Fact(SomeFact("value"))), Message(Fact(SomeOtherFact("otherValue"))))
+        val instance = messages.applyTo(SomeClass::class)
+
+        assertEquals("value", instance.someProperty)
+        assertEquals("otherValue", instance.someOtherProperty)
 
     }
 

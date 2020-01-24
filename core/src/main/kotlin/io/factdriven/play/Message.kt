@@ -2,8 +2,8 @@ package io.factdriven.play
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.factdriven.def.Fact
 import java.util.*
+import kotlin.reflect.KClass
 
 
 /**
@@ -18,9 +18,9 @@ data class Message (
 
 ) {
 
-    constructor(fact: Fact<*>, source: Endpoint? = null): this(UUID.randomUUID().toString(), fact, source)
+    constructor(fact: Fact<*>, sender: Endpoint? = null): this(UUID.randomUUID().toString(), fact, sender)
 
-    constructor(message: Message, target: Endpoint): this(message.id, message.fact, message.sender, target)
+    constructor(message: Message, receiver: Endpoint): this(message.id, message.fact, message.sender, receiver)
 
     fun toJson(): String {
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
@@ -47,8 +47,11 @@ data class Message (
     object list {
 
         fun fromJson(json: String): List<Message> {
-            val tree = mapper.readTree(json)
-            return if (tree.isArray) tree.map { fromJson(it) } else listOf(Message.fromJson(json))
+            return fromJson(mapper.readTree(json))
+        }
+
+        fun fromJson(tree: JsonNode): List<Message> {
+            return if (tree.isArray) tree.map { Message.fromJson(it) } else listOf(Message.fromJson(tree))
         }
 
     }
@@ -57,4 +60,8 @@ data class Message (
 
 fun List<Message>.toJson(): String {
     return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
+}
+
+fun <A: Any> List<Message>.applyTo(type: KClass<A>): A {
+    return this.map { it.fact }.applyTo(type)
 }

@@ -1,5 +1,8 @@
 package io.factdriven.play
 
+import io.factdriven.def.Definition
+import io.factdriven.def.DefinitionTest
+import io.factdriven.lang.define
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -8,14 +11,14 @@ import org.junit.jupiter.api.Test
  */
 class EndpointTest {
 
-    data class SomeActor(val property: String)
+    data class SomeHandler(val property: String)
     data class SomeFact(val property: String)
 
     @Test
     fun testHandler() {
 
-        val handler = Handler(SomeActor::class)
-        assertEquals("SomeActor", handler.type)
+        val handler = Handler(SomeHandler::class)
+        assertEquals("SomeHandler", handler.type)
         assertEquals(null, handler.id)
         assertEquals(null, handler.context)
 
@@ -44,13 +47,31 @@ class EndpointTest {
     @Test
     fun testEndpoint() {
 
-        val endpoint = Endpoint(Handler(SomeActor::class), Handling(SomeFact::class))
-        assertEquals("SomeActor", endpoint.handler.type)
+        val endpoint = Endpoint(Handler(SomeHandler::class), Handling(SomeFact::class))
+        assertEquals("SomeHandler", endpoint.handler.type)
+        assertEquals("SomeHandler", endpoint.handler.type)
         assertEquals(null, endpoint.handler.id)
         assertEquals(null, endpoint.handler.context)
         assertEquals("SomeFact", endpoint.handling.fact)
         assertEquals(emptyMap<String, Any>(), endpoint.handling.details)
         assertEquals("67d6e86c041f4fa48b81d1b979175cce", endpoint.handling.hash)
+
+    }
+
+}
+
+class MessageHandlingTest {
+
+    @Test
+    fun testHandling() {
+
+        val definition = Definition.getDefinitionByType(PaymentRetrieval::class)
+        val message = Message(Fact(RetrievePayment(5F)))
+
+        val handling = definition.handling(message)
+        assertEquals(1, handling.size)
+        assertEquals("RetrievePayment", handling[0].fact)
+        assertEquals(0, handling[0].details.size)
 
     }
 
