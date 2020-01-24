@@ -8,21 +8,21 @@ import io.factdriven.flow.view.*
  */
 fun translate(definition: Definition): Container {
 
-    fun translate(element: Node, parent: Container): Element {
-        return when(element) {
+    fun translate(node: Node, parent: Container): Element {
+        return when(node) {
             is Catching -> {
-                if (element.isFirstChild) {
+                if (node.isFirstChild) {
                     BpmnEventSymbol(
-                        element.id,
-                        element.typeName,
+                        node.id,
+                        node.typeName,
                         parent,
                         BpmnEventType.message,
                         BpmnEventCharacteristic.catching
                     )
                 } else {
                     BpmnTaskSymbol(
-                        element.id,
-                        element.typeName,
+                        node.id,
+                        node.typeName,
                         parent,
                         BpmnTaskType.receive
                     )
@@ -30,8 +30,8 @@ fun translate(definition: Definition): Container {
             }
             is Throwing -> {
                 BpmnEventSymbol(
-                    element.id,
-                    element.typeName,
+                    node.id,
+                    node.typeName,
                     parent,
                     BpmnEventType.message,
                     BpmnEventCharacteristic.throwing

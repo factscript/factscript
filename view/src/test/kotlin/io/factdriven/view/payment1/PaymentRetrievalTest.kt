@@ -1,6 +1,6 @@
 package io.factdriven.view.payment1
 
-import io.factdriven.lang.Flow
+import io.factdriven.def.Definition
 import io.factdriven.view.render
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ class PaymentRetrievalTest {
     @Test
     fun testDefinition() {
 
-        render(Flow.get(PaymentRetrieval::class))
+        render(Definition.getDefinitionByType(PaymentRetrieval::class))
 
     }
 

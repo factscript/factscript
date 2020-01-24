@@ -1,6 +1,6 @@
 package io.factdriven.view.creditcard1
 
-import io.factdriven.lang.Flow
+import io.factdriven.def.Definition
 import io.factdriven.view.render
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ class CreditCardChargeTest {
     @Test
     fun testDefinition() {
 
-        render(Flow.get(CreditCardCharge::class))
+        render(Definition.getDefinitionByType(CreditCardCharge::class))
 
     }
 
