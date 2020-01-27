@@ -45,17 +45,9 @@ data class Handling (val fact: String, val details: Map<String, Any?> = emptyMap
 
 }
 
-fun Catching.endpoint(handlerId: String): Endpoint {
-    val handlerInstance = Player.load(handlerId, entityType)
-    val details = catchingProperties.mapIndexed { propertyIndex, propertyName ->
-        propertyName to matchingValues[propertyIndex].invoke(handlerInstance)
-    }.toMap()
-    return Endpoint(Handler(entityType.simpleName!!, handlerId), Handling(catchingType, details))
-}
-
 fun Catching.handling(message: Message): Handling? {
     return if (catchingType.isInstance(message.fact.details))
-        Handling(catchingType, catchingProperties.map { it to message.fact.getValue(it) }.toMap())
+        Handling(catchingType, catchingProperties.map { it to message.fact.details.getValue(it) }.toMap())
     else null
 }
 

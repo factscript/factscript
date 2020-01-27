@@ -22,10 +22,6 @@ data class Message (
 
     constructor(message: Message, receiver: Endpoint): this(message.id, message.fact, message.sender, receiver)
 
-    fun toJson(): String {
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this)
-    }
-
     companion object {
 
         private val mapper = jacksonObjectMapper()
@@ -58,7 +54,7 @@ data class Message (
 
 }
 
-fun List<Message>.toJson(): String {
+fun Any.toJson(): String {
     return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
 }
 

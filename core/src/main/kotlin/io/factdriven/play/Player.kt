@@ -1,5 +1,7 @@
 package io.factdriven.play
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
 /**
@@ -29,6 +31,8 @@ object Player {
     private lateinit var processor: Processor
     private lateinit var publisher: Publisher
 
+    val log: Logger = LoggerFactory.getLogger(Player::class.java)
+
     fun register(repository: Repository) {
         this.repository = repository
     }
@@ -46,14 +50,22 @@ object Player {
     }
 
     fun <I: Any> load(id: String, type: KClass<I>): I {
-        return load(id).applyTo(type)
+        return load(load(id), type)
+    }
+
+    fun <I: Any> load(messages: List<Message>, type: KClass<I>): I {
+        val instance = messages.applyTo(type)
+        log.debug("Loading ${type.simpleName} [${messages.first().id}]\n${instance.toJson()}")
+        return instance
     }
 
     fun process(message: Message) {
+        log.debug("Processing Message [${message.id}]\n${message.toJson()}")
         processor.handle(message)
     }
 
     fun publish(message: Message) {
+        log.debug("Publishing ${message.fact.type.simpleName} [${message.id}]\n${message.toJson()}")
         publisher.handle(message)
     }
 

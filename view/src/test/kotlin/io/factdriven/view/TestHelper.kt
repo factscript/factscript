@@ -1,7 +1,8 @@
 package io.factdriven.view
 
 import io.factdriven.def.Definition
-import io.factdriven.flow.view.transform
+import io.factdriven.view.bpmn.transform
+import io.factdriven.view.bpmn.translate
 import org.camunda.bpm.model.bpmn.Bpmn
 import java.io.File
 

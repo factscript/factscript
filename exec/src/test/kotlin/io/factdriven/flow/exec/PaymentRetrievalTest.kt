@@ -17,7 +17,7 @@ class PaymentRetrievalTest: CamundaFlowExecutionTest() {
         CreditCardCharge.init()
     }
 
-    @Test
+    // @Test
     fun testPaymentRetrieval() {
 
         val message = Message(RetrievePayment(reference = "anOrderId", accountId = "anAccountId", payment = 5F))
