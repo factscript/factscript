@@ -13,14 +13,13 @@ data class Message (
 
     val id: String,
     val fact: Fact<*>,
-    val sender: Endpoint? = null,
-    val receiver: Endpoint? = null
+    val handler: Handler? = null
 
 ) {
 
-    constructor(fact: Fact<*>, sender: Endpoint? = null): this(UUID.randomUUID().toString(), fact, sender)
+    constructor(fact: Fact<*>, sender: Handler? = null): this(UUID.randomUUID().toString(), fact, sender)
 
-    constructor(message: Message, receiver: Endpoint): this(UUID.randomUUID().toString(), message.fact, message.sender, receiver)
+    constructor(message: Message, receiver: Handler): this(UUID.randomUUID().toString(), message.fact, receiver)
 
     companion object {
 
@@ -32,10 +31,9 @@ data class Message (
 
         internal fun fromJson(tree: JsonNode): Message {
             val id = tree.path("id").textValue()
-            val sender = mapper.readValue(mapper.treeAsTokens(tree.get("sender")), Endpoint::class.java)
-            val receiver = mapper.readValue(mapper.treeAsTokens(tree.get("receiver")), Endpoint::class.java)
+            val handler = mapper.readValue(mapper.treeAsTokens(tree.get("handler")), Handler::class.java)
             val fact = Fact.fromJson(tree.path("fact"))
-            return Message(id, fact, sender, receiver)
+            return Message(id, fact, handler)
         }
 
     }

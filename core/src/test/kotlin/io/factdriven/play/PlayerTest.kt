@@ -17,7 +17,7 @@ class PlayerTest {
         var result: Message? = null
 
         val processor = object: Processor {
-            override fun handle(message: Message) {
+            override fun process(message: Message) {
                 result = message
             }
         }

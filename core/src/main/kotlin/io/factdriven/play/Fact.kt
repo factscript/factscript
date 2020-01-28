@@ -80,3 +80,4 @@ fun <A: Any> List<Fact<*>>.applyTo(type: KClass<A>): A {
     return entity
 
 }
+

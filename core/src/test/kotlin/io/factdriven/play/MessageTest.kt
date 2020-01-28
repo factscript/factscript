@@ -16,7 +16,6 @@ class MessageTest {
         val fact = Fact(SomeFact("value"))
         val message = Message(fact)
         assertNotNull(message.id)
-        assertNull(message.sender)
         assertEquals(fact, message.fact)
 
     }

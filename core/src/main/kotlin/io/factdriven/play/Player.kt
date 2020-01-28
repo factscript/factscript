@@ -8,21 +8,15 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 interface Processor {
-
-    fun handle(message: Message)
-
+    fun process(message: Message)
 }
 
 interface Publisher {
-
     fun publish(vararg message: Message)
-
 }
 
 interface Repository {
-
     fun load(id: String): List<Message>
-
 }
 
 object Player {
@@ -61,7 +55,7 @@ object Player {
 
     fun process(message: Message) {
         log.debug("Processing message ${message.fact.type.simpleName} [${message.id}]\n${message.toJson()}")
-        processor.handle(message)
+        processor.process(message)
     }
 
     fun publish(vararg messages: Message) {

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import io.factdriven.def.Catching
 import io.factdriven.def.Definition
 import io.factdriven.def.Node
-import io.factdriven.flow.lang.MessagePattern
 import io.factdriven.flow.lang.getValue
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -14,12 +13,10 @@ import kotlin.collections.Map
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+data class Handler (val handlerId: HandlerId, val handling: Handling)
 
-data class Endpoint (val handler: Handler, val handling: Handling)
-
-data class Handler (val context: String?, val type: String, val id: String?) {
-    constructor(type: String, id: String? = null): this(null, type, id)
-    constructor(type: KClass<*>, id: String? = null): this(null, type.simpleName!!, id)
+data class HandlerId (val type: String, val id: String?) {
+    constructor(type: KClass<*>, id: String? = null): this(type.simpleName!!, id)
 }
 
 data class Handling (val fact: String, val details: Map<String, Any?> = emptyMap()) {

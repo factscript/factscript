@@ -51,9 +51,9 @@ class CamundaProcessor: Processor {
 
     private val engine: ProcessEngine = ProcessEngines.getProcessEngines().values.first()
 
-    override fun handle(message: Message) {
-        if (message.receiver != null) {
-            process(message)
+    override fun process(message: Message) {
+        if (message.handler != null) {
+            handle(message)
         } else {
             route(message)
         }
@@ -69,7 +69,7 @@ class CamundaProcessor: Processor {
                     .topic(handling.hash, Long.MAX_VALUE)
                     .execute()
                 return externalTasksHandlingMessage.map { task ->
-                    Message(message, Endpoint(Handler(task.processDefinitionKey, task.businessKey), handling))
+                    Message(message, Handler(HandlerId(task.processDefinitionKey, task.businessKey), handling))
                 }
             }
 
@@ -90,7 +90,7 @@ class CamundaProcessor: Processor {
 
                 return eventSubscriptionsHandlingMessage.mapIndexed { index, subscription ->
                     val processDefinitionKey = subscription.activityId.substring(0, subscription.activityId.indexOf("-"))
-                    Message(message, Endpoint(Handler(processDefinitionKey, businessKeysOfRunningProcessInstances[index]), handling))
+                    Message(message, Handler(HandlerId(processDefinitionKey, businessKeysOfRunningProcessInstances[index]), handling))
                 }
 
             }
@@ -105,9 +105,9 @@ class CamundaProcessor: Processor {
 
     }
 
-    private fun process(message: Message) {
+    private fun handle(message: Message) {
 
-        val handler = message.receiver?.handler
+        val handler = message.handler?.handlerId
             ?: throw IllegalArgumentException("Messages not (yet) routed to receiver!")
 
         val processInstanceId = handler.id?.let {
@@ -135,13 +135,13 @@ class CamundaProcessor: Processor {
             val externalTask = engine.externalTaskService
                 .createExternalTaskQuery()
                 .processInstanceId(processInstanceId)
-                .topicName(message.receiver!!.handling.hash)
+                .topicName(message.handler!!.handling.hash)
                 .singleResult()
 
             if (externalTask != null) {
                 engine.externalTaskService.complete(
                     externalTask.id,
-                    message.receiver!!.handling.hash,
+                    message.handler!!.handling.hash,
                     variables()
                 )
                 return
@@ -150,7 +150,7 @@ class CamundaProcessor: Processor {
         }
 
         val correlationBuilder = engine.runtimeService
-            .createMessageCorrelation(message.receiver!!.handling.hash)
+            .createMessageCorrelation(message.handler!!.handling.hash)
             .setVariables(variables())
         if (processInstanceId != null) {
             correlationBuilder.processInstanceId(processInstanceId)
@@ -205,14 +205,14 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
     }
 
-    private fun Catching.endpoint(execution: DelegateExecution, handlerId: String): Endpoint {
+    private fun Catching.endpoint(execution: DelegateExecution, handlerId: String): Handler {
         val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
         val messages = Message.list.fromJson(messageString)
         val handlerInstance = Player.load(messages, entityType)
         val details = catchingProperties.mapIndexed { propertyIndex, propertyName ->
             propertyName to matchingValues[propertyIndex].invoke(handlerInstance)
         }.toMap()
-        return Endpoint(Handler(entityType.simpleName!!, handlerId), Handling(catchingType, details))
+        return Handler(HandlerId(entityType.simpleName!!, handlerId), Handling(catchingType, details))
     }
 
 }
