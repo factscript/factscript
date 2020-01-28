@@ -43,6 +43,8 @@ interface Execution<T: Any> {
 
     val emit: Emit<T>
 
+    val issue: Issue<T>
+
     val notice: Notice<T>
 
 }
@@ -59,6 +61,13 @@ class FlowImpl<T:Any>(type: KClass<T>): Flow<T>, DefinitionImpl(type) {
     override val emit: Emit<T>
         get() {
             val child = EmitImpl<T>(this)
+            children.add(child)
+            return child
+        }
+
+    override val issue: Issue<T>
+        get() {
+            val child = IssueImpl<T>(this)
             children.add(child)
             return child
         }
