@@ -1,7 +1,8 @@
-package io.factdriven.view.payment1
+package io.factdriven.view.payment2
 
 import io.factdriven.def.Definition
 import io.factdriven.view.render
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 /**

@@ -28,13 +28,22 @@ fun translate(definition: Definition): Container {
                 }
             }
             is Throwing -> {
-                BpmnEventSymbol(
-                    node.id,
-                    node.typeName,
-                    parent,
-                    BpmnEventType.message,
-                    BpmnEventCharacteristic.throwing
-                )
+                if (node.isLastChild) {
+                    BpmnEventSymbol(
+                        node.id,
+                        node.typeName,
+                        parent,
+                        BpmnEventType.message,
+                        BpmnEventCharacteristic.throwing
+                    )
+                } else {
+                    BpmnTaskSymbol(
+                        node.id,
+                        node.typeName,
+                        parent,
+                        BpmnTaskType.send
+                    )
+                }
             }
             else -> throw IllegalArgumentException()
         }

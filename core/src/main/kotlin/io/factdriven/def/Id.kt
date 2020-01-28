@@ -25,6 +25,10 @@ val Child.isFirstChild: Boolean get() {
     return parent.children.first() == this
 }
 
+val Child.isLastChild: Boolean get() {
+    return parent.children.last() == this
+}
+
 val Child.index: Int get() {
     return parent.children.indexOf(this)
 }
