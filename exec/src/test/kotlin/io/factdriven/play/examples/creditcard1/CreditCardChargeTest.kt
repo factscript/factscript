@@ -1,8 +1,6 @@
 package io.factdriven.play.examples.creditcard1
 
 import io.factdriven.def.Definition
-import io.factdriven.play.Fact
-import io.factdriven.play.Message
 import io.factdriven.play.PlayUsingCamundaTest
 import io.factdriven.play.Player
 import org.junit.jupiter.api.Assertions

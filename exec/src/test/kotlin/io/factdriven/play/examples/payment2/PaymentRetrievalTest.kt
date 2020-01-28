@@ -1,4 +1,4 @@
-package io.factdriven.play.examples.payment1
+package io.factdriven.play.examples.payment2
 
 import io.factdriven.def.Definition
 import io.factdriven.play.PlayUsingCamundaTest
@@ -13,13 +13,20 @@ class PaymentRetrievalTest: PlayUsingCamundaTest() {
 
     init {
         Definition.init(PaymentRetrieval::class)
+        Definition.init(CreditCardCharge::class)
     }
 
     @Test
     fun test() {
 
         val id = send(RetrievePayment(amount = 5F))
-        val paymentRetrieval = Player.load(id, PaymentRetrieval::class)
+        var paymentRetrieval = Player.load(id, PaymentRetrieval::class)
+        Assertions.assertEquals(5F, paymentRetrieval.amount)
+        Assertions.assertEquals(false, paymentRetrieval.retrieved)
+
+        send(CreditCardGatewayConfirmationReceived(reference = paymentRetrieval.reference, amount = paymentRetrieval.amount))
+
+        paymentRetrieval = Player.load(id, PaymentRetrieval::class)
         Assertions.assertEquals(5F, paymentRetrieval.amount)
         Assertions.assertEquals(true, paymentRetrieval.retrieved)
 

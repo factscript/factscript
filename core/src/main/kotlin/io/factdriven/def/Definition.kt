@@ -41,8 +41,13 @@ interface Definition: Node {
 
         val all: Map<KClass<*>, Definition> = mutableMapOf()
 
-        fun register(definition: Definition) {
-            (all as MutableMap<KClass<*>, Definition>)[definition.entityType] = definition
+        fun register(vararg definitions: Definition) {
+            definitions.forEach { definition ->
+                all.keys.filter { it.simpleName == definition.typeName }.forEach {
+                    (all as MutableMap<KClass<*>, Definition>).remove(it)
+                }
+                (all as MutableMap<KClass<*>, Definition>)[definition.entityType] = definition
+            }
         }
 
         fun getDefinitionById(id: String): Definition {
