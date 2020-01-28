@@ -15,7 +15,7 @@ interface Processor {
 
 interface Publisher {
 
-    fun handle(message: Message)
+    fun publish(vararg message: Message)
 
 }
 
@@ -55,18 +55,20 @@ object Player {
 
     fun <I: Any> load(messages: List<Message>, type: KClass<I>): I {
         val instance = messages.applyTo(type)
-        log.debug("Loading ${type.simpleName} [${messages.first().id}]\n${instance.toJson()}")
+        log.debug("Loading aggregate ${type.simpleName} [${messages.first().id}]\n${instance.toJson()}")
         return instance
     }
 
     fun process(message: Message) {
-        log.debug("Processing Message [${message.id}]\n${message.toJson()}")
+        log.debug("Processing message ${message.fact.type.simpleName} [${message.id}]\n${message.toJson()}")
         processor.handle(message)
     }
 
-    fun publish(message: Message) {
-        log.debug("Publishing ${message.fact.type.simpleName} [${message.id}]\n${message.toJson()}")
-        publisher.handle(message)
+    fun publish(vararg messages: Message) {
+        messages.forEach { message ->
+            log.debug("Publishing message ${message.fact.type.simpleName} [${message.id}]\n${message.toJson()}")
+        }
+        publisher.publish(*messages)
     }
 
 }

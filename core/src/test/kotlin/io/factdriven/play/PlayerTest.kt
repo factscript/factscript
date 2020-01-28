@@ -35,8 +35,8 @@ class PlayerTest {
         var result: Message? = null
 
         val publisher = object: Publisher {
-            override fun handle(message: Message) {
-                result = message
+            override fun publish(vararg message: Message) {
+                result = message.first()
             }
         }
         Player.register(publisher)

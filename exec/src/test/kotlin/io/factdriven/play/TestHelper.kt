@@ -9,6 +9,8 @@ import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
 import org.camunda.bpm.engine.impl.test.TestHelper
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import java.io.File
 
 /**
@@ -16,16 +18,22 @@ import java.io.File
  */
 open class PlayUsingCamundaTest {
 
-    private var engine: ProcessEngine? = null
-        get() {
-            if (field == null) {
-                val configuration = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration() as ProcessEngineConfigurationImpl
-                configuration.processEnginePlugins = listOf(CamundaFlowExecutionPlugin())
-                configuration.isJobExecutorActivate = true
-                field = configuration.buildProcessEngine()
-            }
-            return field
+    companion object {
+
+        private val plugin = CamundaFlowExecutionPlugin()
+        private val engine: ProcessEngine
+
+        init {
+            val configuration = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration() as ProcessEngineConfigurationImpl
+            configuration.processEnginePlugins = listOf(CamundaFlowExecutionPlugin())
+            configuration.isJobExecutorActivate = true
+            engine = configuration.buildProcessEngine()
+            Player.register(CamundaRepository())
+            Player.register(CamundaPublisher())
+            Player.register(CamundaProcessor())
         }
+
+    }
 
     init {
 
@@ -34,8 +42,6 @@ open class PlayUsingCamundaTest {
     }
 
     protected fun send(fact: Any): String {
-
-        engine
 
         val message = when(fact) {
             is Fact<*> -> Message(fact)
@@ -46,13 +52,18 @@ open class PlayUsingCamundaTest {
         Player.publish(message)
 
         TestHelper.waitForJobExecutorToProcessAllJobs(
-            engine?.processEngineConfiguration as ProcessEngineConfigurationImpl,
+            engine.processEngineConfiguration as ProcessEngineConfigurationImpl,
             60000,
             250
         )
 
-        return message.id
+        return message.fact.id
 
+    }
+
+    @BeforeEach
+    fun createDeployment() {
+        plugin.postProcessEngineBuild(engine)
     }
 
 }

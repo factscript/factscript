@@ -18,7 +18,7 @@ class CreditCardChargeTest: PlayUsingCamundaTest() {
     }
 
     @Test
-    fun testDefinition() {
+    fun test() {
 
         val id = send(ChargeCreditCard(reference = "anOrderId", charge = 5F))
         var charge = Player.load(id, CreditCardCharge::class)

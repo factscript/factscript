@@ -20,7 +20,7 @@ data class Message (
 
     constructor(fact: Fact<*>, sender: Endpoint? = null): this(UUID.randomUUID().toString(), fact, sender)
 
-    constructor(message: Message, receiver: Endpoint): this(message.id, message.fact, message.sender, receiver)
+    constructor(message: Message, receiver: Endpoint): this(UUID.randomUUID().toString(), message.fact, message.sender, receiver)
 
     companion object {
 

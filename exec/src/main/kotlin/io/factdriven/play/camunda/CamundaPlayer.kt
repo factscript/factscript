@@ -109,7 +109,6 @@ class CamundaProcessor: Processor {
 
         val handler = message.receiver?.handler
             ?: throw IllegalArgumentException("Messages not (yet) routed to receiver!")
-        val definition = Definition.getDefinitionById(handler.type)
 
         val processInstanceId = handler.id?.let {
             engine.runtimeService.createProcessInstanceQuery()
@@ -156,7 +155,7 @@ class CamundaProcessor: Processor {
         if (processInstanceId != null) {
             correlationBuilder.processInstanceId(processInstanceId)
         } else {
-            correlationBuilder.processInstanceBusinessKey(message.id)
+            correlationBuilder.processInstanceBusinessKey(message.fact.id)
         }
         correlationBuilder.correlate()
 
@@ -168,8 +167,10 @@ class CamundaPublisher: Publisher {
 
     private val engine: ProcessEngineImpl = ProcessEngines.getProcessEngines().values.first() as ProcessEngineImpl
 
-    override fun handle(message: Message) {
-        engine.processEngineConfiguration.commandExecutorTxRequired.execute(CreateCamundaBpmFlowJob(message))
+    override fun publish(vararg messages: Message) {
+        messages.forEach { message ->
+            engine.processEngineConfiguration.commandExecutorTxRequired.execute(CreateCamundaBpmFlowJob(message))
+        }
     }
 
     class CreateCamundaBpmFlowJob(private val message: Message) : Command<String> {
@@ -226,7 +227,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
         fun message(node: Node): Message? {
             return when(node) {
-                is Throwing -> node.constructor.invoke(aggregate()).let { Message(Fact(it)) }
+                is Throwing -> { node.constructor.invoke(aggregate()).let { Message(Fact(it)) } }
                 else -> null
             }
         }
@@ -296,10 +297,6 @@ class CamundaFlowExecutionPlugin: ProcessEnginePlugin {
     }
 
     override fun postProcessEngineBuild(engine: ProcessEngine) {
-
-        Player.register(CamundaProcessor())
-        Player.register(CamundaPublisher())
-        Player.register(CamundaRepository())
 
         Definition.all.values.forEach { definition ->
             val bpmn = transform(translate(definition))
