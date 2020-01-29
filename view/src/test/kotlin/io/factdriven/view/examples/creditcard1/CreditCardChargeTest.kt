@@ -1,4 +1,4 @@
-package io.factdriven.view.payment1
+package io.factdriven.view.examples.creditcard1
 
 import io.factdriven.def.Definition
 import io.factdriven.view.render
@@ -7,12 +7,12 @@ import org.junit.jupiter.api.Test
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class PaymentRetrievalTest {
+class CreditCardChargeTest {
 
     @Test
-    fun testView() {
+    fun testDefinition() {
 
-        render(Definition.getDefinitionByType(PaymentRetrieval::class))
+        render(Definition.getDefinitionByType(CreditCardCharge::class))
 
     }
 

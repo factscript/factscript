@@ -9,23 +9,30 @@ fun translate(definition: Definition): Container {
 
     fun translate(node: Node, parent: Container): Element {
         return when(node) {
+            is Executing -> {
+                BpmnTaskSymbol(
+                    node.id,
+                    node.typeName,
+                    parent,
+                    BpmnTaskType.service
+                )
+            }
+            is Promising -> {
+                BpmnEventSymbol(
+                    node.id,
+                    node.typeName,
+                    parent,
+                    BpmnEventType.message,
+                    BpmnEventCharacteristic.catching
+                )
+            }
             is Catching -> {
-                if (node.isFirstChild) {
-                    BpmnEventSymbol(
-                        node.id,
-                        node.typeName,
-                        parent,
-                        BpmnEventType.message,
-                        BpmnEventCharacteristic.catching
-                    )
-                } else {
-                    BpmnTaskSymbol(
-                        node.id,
-                        node.typeName,
-                        parent,
-                        BpmnTaskType.receive
-                    )
-                }
+                BpmnTaskSymbol(
+                    node.id,
+                    node.typeName,
+                    parent,
+                    BpmnTaskType.receive
+                )
             }
             is Throwing -> {
                 if (node.isLastChild) {

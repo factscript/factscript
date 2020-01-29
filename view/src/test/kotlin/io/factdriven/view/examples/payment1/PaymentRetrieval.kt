@@ -1,4 +1,4 @@
-package io.factdriven.view.payment1
+package io.factdriven.view.examples.payment1
 
 import io.factdriven.lang.define
 

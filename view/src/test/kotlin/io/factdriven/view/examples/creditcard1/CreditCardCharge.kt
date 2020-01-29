@@ -1,4 +1,4 @@
-package io.factdriven.view.creditcard1
+package io.factdriven.view.examples.creditcard1
 
 import io.factdriven.lang.define
 

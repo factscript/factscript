@@ -1,4 +1,4 @@
-package io.factdriven.view.payment2
+package io.factdriven.view.examples.payment3
 
 import io.factdriven.lang.define
 
@@ -21,7 +21,9 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
             define <CreditCardCharge> {
 
-                on command ChargeCreditCard::class
+                on command ChargeCreditCard::class promise {
+                    report success CreditCardCharged::class
+                }
 
                 consume event(CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
 

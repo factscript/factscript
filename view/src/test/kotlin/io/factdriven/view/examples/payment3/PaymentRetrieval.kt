@@ -1,4 +1,4 @@
-package io.factdriven.view.payment2
+package io.factdriven.view.examples.payment3
 
 import io.factdriven.lang.define
 import java.util.*
@@ -15,15 +15,13 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
         init {
 
-            define<PaymentRetrieval> {
+            define <PaymentRetrieval> {
 
                 on command RetrievePayment::class
 
-                issue command ChargeCreditCard::class by {
+                execute command ChargeCreditCard::class by {
                     ChargeCreditCard(id, total)
                 }
-
-                consume event CreditCardCharged::class having "id" match { id }
 
                 emit event PaymentRetrieved::class by {
                     PaymentRetrieved(total)
