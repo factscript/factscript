@@ -15,7 +15,7 @@ class CreditCardCharge(fact: ChargeCreditCard) {
         init {
             define <CreditCardCharge> {
                 on command ChargeCreditCard::class
-                notice event ConfirmationReceived::class having "reference" match { reference }
+                consume event ConfirmationReceived::class having "reference" match { reference }
                 emit event CreditCardCharged::class by {
                     CreditCardCharged(reference = reference, charge = charge)
                 }

@@ -1,7 +1,6 @@
 package io.factdriven.play.examples.payment2
 
 import io.factdriven.lang.define
-import java.util.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -28,7 +27,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     ChargeCreditCard(reference, amount)
                 }
 
-                notice event CreditCardCharged::class having "reference" match { reference }
+                consume event CreditCardCharged::class having "reference" match { reference }
 
                 emit event PaymentRetrieved::class by {
                     PaymentRetrieved(amount)

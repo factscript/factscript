@@ -2,10 +2,7 @@ package io.factdriven.lang
 
 import io.factdriven.def.Definition
 import io.factdriven.def.DefinitionImpl
-import io.factdriven.def.Node
-import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
-import kotlin.reflect.full.companionObjectInstance
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -45,7 +42,7 @@ interface Execution<T: Any> {
 
     val issue: Issue<T>
 
-    val notice: Notice<T>
+    val consume: Consume<T>
 
 }
 
@@ -72,9 +69,9 @@ class FlowImpl<T:Any>(type: KClass<T>): Flow<T>, DefinitionImpl(type) {
             return child
         }
 
-    override val notice: Notice<T>
+    override val consume: Consume<T>
         get() {
-            val child = NoticeImpl<T>(this)
+            val child = ConsumeImpl<T>(this)
             children.add(child)
             return child
         }

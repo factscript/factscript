@@ -15,7 +15,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
         init {
 
-            define<PaymentRetrieval> {
+            define <PaymentRetrieval> {
 
                 on command RetrievePayment::class
 
@@ -23,7 +23,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     ChargeCreditCard(id, total)
                 }
 
-                notice event CreditCardCharged::class having "id" match { id }
+                consume event CreditCardCharged::class having "id" match { id }
 
                 emit event PaymentRetrieved::class by {
                     PaymentRetrieved(total)

@@ -23,7 +23,7 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
                 on command ChargeCreditCard::class
 
-                notice event(CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                consume event(CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
 
                 emit event CreditCardCharged::class by {
                     CreditCardCharged(reference, amount)
