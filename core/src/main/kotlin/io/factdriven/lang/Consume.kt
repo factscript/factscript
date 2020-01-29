@@ -31,7 +31,7 @@ interface ConsumeEventHavingMatch<T: Any> {
 
 }
 
-class ConsumeImpl<T: Any>(override val parent: Node): Consume<T>, ConsumeEventHaving<T>, ConsumeEventHavingMatch<T>, CatchingImpl(parent) {
+class ConsumeImpl<T: Any>(parent: Node): Consume<T>, ConsumeEventHaving<T>, ConsumeEventHavingMatch<T>, CatchingImpl(parent) {
 
     override fun <M : Any> event(type: KClass<M>): ConsumeEventHaving<T> {
         this.catchingType = type

@@ -17,7 +17,7 @@ interface EmitEvent<T: Any> {
 
 }
 
-class EmitImpl<T: Any>(override val parent: Node): Emit<T>, Sentence<T>, ThrowingImpl(parent) {
+class EmitImpl<T: Any>(parent: Node): Emit<T>, Sentence<T>, ThrowingImpl(parent) {
 
     override fun <M: Any> event(type: KClass<M>): Sentence<T> {
         this.throwingType = type

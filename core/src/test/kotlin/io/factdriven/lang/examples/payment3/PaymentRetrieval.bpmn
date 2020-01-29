@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="3.4.1">
+  <bpmn:collaboration id="Collaboration_1pjufs3">
+    <bpmn:participant id="Participant_05w6bmj" name="Payment retrieval" processRef="PaymentRetrieval" />
+    <bpmn:participant id="Participant_05l0tlj" name="Credit card charge" />
+    <bpmn:messageFlow id="MessageFlow_0adfns9" name="Charge &#10;credit card" sourceRef="SendTask_1lpmlff" targetRef="Participant_05l0tlj" />
+    <bpmn:messageFlow id="MessageFlow_16wnn0w" name="Credit card charged" sourceRef="Participant_05l0tlj" targetRef="SendTask_1lpmlff" />
+  </bpmn:collaboration>
+  <bpmn:process id="PaymentRetrieval" name="PaymentRetrieval" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_0slv0x5" name="Retrieve payment">
+      <bpmn:outgoing>SequenceFlow_0nggot5</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_193zsf2" />
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="SequenceFlow_0nggot5" sourceRef="StartEvent_0slv0x5" targetRef="SendTask_1lpmlff" />
+    <bpmn:serviceTask id="SendTask_1lpmlff" name="Charge credit card">
+      <bpmn:incoming>SequenceFlow_0nggot5</bpmn:incoming>
+      <bpmn:outgoing>SequenceFlow_13jlpnw</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="SequenceFlow_13jlpnw" sourceRef="SendTask_1lpmlff" targetRef="EndEvent_1e100dd" />
+    <bpmn:endEvent id="EndEvent_1e100dd" name="Payment retrieved">
+      <bpmn:incoming>SequenceFlow_13jlpnw</bpmn:incoming>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_05tqpl8" />
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1pjufs3">
+      <bpmndi:BPMNShape id="Participant_05w6bmj_di" bpmnElement="Participant_05w6bmj" isHorizontal="true">
+        <dc:Bounds x="149" y="43" width="501" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_0slv0x5_di" bpmnElement="StartEvent_0slv0x5" bioc:stroke="rgb(30, 136, 229)" bioc:fill="rgb(187, 222, 251)">
+        <dc:Bounds x="249" y="145" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="224" y="188" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1e100dd_di" bpmnElement="EndEvent_1e100dd" bioc:stroke="rgb(251, 140, 0)" bioc:fill="rgb(255, 224, 178)">
+        <dc:Bounds x="522" y="145" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="495" y="188" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_0nggot5_di" bpmnElement="SequenceFlow_0nggot5">
+        <di:waypoint x="285" y="163" />
+        <di:waypoint x="353" y="163" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Participant_1cac8gp_di" bpmnElement="Participant_05l0tlj" isHorizontal="true">
+        <dc:Bounds x="149" y="350" width="501" height="60" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="MessageFlow_0adfns9_di" bpmnElement="MessageFlow_0adfns9" bioc:stroke="rgb(30, 136, 229)" bioc:fill="rgb(187, 222, 251)">
+        <di:waypoint x="380" y="203" />
+        <di:waypoint x="380" y="350" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="314" y="306" width="52" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_16wnn0w_di" bpmnElement="MessageFlow_16wnn0w" bioc:stroke="rgb(251, 140, 0)" bioc:fill="rgb(255, 224, 178)">
+        <di:waypoint x="430" y="350" />
+        <di:waypoint x="430" y="203" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="443" y="306" width="54" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="ServiceTask_1fewfb4_di" bpmnElement="SendTask_1lpmlff" bioc:stroke="rgb(30, 136, 229)" bioc:fill="rgb(187, 222, 251)">
+        <dc:Bounds x="353" y="123" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="SequenceFlow_13jlpnw_di" bpmnElement="SequenceFlow_13jlpnw">
+        <di:waypoint x="453" y="163" />
+        <di:waypoint x="522" y="163" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

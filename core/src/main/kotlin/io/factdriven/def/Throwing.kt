@@ -12,7 +12,7 @@ interface Throwing: Child {
 
 }
 
-open class ThrowingImpl(override val parent: Node): Throwing, ChildImpl(parent) {
+open class ThrowingImpl(parent: Node): Throwing, ChildImpl(parent) {
 
     override lateinit var throwingType: KClass<*>
     override lateinit var constructor: Any.() -> Any

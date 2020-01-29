@@ -13,7 +13,7 @@ interface Catching: Child {
 
 }
 
-open class CatchingImpl(override val parent: Node): Catching, ChildImpl(parent) {
+open class CatchingImpl(parent: Node): Catching, ChildImpl(parent) {
 
     override lateinit var catchingType: KClass<*>
     override val catchingProperties = mutableListOf<String>()

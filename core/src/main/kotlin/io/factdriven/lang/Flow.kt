@@ -44,6 +44,8 @@ interface Execution<T: Any> {
 
     val consume: Consume<T>
 
+    val execute: Execute<T>
+
 }
 
 class FlowImpl<T:Any>(type: KClass<T>): Flow<T>, DefinitionImpl(type) {
@@ -72,6 +74,13 @@ class FlowImpl<T:Any>(type: KClass<T>): Flow<T>, DefinitionImpl(type) {
     override val consume: Consume<T>
         get() {
             val child = ConsumeImpl<T>(this)
+            children.add(child)
+            return child
+        }
+
+    override val execute: Execute<T>
+        get() {
+            val child = ExecuteImpl<T>(this)
             children.add(child)
             return child
         }

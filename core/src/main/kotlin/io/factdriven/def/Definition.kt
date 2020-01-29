@@ -12,6 +12,11 @@ interface Node {
     val entityType: KClass<*>
     val children: List<Child>
 
+    fun getPromisingOn(type: KClass<*>): Promising {
+        val promising = children.find { it is Promising && it.catchingType == type } as Promising?
+        return promising ?: throw IllegalArgumentException("Node promising on ${type.simpleName} not defined!")
+    }
+
     fun getCatching(type: KClass<*>): Catching {
         val catching = children.find { it is Catching && it.catchingType == type } as Catching?
         return catching ?: throw IllegalArgumentException("Node catching ${type.simpleName} not defined!")
@@ -20,6 +25,11 @@ interface Node {
     fun getThrowing(type: KClass<*>): Throwing {
         val throwing = children.find { it is Throwing && it.throwingType == type } as Throwing?
         return throwing ?: throw IllegalArgumentException("Node throwing ${type.simpleName} not defined!")
+    }
+
+    fun getExecuting(type: KClass<*>): Executing {
+        val executing = children.find { it is Executing && it.throwingType == type } as Executing?
+        return executing ?: throw IllegalArgumentException("Node executing ${type.simpleName} not defined!")
     }
 
     fun getNodeById(id: String): Node? {
@@ -63,6 +73,12 @@ interface Definition: Node {
             }.invoke()
         }
 
+        fun getPromisingNodeByCatchingType(catchingType: KClass<*>): Promising {
+            return all.values.filter { definition ->
+                definition.children.any { it is Promising && it.catchingType == catchingType }
+            }[0].getPromisingOn(catchingType)
+        }
+
         fun getNodeById(id: String): Node {
             return getDefinitionById(id).getNodeById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
         }
@@ -88,5 +104,5 @@ abstract class NodeImpl(override val entityType: KClass<*>): Node {
 
 }
 
-open class ChildImpl(override val parent: Node, override val entityType: KClass<*> = parent.entityType): Child, NodeImpl(entityType)
-open class DefinitionImpl(override val entityType: KClass<*>): Definition, NodeImpl(entityType)
+open class ChildImpl(override val parent: Node, entityType: KClass<*> = parent.entityType): Child, NodeImpl(entityType)
+open class DefinitionImpl(entityType: KClass<*>): Definition, NodeImpl(entityType)

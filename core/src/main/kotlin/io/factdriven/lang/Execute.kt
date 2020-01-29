@@ -1,5 +1,6 @@
 package io.factdriven.lang
 
+import io.factdriven.def.ExecutingImpl
 import io.factdriven.def.Node
 import io.factdriven.def.ThrowingImpl
 import kotlin.reflect.KClass
@@ -8,16 +9,16 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLang
-interface Issue<T: Any>: IssueCommand<T>
+interface Execute<T: Any>: IssueCommand<T>
 
 @FlowLang
-interface IssueCommand<T: Any> {
+interface ExecuteCommand<T: Any> {
 
     infix fun <M: Any> command(type: KClass<M>): Sentence<T>
 
 }
 
-class IssueImpl<T: Any>(parent: Node): Issue<T>, Sentence<T>, ThrowingImpl(parent) {
+class ExecuteImpl<T: Any>(parent: Node): Execute<T>, Sentence<T>, ExecutingImpl(parent) {
 
     override fun <M: Any> command(type: KClass<M>): Sentence<T> {
         this.throwingType = type
