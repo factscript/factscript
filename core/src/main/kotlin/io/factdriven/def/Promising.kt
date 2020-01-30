@@ -5,13 +5,13 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Promising: Catching {
+interface Promising: Consuming {
 
     val successType: KClass<*>
 
 }
 
-open class PromisingImpl(parent: Node): Promising, CatchingImpl(parent) {
+open class PromisingImpl(parent: Node): Promising, ConsumingImpl(parent) {
 
     override lateinit var successType: KClass<*>
 

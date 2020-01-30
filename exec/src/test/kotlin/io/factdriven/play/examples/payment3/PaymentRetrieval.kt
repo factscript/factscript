@@ -1,4 +1,4 @@
-package io.factdriven.view.examples.payment2
+package io.factdriven.play.examples.payment3
 
 import io.factdriven.lang.define
 import java.util.*
@@ -8,8 +8,13 @@ import java.util.*
  */
 class PaymentRetrieval(fact: RetrievePayment) {
 
-    var id = UUID.randomUUID().toString()
-    var total = fact.amount
+    val reference = "SomeReference"
+    val amount = fact.amount
+    var retrieved = false; private set
+
+    fun apply(fact: PaymentRetrieved) {
+        retrieved = true
+    }
 
     companion object {
 
@@ -19,14 +24,12 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 on command RetrievePayment::class
 
-                issue command ChargeCreditCard::class by {
-                    ChargeCreditCard(id, total)
+                execute command ChargeCreditCard::class by {
+                    ChargeCreditCard(reference, amount)
                 }
 
-                consume event CreditCardCharged::class having "id" match { id }
-
                 emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(total)
+                    PaymentRetrieved(amount)
                 }
 
             }

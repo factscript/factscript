@@ -17,8 +17,8 @@ interface Node {
         return promising ?: throw IllegalArgumentException("Node promising on ${type.simpleName} not defined!")
     }
 
-    fun getCatching(type: KClass<*>): Catching {
-        val catching = children.find { it is Catching && it.catchingType == type } as Catching?
+    fun getCatching(type: KClass<*>): Consuming {
+        val catching = children.find { it is Consuming && it.catchingType == type } as Consuming?
         return catching ?: throw IllegalArgumentException("Node catching ${type.simpleName} not defined!")
     }
 

@@ -1,9 +1,7 @@
 package io.factdriven.play
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import io.factdriven.def.Catching
-import io.factdriven.def.Definition
-import io.factdriven.def.Node
+import io.factdriven.def.*
 import io.factdriven.flow.lang.getValue
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -42,7 +40,13 @@ data class Handling (val fact: String, val details: Map<String, Any?> = emptyMap
 
 }
 
-fun Catching.handling(message: Message): Handling? {
+fun Executing.handling(message: Message): Handling? {
+    return if (catchingType.isInstance(message.fact.details))
+        Handling(catchingType, mapOf("@executing" to typeName))
+    else null
+}
+
+fun Consuming.handling(message: Message): Handling? {
     return if (catchingType.isInstance(message.fact.details))
         Handling(catchingType, catchingProperties.map { it to message.fact.details.getValue(it) }.toMap())
     else null
@@ -51,7 +55,8 @@ fun Catching.handling(message: Message): Handling? {
 fun Definition.handling(message: Message): List<Handling> {
     fun handling(node: Node): List<Handling> {
         return when(node) {
-            is Catching -> node.handling(message)?.let { listOf(it) } ?: emptyList()
+            is Consuming -> node.handling(message)?.let { listOf(it) } ?: emptyList()
+            is Executing -> node.handling(message)?.let { listOf(it) } ?: emptyList()
             is Definition -> children.map { handling(it) }.flatten()
             else -> emptyList()
         }

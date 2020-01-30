@@ -26,7 +26,7 @@ fun translate(definition: Definition): Container {
                     BpmnEventCharacteristic.catching
                 )
             }
-            is Catching -> {
+            is Consuming -> {
                 BpmnTaskSymbol(
                     node.id,
                     node.typeName,

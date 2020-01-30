@@ -16,7 +16,7 @@ val Node.id: String get() {
 val Node.typeName: String get() {
     return when (this) {
         is Throwing -> throwingType.simpleName!!
-        is Catching -> catchingType.simpleName!!
+        is Consuming -> catchingType.simpleName!!
         else -> entityType.simpleName!!
     }
 }

@@ -198,14 +198,15 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
         val nodeId = target.getValue(execution).toString()
         val endpoint = when (val node = Definition.getNodeById(nodeId)) {
-            is Catching -> node.endpoint(execution, nodeId)
+            is Consuming -> node.endpoint(execution, nodeId)
+            is Executing -> node.endpoint(execution, nodeId)
             else -> null
         }
         execution.setVariable(MESSAGE_NAME_VAR, endpoint?.handling?.hash)
 
     }
 
-    private fun Catching.endpoint(execution: DelegateExecution, handlerId: String): Handler {
+    private fun Consuming.endpoint(execution: DelegateExecution, handlerId: String): Handler {
         val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
         val messages = Message.list.fromJson(messageString)
         val handlerInstance = Player.load(messages, entityType)
@@ -213,6 +214,10 @@ class CamundaFlowTransitionListener: ExecutionListener {
             propertyName to matchingValues[propertyIndex].invoke(handlerInstance)
         }.toMap()
         return Handler(HandlerId(entityType.simpleName!!, handlerId), Handling(catchingType, details))
+    }
+
+    private fun Executing.endpoint(execution: DelegateExecution, handlerId: String): Handler {
+        return Handler(HandlerId(entityType.simpleName!!, handlerId), Handling(catchingType, mapOf("@executing" to typeName)))
     }
 
 }

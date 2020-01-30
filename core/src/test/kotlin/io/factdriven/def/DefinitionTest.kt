@@ -1,8 +1,6 @@
 package io.factdriven.def
 
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.lang.IllegalArgumentException
@@ -38,7 +36,7 @@ class DefinitionTest {
     fun testGetNodeById() {
         assertThrows<IllegalArgumentException> { Definition.getNodeById("Any") }
         assertThrows<IllegalArgumentException> { Definition.getNodeById("PaymentRetrieval-RetrievePayment-0") }
-        assertTrue(Definition.getNodeById("PaymentRetrieval-RetrievePayment-1") is Catching)
+        assertTrue(Definition.getNodeById("PaymentRetrieval-RetrievePayment-1") is Consuming)
         assertTrue(Definition.getNodeById("PaymentRetrieval-PaymentRetrieved-1") is Throwing)
     }
 
