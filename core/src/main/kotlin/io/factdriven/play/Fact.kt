@@ -18,7 +18,7 @@ data class Fact<F: Any> (
 
 ) {
 
-    constructor(fact: F): this(UUID.randomUUID().toString(), fact::class.java.simpleName, fact) {
+    constructor(fact: F): this(UUID.randomUUID().toString(), fact.name, fact) {
         register(fact::class)
     }
 
@@ -35,7 +35,7 @@ data class Fact<F: Any> (
         private val types = mutableMapOf<String, KClass<*>>()
 
         fun register(type: KClass<*>) {
-            type.simpleName?.let { types[it] = type } ?: throw IllegalArgumentException()
+            types[type.name] = type
         }
 
         fun getType(name: String): KClass<*> {
@@ -81,3 +81,9 @@ fun <A: Any> List<Fact<*>>.applyTo(type: KClass<A>): A {
 
 }
 
+fun Any.getValue(property: String): Any? {
+    return javaClass.getDeclaredField(property).let { field ->
+        field.isAccessible = true
+        return@let field.get(this)
+    }
+}

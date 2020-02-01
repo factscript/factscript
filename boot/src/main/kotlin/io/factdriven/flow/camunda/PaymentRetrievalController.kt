@@ -1,7 +1,9 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.flow.lang.Fact
-import io.factdriven.flow.lang.Message
+import io.factdriven.play.Fact
+import io.factdriven.play.Message
+import io.factdriven.play.Player
+import io.factdriven.play.toJson
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
@@ -22,11 +24,9 @@ class PaymentRetrievalController {
         return send(fact).toJson()
     }
 
-    private fun send(fact: Fact): Message<*> {
-        val message = Message(fact)
-        CamundaBpmFlowExecutor.target(message).map {
-            CamundaBpmFlowExecutor.correlate(it)
-        }
+    private fun send(fact: Any): Message {
+        val message = Message(Fact(fact))
+        Player.process(message)
         return message
     }
 

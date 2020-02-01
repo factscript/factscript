@@ -2,7 +2,6 @@ package io.factdriven.play
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.factdriven.def.*
-import io.factdriven.flow.lang.getValue
 import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.reflect.KClass
@@ -14,12 +13,12 @@ import kotlin.collections.Map
 data class Handler (val handlerId: HandlerId, val handling: Handling)
 
 data class HandlerId (val type: String, val id: String?) {
-    constructor(type: KClass<*>, id: String? = null): this(type.simpleName!!, id)
+    constructor(type: KClass<*>, id: String? = null): this(type.name, id)
 }
 
 data class Handling (val fact: String, val details: Map<String, Any?> = emptyMap()) {
 
-    constructor(fact: KClass<*>, details: Map<String, Any?> = emptyMap()): this (fact.simpleName!!, details)
+    constructor(fact: KClass<*>, details: Map<String, Any?> = emptyMap()): this (fact.name, details)
 
     val hash = hash(this) @JsonIgnore get
 

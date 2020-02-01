@@ -1,6 +1,6 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.flow.define
+import io.factdriven.lang.define
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -36,21 +36,19 @@ data class PaymentRetrieval(
 
             define <PaymentRetrieval> {
 
-                on message(RetrievePayment::class) create progress(PaymentRetrievalAccepted::class) by {
-                    PaymentRetrievalAccepted(paymentId = it.reference)
+                on command RetrievePayment::class promise {
+                    report success PaymentRetrieved::class
                 }
 
-                execute service {
-                    create intention(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, charge = 1F) }
-                    on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
+                execute command ChargeCreditCard::class by {
+                    ChargeCreditCard(reference = paymentId, charge = 1F)
                 }
 
-                execute service {
-                    create intention(ChargeCreditCard::class) by { ChargeCreditCard(reference = paymentId, charge = total - covered) }
-                    on message(CreditCardCharged::class) having "reference" match { paymentId } create success()
+                execute command ChargeCreditCard::class by {
+                    ChargeCreditCard(reference = paymentId, charge = total - covered)
                 }
 
-                create success(PaymentRetrieved::class) by {
+                emit event PaymentRetrieved::class by {
                     PaymentRetrieved(paymentId = paymentId, payment = total)
                 }
 

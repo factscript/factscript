@@ -1,5 +1,6 @@
 package io.factdriven.def
 
+import io.factdriven.play.name
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
@@ -14,22 +15,22 @@ interface Node {
 
     fun getPromisingOn(type: KClass<*>): Promising {
         val promising = children.find { it is Promising && it.catchingType == type } as Promising?
-        return promising ?: throw IllegalArgumentException("Node promising on ${type.simpleName} not defined!")
+        return promising ?: throw IllegalArgumentException("Node promising on ${type.name} not defined!")
     }
 
     fun getCatching(type: KClass<*>): Consuming {
         val catching = children.find { it is Consuming && it.catchingType == type } as Consuming?
-        return catching ?: throw IllegalArgumentException("Node catching ${type.simpleName} not defined!")
+        return catching ?: throw IllegalArgumentException("Node catching ${type.name} not defined!")
     }
 
     fun getThrowing(type: KClass<*>): Throwing {
         val throwing = children.find { it is Throwing && it.throwingType == type } as Throwing?
-        return throwing ?: throw IllegalArgumentException("Node throwing ${type.simpleName} not defined!")
+        return throwing ?: throw IllegalArgumentException("Node throwing ${type.name} not defined!")
     }
 
     fun getExecuting(type: KClass<*>): Executing {
         val executing = children.find { it is Executing && it.throwingType == type } as Executing?
-        return executing ?: throw IllegalArgumentException("Node executing ${type.simpleName} not defined!")
+        return executing ?: throw IllegalArgumentException("Node executing ${type.name} not defined!")
     }
 
     fun getNodeById(id: String): Node? {
@@ -53,7 +54,7 @@ interface Definition: Node {
 
         fun register(vararg definitions: Definition) {
             definitions.forEach { definition ->
-                all.keys.filter { it.simpleName == definition.typeName }.forEach {
+                all.keys.filter { it.name == definition.typeName }.forEach {
                     (all as MutableMap<KClass<*>, Definition>).remove(it)
                 }
                 (all as MutableMap<KClass<*>, Definition>)[definition.entityType] = definition
@@ -62,14 +63,14 @@ interface Definition: Node {
 
         fun getDefinitionById(id: String): Definition {
             val definitionId = if (id.contains("-")) id.substring(0, id.indexOf("-")) else id
-            val entityType = all.keys.find { it.simpleName == definitionId }
+            val entityType = all.keys.find { it.name == definitionId }
             return if (entityType != null) getDefinitionByType(entityType) else throw IllegalArgumentException("Flow '${definitionId}' is not defined!")
         }
 
         fun getDefinitionByType(entityType: KClass<*>): Definition {
             return all[entityType] ?: {
                 init(entityType)
-                all[entityType] ?: throw IllegalArgumentException("Flow '${entityType.simpleName}' is not defined!")
+                all[entityType] ?: throw IllegalArgumentException("Flow '${entityType.name}' is not defined!")
             }.invoke()
         }
 

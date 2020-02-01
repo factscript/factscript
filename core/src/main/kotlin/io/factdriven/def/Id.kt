@@ -1,5 +1,7 @@
 package io.factdriven.def
 
+import io.factdriven.play.name
+
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
@@ -15,9 +17,9 @@ val Node.id: String get() {
 
 val Node.typeName: String get() {
     return when (this) {
-        is Throwing -> throwingType.simpleName!!
-        is Consuming -> catchingType.simpleName!!
-        else -> entityType.simpleName!!
+        is Throwing -> throwingType.name
+        is Consuming -> catchingType.name
+        else -> entityType.name
     }
 }
 

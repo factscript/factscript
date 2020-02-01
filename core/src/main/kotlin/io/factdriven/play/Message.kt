@@ -56,6 +56,9 @@ fun Any.toJson(): String {
     return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
 }
 
+val KClass<*>.name: String get() = this.java.simpleName // TODO investigate a name annotation first
+val Any.name: String get() = this::class.name
+
 fun <A: Any> List<Message>.applyTo(type: KClass<A>): A {
     return this.map { it.fact }.applyTo(type)
 }
