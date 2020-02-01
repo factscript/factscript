@@ -18,11 +18,11 @@ class CreditCardChargeTest: PlayUsingCamundaTest() {
     @Test
     fun test() {
 
-        val id = send(ChargeCreditCard(reference = "anOrderId", charge = 5F))
+        val id = send(CreditCardCharge::class, ChargeCreditCard(reference = "anOrderId", charge = 5F))
         var charge = Player.load(id, CreditCardCharge::class)
         Assertions.assertEquals(5F, charge.charge)
         Assertions.assertEquals(false, charge.closed)
-        send(ConfirmationReceived(reference = "anOrderId"))
+        send(CreditCardCharge::class, ConfirmationReceived(reference = "anOrderId"))
         charge = Player.load(id, CreditCardCharge::class)
         Assertions.assertEquals(true, charge.closed)
 

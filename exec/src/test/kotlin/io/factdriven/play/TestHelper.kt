@@ -12,6 +12,7 @@ import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import java.io.File
+import kotlin.reflect.KClass
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -41,12 +42,12 @@ open class PlayUsingCamundaTest {
 
     }
 
-    protected fun send(fact: Any): String {
+    protected fun send(type: KClass<*>, fact: Any): String {
 
         val message = when(fact) {
-            is Fact<*> -> Message(fact)
+            is Fact<*> -> Message.from(type, fact)
             is Message -> fact
-            else -> Message(Fact(fact))
+            else -> Message.from(type, Fact(fact))
         }
 
         Player.publish(message)

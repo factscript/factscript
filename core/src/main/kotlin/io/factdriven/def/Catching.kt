@@ -31,6 +31,6 @@ interface Executing: Throwing, Catching
 open class ExecutingImpl(parent: Node): Executing, ThrowingImpl(parent) {
 
     override val catchingType: KClass<*>
-        get() = Definition.getPromisingNodeByCatchingType(throwingType).successType
+        get() = Definition.getPromisingNodeByCatchingType(throwingType).successType!!
 
 }

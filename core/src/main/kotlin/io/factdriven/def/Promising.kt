@@ -7,12 +7,12 @@ import kotlin.reflect.KClass
  */
 interface Promising: Consuming {
 
-    val successType: KClass<*>
+    val successType: KClass<*>?
 
 }
 
 open class PromisingImpl(parent: Node): Promising, ConsumingImpl(parent) {
 
-    override lateinit var successType: KClass<*>
+    override var successType: KClass<*>? = null
 
 }

@@ -19,12 +19,12 @@ class PaymentRetrievalTest: PlayUsingCamundaTest() {
     @Test
     fun test() {
 
-        val id = send(RetrievePayment(amount = 5F))
+        val id = send(PaymentRetrieval::class, RetrievePayment(amount = 5F))
         var paymentRetrieval = Player.load(id, PaymentRetrieval::class)
         Assertions.assertEquals(5F, paymentRetrieval.amount)
         Assertions.assertEquals(false, paymentRetrieval.retrieved)
 
-        send(CreditCardGatewayConfirmationReceived(reference = paymentRetrieval.reference, amount = paymentRetrieval.amount))
+        send(CreditCardCharge::class, CreditCardGatewayConfirmationReceived(reference = paymentRetrieval.reference, amount = paymentRetrieval.amount))
 
         paymentRetrieval = Player.load(id, PaymentRetrieval::class)
         Assertions.assertEquals(5F, paymentRetrieval.amount)

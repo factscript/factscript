@@ -13,9 +13,8 @@ interface Node {
     val entityType: KClass<*>
     val children: List<Child>
 
-    fun getPromisingOn(type: KClass<*>): Promising {
-        val promising = children.find { it is Promising && it.catchingType == type } as Promising?
-        return promising ?: throw IllegalArgumentException("Node promising on ${type.name} not defined!")
+    fun getPromising(): Promising {
+        return children.find { it is Promising } as Promising
     }
 
     fun getCatching(type: KClass<*>): Consuming {
@@ -77,7 +76,7 @@ interface Definition: Node {
         fun getPromisingNodeByCatchingType(catchingType: KClass<*>): Promising {
             return all.values.filter { definition ->
                 definition.children.any { it is Promising && it.catchingType == catchingType }
-            }[0].getPromisingOn(catchingType)
+            }[0].getPromising()
         }
 
         fun getNodeById(id: String): Node {

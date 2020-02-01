@@ -24,13 +24,17 @@ import org.camunda.spin.impl.json.jackson.JacksonJsonNode
 import org.camunda.spin.plugin.impl.SpinProcessEnginePlugin
 import org.camunda.spin.plugin.variable.SpinValues
 import org.camunda.spin.plugin.variable.value.JsonValue
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+val log: Logger = LoggerFactory.getLogger(Player::class.java)
+
 class CamundaRepository: Repository {
 
-    private val engine: ProcessEngine = ProcessEngines.getProcessEngines().values.first()
+    private val engine: ProcessEngine get() = ProcessEngines.getProcessEngines().values.first()
 
     override fun load(id: String): List<Message> {
         val processInstance =
@@ -49,7 +53,7 @@ class CamundaRepository: Repository {
 
 class CamundaProcessor: Processor {
 
-    private val engine: ProcessEngine = ProcessEngines.getProcessEngines().values.first()
+    private val engine: ProcessEngine get() = ProcessEngines.getProcessEngines().values.first()
 
     override fun process(message: Message) {
         if (message.handler != null) {
@@ -69,7 +73,7 @@ class CamundaProcessor: Processor {
                     .topic(handling.hash, Long.MAX_VALUE)
                     .execute()
                 return externalTasksHandlingMessage.map { task ->
-                    Message(message, Handler(HandlerId(task.processDefinitionKey, task.businessKey), handling))
+                    Message.handle(message, Handler(StreamId(task.processDefinitionKey, task.businessKey), handling))
                 }
             }
 
@@ -90,7 +94,7 @@ class CamundaProcessor: Processor {
 
                 return eventSubscriptionsHandlingMessage.mapIndexed { index, subscription ->
                     val processDefinitionKey = subscription.activityId.substring(0, subscription.activityId.indexOf("-"))
-                    Message(message, Handler(HandlerId(processDefinitionKey, businessKeysOfRunningProcessInstances[index]), handling))
+                    Message.handle(message, Handler(StreamId(processDefinitionKey, businessKeysOfRunningProcessInstances[index]), handling))
                 }
 
             }
@@ -107,7 +111,7 @@ class CamundaProcessor: Processor {
 
     private fun handle(message: Message) {
 
-        val handler = message.handler?.handlerId
+        val handler = message.handler?.stream
             ?: throw IllegalArgumentException("Messages not (yet) routed to receiver!")
 
         val processInstanceId = handler.id?.let {
@@ -165,7 +169,7 @@ class CamundaProcessor: Processor {
 
 class CamundaPublisher: Publisher {
 
-    private val engine: ProcessEngineImpl = ProcessEngines.getProcessEngines().values.first() as ProcessEngineImpl
+    private val engine: ProcessEngineImpl get() = ProcessEngines.getProcessEngines().values.first() as ProcessEngineImpl
 
     override fun publish(vararg messages: Message) {
         messages.forEach { message ->
@@ -197,27 +201,29 @@ class CamundaFlowTransitionListener: ExecutionListener {
     override fun notify(execution: DelegateExecution) {
 
         val nodeId = target.getValue(execution).toString()
-        val endpoint = when (val node = Definition.getNodeById(nodeId)) {
-            is Consuming -> node.endpoint(execution, nodeId)
-            is Executing -> node.endpoint(execution, nodeId)
+        val handling = when (val node = Definition.getNodeById(nodeId)) {
+            is Consuming -> node.endpoint(execution)
+            is Executing -> node.endpoint(execution)
             else -> null
         }
-        execution.setVariable(MESSAGE_NAME_VAR, endpoint?.handling?.hash)
+        execution.setVariable(MESSAGE_NAME_VAR, handling?.hash)
 
     }
 
-    private fun Consuming.endpoint(execution: DelegateExecution, handlerId: String): Handler {
+    private fun Consuming.endpoint(execution: DelegateExecution): Handling {
         val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
         val messages = Message.list.fromJson(messageString)
         val handlerInstance = Player.load(messages, entityType)
         val details = catchingProperties.mapIndexed { propertyIndex, propertyName ->
             propertyName to matchingValues[propertyIndex].invoke(handlerInstance)
         }.toMap()
-        return Handler(HandlerId(entityType.simpleName!!, handlerId), Handling(catchingType, details))
+        return Handling(catchingType, details)
     }
 
-    private fun Executing.endpoint(execution: DelegateExecution, handlerId: String): Handler {
-        return Handler(HandlerId(entityType.simpleName!!, handlerId), Handling(catchingType, mapOf("@executing" to typeName)))
+    private fun Executing.endpoint(execution: DelegateExecution): Handling {
+        val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
+        val messages = Message.list.fromJson(messageString)
+        return Handling(catchingType, MessageId.nextId(messages.last().id))
     }
 
 }
@@ -226,13 +232,18 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
+        val definition = Definition.getDefinitionById(execution.currentActivityId)
         val node = Definition.getNodeById(execution.currentActivityId)
         val messages = Message.list.fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
         fun aggregate() = messages.applyTo(node.entityType)
 
         fun message(node: Node): Message? {
             return when(node) {
-                is Throwing -> { node.constructor.invoke(aggregate()).let { Message(Fact(it)) } }
+                is Throwing -> {
+                    val fact = node.constructor.invoke(aggregate())
+                    val correlating = definition.getPromising().successType?.isInstance(fact) ?: false
+                    Message.from(messages, Fact(fact), if (correlating) messages.first().id else null)
+                }
                 else -> null
             }
         }
