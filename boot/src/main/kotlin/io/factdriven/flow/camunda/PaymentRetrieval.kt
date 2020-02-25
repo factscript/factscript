@@ -1,6 +1,6 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.lang.define
+import io.factdriven.language.define
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

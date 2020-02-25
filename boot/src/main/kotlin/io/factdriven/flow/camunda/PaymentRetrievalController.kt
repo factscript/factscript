@@ -1,9 +1,9 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.play.Fact
-import io.factdriven.play.Message
-import io.factdriven.play.Player
-import io.factdriven.play.toJson
+import io.factdriven.execution.Fact
+import io.factdriven.execution.Message
+import io.factdriven.execution.Player
+import io.factdriven.execution.toJson
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam

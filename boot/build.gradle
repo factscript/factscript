@@ -45,7 +45,7 @@ repositories {
 }
 
 dependencies {
-    compile project(':exec')
+    compile project(':execution')
 
     if (isEe){
         println "using ee dependencies"
