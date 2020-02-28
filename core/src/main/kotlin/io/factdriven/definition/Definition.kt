@@ -10,8 +10,10 @@ import kotlin.reflect.full.companionObjectInstance
  */
 interface Node {
 
+    val parent: Node?
+    val label: String?
     val entityType: KClass<*>
-    val children: List<Child>
+    val children: List<Node>
 
     fun getPromising(): Promising {
         return children.find { it is Promising } as Promising
@@ -94,15 +96,23 @@ interface Definition: Node {
 
 interface Child: Node {
 
-    val parent: Node
+    override val parent: Node
 
 }
 
 abstract class NodeImpl(override val entityType: KClass<*>): Node {
 
-    override val children: MutableList<Child> = mutableListOf()
+    override val children: MutableList<Node> = mutableListOf()
 
 }
 
-open class ChildImpl(override val parent: Node, entityType: KClass<*> = parent.entityType): Child, NodeImpl(entityType)
-open class DefinitionImpl(entityType: KClass<*>): Definition, NodeImpl(entityType)
+open class ChildImpl(override val parent: Node, entityType: KClass<*> = parent.entityType): Child, NodeImpl(entityType) {
+
+    override var label: String? = null
+
+}
+open class DefinitionImpl(entityType: KClass<*>, override val parent: Node? = null): Definition, NodeImpl(entityType) {
+
+    override var label: String? = null
+
+}

@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLang
-interface Consume<T: Any>: ConsumeEvent<T>
+interface Consume<T: Any>: ConsumeEvent<T>, ConsumeFirst<T>
 
 @FlowLang
 interface ConsumeEvent<T: Any> {
@@ -16,6 +16,21 @@ interface ConsumeEvent<T: Any> {
     infix fun <M : Any> event(type: KClass<M>): ConsumeEventHaving<T>
 
 }
+
+@FlowLang
+interface ConsumeFirst<T: Any> {
+
+    infix fun first(path: Flow<T>.() -> Unit): ConsumeOr<T>
+
+}
+
+@FlowLang
+interface ConsumeOr<T: Any> {
+
+    infix fun or(path: Flow<T>.() -> Unit): ConsumeOr<T>
+
+}
+
 
 @FlowLang
 interface ConsumeEventHaving<T: Any> {
@@ -46,6 +61,10 @@ class ConsumeImpl<T: Any>(parent: Node): Consume<T>, ConsumeEventHaving<T>, Cons
     override fun match(value: T.() -> Any?) {
         @Suppress("UNCHECKED_CAST")
         this.matchingValues.add(value as (Any.() -> Any?))
+    }
+
+    override fun first(path: Flow<T>.() -> Unit): ConsumeOr<T> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 }

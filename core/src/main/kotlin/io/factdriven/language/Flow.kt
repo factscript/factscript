@@ -2,6 +2,7 @@ package io.factdriven.language
 
 import io.factdriven.definition.Definition
 import io.factdriven.definition.DefinitionImpl
+import io.factdriven.definition.Node
 import kotlin.reflect.KClass
 
 /**
@@ -46,9 +47,11 @@ interface Execution<T: Any> {
 
     val execute: Execute<T>
 
+    val select: Select<T>
+
 }
 
-class FlowImpl<T:Any>(type: KClass<T>): Flow<T>, DefinitionImpl(type) {
+open class FlowImpl<T:Any>(type: KClass<T>, override val parent: Node? = null): Flow<T>, DefinitionImpl(type, parent) {
 
     override val on: On<T>
         get() {
@@ -85,4 +88,18 @@ class FlowImpl<T:Any>(type: KClass<T>): Flow<T>, DefinitionImpl(type) {
             return child
         }
 
+    override val select: Select<T>
+        get() {
+            val child = SelectImpl<T>(this)
+            children.add(child)
+            return child
+        }
+
 }
+
+interface Labeled<L> {
+
+    operator fun invoke(case: String): L
+
+}
+

@@ -34,6 +34,7 @@ data class PaymentRetrieval(
 
         fun init() {
 
+            // TODO "define" wird kritisiert
             define <PaymentRetrieval> {
 
                 on command RetrievePayment::class promise {

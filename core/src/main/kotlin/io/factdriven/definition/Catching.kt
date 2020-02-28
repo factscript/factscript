@@ -18,6 +18,14 @@ interface Consuming: Catching {
 
 }
 
+interface Promising: Consuming {
+
+    val successType: KClass<*>?
+
+}
+
+interface Executing: Throwing, Catching
+
 open class ConsumingImpl(parent: Node): Consuming, ChildImpl(parent) {
 
     override lateinit var catchingType: KClass<*>
@@ -26,7 +34,11 @@ open class ConsumingImpl(parent: Node): Consuming, ChildImpl(parent) {
 
 }
 
-interface Executing: Throwing, Catching
+open class PromisingImpl(parent: Node): Promising, ConsumingImpl(parent) {
+
+    override var successType: KClass<*>? = null
+
+}
 
 open class ExecutingImpl(parent: Node): Executing, ThrowingImpl(parent) {
 

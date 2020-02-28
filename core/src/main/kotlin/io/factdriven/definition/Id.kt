@@ -23,16 +23,16 @@ val Node.typeName: String get() {
     }
 }
 
-val Child.isFirstChild: Boolean get() {
-    return parent.children.first() == this
+val Node.isFirstChild: Boolean get() {
+    return parent == null || parent!!.children.first() == this
 }
 
-val Child.isLastChild: Boolean get() {
-    return parent.children.last() == this
+val Node.isLastChild: Boolean get() {
+    return parent == null || parent!!.children.last() == this
 }
 
-val Child.index: Int get() {
-    return parent.children.indexOf(this)
+val Node.index: Int get() {
+    return parent?.children?.indexOf(this) ?: 0
 }
 
 internal val Child.numberOfEntityType: Int get() {
