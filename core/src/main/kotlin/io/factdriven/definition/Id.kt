@@ -7,10 +7,10 @@ import io.factdriven.execution.name
  */
 val Node.id: String get() {
     val id = StringBuffer()
-    if (this is Child)
-        id.append(parent.id).append("-")
+    if (parent != null)
+        id.append(parent!!.id).append("-")
     id.append(typeName)
-    if (this is Child)
+    if (parent != null)
         id.append("-").append(numberOfEntityType)
     return id.toString()
 }
@@ -35,8 +35,8 @@ val Node.index: Int get() {
     return parent?.children?.indexOf(this) ?: 0
 }
 
-internal val Child.numberOfEntityType: Int get() {
-    return parent.children.count {
+internal val Node.numberOfEntityType: Int get() {
+    return parent?.children?.count {
         it.typeName == typeName && it.index <= index
-    }
+    } ?: 0
 }

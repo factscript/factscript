@@ -15,10 +15,11 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+const val visualizeContainers = false
 
 val zero = Position(
-    160 - margin,
-    80 - margin
+    160 - margin.width,
+    92 - margin.height
 )
 
 abstract class BpmnSymbol(id: String, name: String, parent: Container): Symbol(id, name, parent) {
@@ -87,6 +88,46 @@ class BpmnEventSymbol(id: String, name: String, parent: Container, val eventType
             BpmnEventPosition.end
         } else {
             BpmnEventPosition.intermediate
+        }
+    }
+
+}
+
+enum class BpmnGatewayType {
+    exclusive
+}
+
+class BpmnGatewaySymbol(id: String, name: String, parent: Container, val gatewayType: BpmnGatewayType): BpmnSymbol(id, name, parent)  {
+
+    override val inner = Dimension(50, 50)
+
+    override val elementClass: KClass<out FlowNode> get() {
+        return when (gatewayType) {
+            BpmnGatewayType.exclusive -> org.camunda.bpm.model.bpmn.instance.ExclusiveGateway::class
+        }
+    }
+
+    override fun waypoint(connector: Connector): Position {
+        return if (connector.source == this) {
+            if (connector.source.center.y < connector.target.center.y) {
+                bottomCenter
+            } else if (connector.target is BpmnGatewaySymbol) {
+                bottomCenter
+            } else if (connector.source.center.y > connector.target.center.y) {
+                topCenter
+            } else {
+                rightCenter
+            }
+        } else {
+            if (connector.source.center.y < connector.target.center.y) {
+                topCenter
+            } else if (connector.source is BpmnGatewaySymbol) {
+                bottomCenter
+            } else if (connector.source.center.y > connector.target.center.y) {
+                bottomCenter
+            } else {
+                leftCenter
+            }
         }
     }
 
@@ -216,6 +257,10 @@ fun transform(container: Container): BpmnModelInstance {
 
             }
 
+            is BpmnGatewaySymbol -> {
+                modelElementInstance.setAttributeValue("name", symbol.name.sentenceCase().replace(" ", "\n"), false)
+            }
+
         }
 
         val bpmnShape = modelInstance.newInstance(BpmnShape::class.java)
@@ -235,7 +280,8 @@ fun transform(container: Container): BpmnModelInstance {
 
         with(modelInstance.newInstance(Bounds::class.java)) {
             x = (symbol.topLeft.x + zero.x).toDouble() + 6
-            y = (symbol.topLeft.y + zero.y).toDouble() + symbol.inner.height + 6
+            val diff = (if (symbol is BpmnGatewaySymbol) { (symbol.name.toCharArray().filter { it == ' '  }.size * 13 + 18) * -1 } else { symbol.inner.height + 6 })
+            y = (symbol.topLeft.y + zero.y).toDouble() + diff
             height = 20.toDouble()
             width = symbol.inner.width.toDouble() - 12
             bpmnLabel.addChildElement(this)
@@ -285,8 +331,30 @@ fun transform(container: Container): BpmnModelInstance {
 
     }
 
+    fun createGroup(element: Element) {
+
+        val group = modelInstance.newInstance(Group::class.java)
+        process.addChildElement(group)
+        val bpmnShape = modelInstance.newInstance(BpmnShape::class.java)
+        bpmnShape.bpmnElement = group as BaseElement
+        plane.addChildElement(bpmnShape)
+
+        with(modelInstance.newInstance(Bounds::class.java)) {
+            x = (element.position.x + zero.x).toDouble()
+            y = (element.position.y + zero.y).toDouble()
+            width = element.dimension.width.toDouble()
+            height = element.dimension.height.toDouble()
+            bpmnShape.bounds = this
+        }
+
+    }
+
     container.symbols.forEach { flowNodes[it] = createBpmnModelElementInstance(it as BpmnSymbol) }
     container.connectors.forEach { createSequenceFlow(it) }
+    if (visualizeContainers) {
+        container.symbols.forEach { createGroup(it) }
+        container.containers.forEach { createGroup(it) }
+    }
 
     return process.modelInstance as BpmnModelInstance
 

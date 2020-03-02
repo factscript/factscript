@@ -7,8 +7,8 @@ import io.factdriven.definition.*
  */
 fun translate(definition: Definition): Container {
 
-    fun translate(node: Node, parent: Container): Element {
-        return when(node) {
+    fun translate(node: Node, parent: Container) {
+        when(node) {
             is Executing -> {
                 BpmnTaskSymbol(
                     node.id,
@@ -52,6 +52,27 @@ fun translate(definition: Definition): Container {
                     )
                 }
             }
+            is Gateway -> {
+                val branch = Branch(node.id, "", parent)
+                BpmnGatewaySymbol(
+                    "${node.id}-split",
+                    node.label ?: "",
+                    branch,
+                    BpmnGatewayType.exclusive
+                )
+                node.children.forEach { translate(it, branch) }
+                BpmnGatewaySymbol(
+                    "${node.id}-join",
+                    "",
+                    branch,
+                    BpmnGatewayType.exclusive
+                )
+            }
+            is Definition -> {
+                val sequence = Sequence(node.id, "", parent)
+                node.children.forEach { translate(it, sequence) }
+            }
+            is Condition -> { /* do nothing */ }
             else -> throw IllegalArgumentException()
         }
     }
@@ -75,7 +96,7 @@ data class Position (val x: Int, val y: Int) {
 
 data class Dimension (val width: Int, val height: Int)
 
-const val margin = 18
+val margin = Dimension(18, 18)
 
 interface Element: Named,
     Identified {
@@ -96,22 +117,24 @@ abstract class Container(override val id: String, override val name: String, ove
 
     val children = mutableListOf<Element>()
 
-    override val dimension: Dimension
-        get() = if (children.isEmpty()) Dimension(
-            0,
-            0
-        ) else Dimension(
-            children.sumBy { it.dimension.width },
-            children.maxBy { it.dimension.height }!!.dimension.height
-        )
-
-    val symbols: Set<Symbol> get() = children.map { when (it) {
-        is Symbol -> listOf(it)
-        is Container -> it.symbols
-        else -> throw IllegalStateException()
-    }}.flatten().toSet()
+    val symbols: Set<Symbol>
+        get() = children.map {
+            when (it) {
+                is Symbol -> listOf(it)
+                is Container -> it.symbols
+                else -> throw IllegalStateException()
+            }
+        }.flatten().toSet()
 
     val connectors: Set<Connector> get() = symbols.map { it.outgoing }.flatten().toSet()
+
+    val containers: Set<Container> get() = children.map {
+        when (it) {
+            is Symbol -> emptySet()
+            is Container -> it.containers
+            else -> throw IllegalStateException()
+        }
+        }.flatten().toSet() + this
 
     abstract fun position(child: Element): Position
 
@@ -119,31 +142,106 @@ abstract class Container(override val id: String, override val name: String, ove
         children.add(child)
     }
 
-    override fun equals(other: Any?): Boolean {
-        return other is Symbol && id.equals(other.id)
-    }
-
-    override fun hashCode(): Int {
-        return id.hashCode()
-    }
-
 }
 
 class Sequence(id: String, name: String, parent: Container? = null): Container(id, name, parent) {
 
+    init {
+        parent?.add(this)
+    }
+
+    override val dimension: Dimension
+        get() = if (children.isEmpty()) Dimension(
+            0,
+            margin.height
+        ) else Dimension(
+            children.sumBy { it.dimension.width },
+            children.maxBy { it.dimension.height }!!.dimension.height
+        )
+
     override fun position(child: Element): Position {
         val predecessors = children.subList(0, children.indexOf(child))
-        return Position(
-            position.x + predecessors.sumBy { it.dimension.width },
-            position.y + (dimension.height - child.dimension.height) / 2
-        )
+        if (child is Branch) {
+            return Position(
+                position.x + predecessors.sumBy { it.dimension.width },
+                center.y - maxOf(child.fork.dimension.height, child.sequences[0].dimension.height) / 2
+            )
+        } else {
+            return Position(
+                position.x + predecessors.sumBy { it.dimension.width },
+                position.y + (dimension.height - child.dimension.height) / 2
+            )
+        }
     }
 
     override fun add(child: Element) {
-        // TODO cannot yet deal with sub containers
-        val predecessor = if (children.isEmpty()) null else children.last() as Symbol
-        predecessor?.connect(child as Symbol)
-        super.add(child)
+        if (child is Symbol) {
+            val element = if (children.isEmpty()) null else children.last()
+            val source = (if (element is Container) element.children.last() else element) as Symbol?
+            source?.connect(child)
+        }
+        children.add(child)
+    }
+
+}
+
+class Branch(id: String, name: String, override val parent: Container): Container(id, name, parent) {
+
+    init {
+        parent.add(this)
+    }
+
+    override val position: Position get() {
+        return parent.position(this)
+    }
+
+    override val dimension: Dimension
+        get() = if (children.isEmpty()) Dimension(
+            0,
+            0
+        ) else Dimension(
+            fork.dimension.width + sequences.maxBy { it.dimension.width }!!.dimension.width + join.dimension.width,
+            sequences.sumBy { it.dimension.height }
+        )
+
+    val fork: Element
+        get() = children.first()
+
+    val join: Element
+        get() = children.last()
+
+    val sequences: List<Sequence>
+        get() = children.subList(1, children.size - 1) as List<Sequence>
+
+    override fun position(child: Element): Position {
+        return if (child == fork) {
+            Position(position.x, position.y + (children.maxBy { it.dimension.height }!!.dimension.height - fork.dimension.height) / 2 )
+        } else if (child == join) {
+            Position(position.x + fork.dimension.width + sequences.maxBy { it.dimension.width }!!.dimension.width, position.y + (children.maxBy { it.dimension.height }!!.dimension.height - fork.dimension.height) / 2)
+        } else {
+            val predecessors = sequences.subList(0, sequences.indexOf(child))
+            Position(position.x + fork.dimension.width, position.y + predecessors.sumBy { it.dimension.height } )
+        }
+    }
+
+    override fun add(child: Element) {
+        if (child is Symbol) {
+            if (children.size == 0) {
+                val last = parent.children.elementAtOrNull(parent.children.size - 2) as Symbol?
+                last?.connect(child)
+            } else {
+                val split = children.first() as Symbol
+                val sequences =
+                    if (children.size > 1) children.subList(1, children.size) as List<Sequence> else emptyList()
+                sequences.forEach {
+                    val first = (it.children.firstOrNull() ?: child) as Symbol
+                    split.connect(first)
+                    val last = it.children.lastOrNull() as Symbol?
+                    last?.connect(child)
+                }
+            }
+        }
+        children.add(child)
     }
 
 }
@@ -174,8 +272,8 @@ abstract class Symbol(override val id: String, override val name: String, overri
 
     override val dimension: Dimension
         get() = Dimension(
-            inner.width + 2 * margin,
-            inner.height + 2 * margin
+            inner.width + 2 * margin.width,
+            inner.height + 2 * margin.height
         )
 
     abstract val inner: Dimension
@@ -226,17 +324,9 @@ abstract class Symbol(override val id: String, override val name: String, overri
         target.incoming.add(connector)
     }
 
-    fun waypoint(connector: Connector): Position {
+    open fun waypoint(connector: Connector): Position {
         // TODO select based on relative position
         return if (connector.source.equals(this)) rightCenter else leftCenter
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is Symbol && id.equals(other.id)
-    }
-
-    override fun hashCode(): Int {
-        return id.hashCode()
     }
 
 }
@@ -249,16 +339,18 @@ class Connector(val source: Symbol, val target: Symbol): Graphical,
     val waypoints: List<Position> get() {
         val from = source.waypoint(this)
         val to = target.waypoint(this)
-        // TODO intermediate waypoints
-        return listOf(from, to)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is Symbol && id.equals(other.id)
-    }
-
-    override fun hashCode(): Int {
-        return id.hashCode()
+        return if (source is BpmnGatewaySymbol) {
+            if (target is BpmnGatewaySymbol) {
+                val sequence = source.parent.children.find { it is Sequence && it.children.isEmpty() }!!
+                listOf(from, Position(from.x, sequence.center.y), Position(to.x, sequence.center.y), to)
+            } else {
+                listOf(from, Position(from.x, to.y), to)
+            }
+        } else if (target is BpmnGatewaySymbol) {
+            listOf(from, Position(to.x, from.y), to)
+        } else {
+            listOf(from, to)
+        }
     }
 
 }
