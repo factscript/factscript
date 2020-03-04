@@ -24,8 +24,16 @@ data class PaymentRetrieval(
 
             define <PaymentRetrieval> {
 
-                on command RetrievePayment::class promise {
-                    report success PaymentRetrieved::class
+                on command RetrievePayment::class
+
+                select ("Payment (partly) uncovered?") either {
+                    given ("Yes") condition { covered < total }
+
+                } or {
+                    given ("Third") // = default path w/o condition
+
+                } or {
+                    given ("No") // = default path w/o condition
                 }
 
                 emit event PaymentRetrieved::class by {
