@@ -75,6 +75,9 @@ task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
     runtime = Runtime.Java8
     timeout = 30
     memorySize = 512
+    environment = [
+            STEP_FUNCTION_ROLE_ARN: System.getenv("STEP_FUNCTION_ROLE_ARN")
+    ]
 }
 
 task invokeFunction(type: AWSLambdaInvokeTask) {
