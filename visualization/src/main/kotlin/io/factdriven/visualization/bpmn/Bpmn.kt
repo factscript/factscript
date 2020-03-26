@@ -1,6 +1,7 @@
 package io.factdriven.visualization.bpmn
 
 import io.factdriven.execution.Handling
+import io.factdriven.execution.Name
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
@@ -22,13 +23,13 @@ val zero = Position(
     92 - margin.height
 )
 
-abstract class BpmnSymbol(id: String, name: String, parent: Container): Symbol(id, name, parent) {
+abstract class BpmnSymbol(id: String, context: String, name: String, parent: Container): Symbol(id, context, name, parent) {
 
     abstract val elementClass: KClass<out FlowNode>
 
 }
 
-class BpmnTaskSymbol(id: String, name: String, parent: Container, val taskType: BpmnTaskType): BpmnSymbol(id, name, parent)  {
+class BpmnTaskSymbol(id: String, context: String, name: String, parent: Container, val taskType: BpmnTaskType): BpmnSymbol(id, context, name, parent)  {
 
     override val inner = Dimension(100, 80)
 
@@ -58,7 +59,7 @@ enum class BpmnEventPosition {
     start, intermediate, end
 }
 
-class BpmnEventSymbol(id: String, name: String, parent: Container, val eventType: BpmnEventType, val characteristic: BpmnEventCharacteristic): BpmnSymbol(id, name, parent) {
+class BpmnEventSymbol(id: String, context: String, name: String, parent: Container, val eventType: BpmnEventType, val characteristic: BpmnEventCharacteristic): BpmnSymbol(id, context, name, parent) {
 
     override val inner = Dimension(36, 36)
 
@@ -97,7 +98,7 @@ enum class BpmnGatewayType {
     exclusive
 }
 
-class BpmnGatewaySymbol(id: String, name: String, parent: Container, val gatewayType: BpmnGatewayType): BpmnSymbol(id, name, parent)  {
+class BpmnGatewaySymbol(id: String, context: String, name: String, parent: Container, val gatewayType: BpmnGatewayType): BpmnSymbol(id, context, name, parent)  {
 
     override val inner = Dimension(50, 50)
 
@@ -201,7 +202,7 @@ fun transform(container: Container): BpmnModelInstance {
                             if (message == null) {
                                 with(modelInstance.newInstance(Message::class.java)) {
                                     setAttributeValue("id", symbol.name)
-                                    setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) Handling(symbol.name).hash else "#{message}")
+                                    setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) Handling(Name(symbol.context, symbol.name)).hash else "#{message}")
                                     definitions.addChildElement(this)
                                     messages[symbol.name] = this
                                     messageEventDefinition.message = this

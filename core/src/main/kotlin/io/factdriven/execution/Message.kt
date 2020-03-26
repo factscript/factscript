@@ -97,8 +97,36 @@ fun Any.toJson(): String {
     return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
 }
 
-val KClass<*>.name: String get() = this.java.simpleName // TODO investigate a name annotation first
-val Any.name: String get() = this::class.name
+/*
+ * Unique, but human manageable and readable name for object types
+ */
+data class Name(val context: String, /* Name unique within given context */ val local: String) {
+
+    companion object {
+
+        fun from(string: String): Name {
+            val split = string.split("-")
+            return Name(split[0], split[1])
+        }
+
+    }
+
+    override fun toString(): String {
+        return "$context-$local"
+    }
+
+}
+
+/*
+ * Globally unique type name
+ */
+// TODO investigate a name annotation first
+val KClass<*>.name: Name get() = Name(java.`package`.name.substring(java.`package`.name.lastIndexOf('.') + 1), java.simpleName)
+
+/*
+ * Globally unique name of object's type
+ */
+val Any.name: Name get() = this::class.name
 
 fun <A: Any> List<Message>.applyTo(type: KClass<A>): A {
     return this.map { it.fact }.applyTo(type)

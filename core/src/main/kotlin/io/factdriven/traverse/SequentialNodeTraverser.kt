@@ -143,7 +143,7 @@ class NodeTraverse (val current: Node,
         if(current is Given<*>){
             return current.label!!
         }
-        return current.typeName
+        return current.typeName.local
     }
 }
 
@@ -158,7 +158,7 @@ class BlockTraverse (val current: Node): Traverse(){
     }
 
     override fun name(): String {
-        return current.typeName + "block"
+        return current.typeName.local + "block"
     }
 }
 

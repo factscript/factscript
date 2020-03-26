@@ -12,7 +12,8 @@ fun translate(definition: Definition): Container {
             is Executing -> {
                 BpmnTaskSymbol(
                     node.id,
-                    node.typeName,
+                    node.typeName.context,
+                    node.typeName.local,
                     parent,
                     BpmnTaskType.service
                 )
@@ -20,7 +21,8 @@ fun translate(definition: Definition): Container {
             is Promising -> {
                 BpmnEventSymbol(
                     node.id,
-                    node.typeName,
+                    node.typeName.context,
+                    node.typeName.local,
                     parent,
                     BpmnEventType.message,
                     BpmnEventCharacteristic.catching
@@ -29,7 +31,8 @@ fun translate(definition: Definition): Container {
             is Consuming -> {
                 BpmnTaskSymbol(
                     node.id,
-                    node.typeName,
+                    node.typeName.context,
+                    node.typeName.local,
                     parent,
                     BpmnTaskType.receive
                 )
@@ -38,7 +41,8 @@ fun translate(definition: Definition): Container {
                 if (node.isLastChild) {
                     BpmnEventSymbol(
                         node.id,
-                        node.typeName,
+                        node.typeName.context,
+                        node.typeName.local,
                         parent,
                         BpmnEventType.message,
                         BpmnEventCharacteristic.throwing
@@ -46,16 +50,18 @@ fun translate(definition: Definition): Container {
                 } else {
                     BpmnTaskSymbol(
                         node.id,
-                        node.typeName,
+                        node.typeName.context,
+                        node.typeName.local,
                         parent,
                         BpmnTaskType.send
                     )
                 }
             }
             is Gateway -> {
-                val branch = Branch(node.id, "", parent)
+                val branch = Branch(node.id, "", "", parent)
                 BpmnGatewaySymbol(
                     "${node.id}-split",
+                    "",
                     node.label ?: "",
                     branch,
                     BpmnGatewayType.exclusive
@@ -64,12 +70,13 @@ fun translate(definition: Definition): Container {
                 BpmnGatewaySymbol(
                     "${node.id}-join",
                     "",
+                    "",
                     branch,
                     BpmnGatewayType.exclusive
                 )
             }
             is Definition -> {
-                val sequence = Sequence(node.id, "", parent)
+                val sequence = Sequence(node.id, "", "", parent)
                 node.children.forEach { translate(it, sequence) }
             }
             is Condition -> { /* do nothing */ }
@@ -77,7 +84,7 @@ fun translate(definition: Definition): Container {
         }
     }
 
-    val sequence = Sequence(definition.id, definition.typeName)
+    val sequence = Sequence(definition.id, definition.typeName.context, definition.typeName.local)
     definition.children.forEach { translate(it, sequence) }
     return sequence
 
@@ -112,7 +119,7 @@ interface Element: Named,
 
 }
 
-abstract class Container(override val id: String, override val name: String, override val parent: Container? = null):
+abstract class Container(override val id: String, override val context: String, override val name: String, override val parent: Container? = null):
     Element {
 
     val children = mutableListOf<Element>()
@@ -144,7 +151,7 @@ abstract class Container(override val id: String, override val name: String, ove
 
 }
 
-class Sequence(id: String, name: String, parent: Container? = null): Container(id, name, parent) {
+class Sequence(id: String, context: String, name: String, parent: Container? = null): Container(id, context, name, parent) {
 
     init {
         parent?.add(this)
@@ -185,7 +192,7 @@ class Sequence(id: String, name: String, parent: Container? = null): Container(i
 
 }
 
-class Branch(id: String, name: String, override val parent: Container): Container(id, name, parent) {
+class Branch(id: String, context: String, name: String, override val parent: Container): Container(id, context, name, parent) {
 
     init {
         parent.add(this)
@@ -254,13 +261,14 @@ interface Identified {
 
 interface Named {
 
+    val context: String
     val name: String
 
 }
 
 interface Graphical
 
-abstract class Symbol(override val id: String, override val name: String, override val parent: Container): Graphical,
+abstract class Symbol(override val id: String, override val context: String, override val name: String, override val parent: Container): Graphical,
     Element {
 
     val outgoing = mutableListOf<Connector>()

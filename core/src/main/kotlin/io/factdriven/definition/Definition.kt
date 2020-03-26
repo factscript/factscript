@@ -1,5 +1,6 @@
 package io.factdriven.definition
 
+import io.factdriven.execution.Name
 import io.factdriven.execution.name
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
@@ -63,9 +64,12 @@ interface Definition: Node {
         }
 
         fun getDefinitionById(id: String): Definition {
-            val definitionId = if (id.contains("-")) id.substring(0, id.indexOf("-")) else id
-            val entityType = all.keys.find { it.name == definitionId }
-            return if (entityType != null) getDefinitionByType(entityType) else throw IllegalArgumentException("Flow '${definitionId}' is not defined!")
+            return getDefinitionByName(Name(id.split("-")[0], id.split("-")[1]))
+        }
+
+        fun getDefinitionByName(name: Name): Definition {
+            val entityType = all.keys.find { it.name == name }
+            return if (entityType != null) getDefinitionByType(entityType) else throw IllegalArgumentException("Flow '${name}' is not defined!")
         }
 
         fun getDefinitionByType(entityType: KClass<*>): Definition {

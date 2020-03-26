@@ -1,5 +1,7 @@
 package io.factdriven.definition
 
+import io.factdriven.execution.Name
+import io.factdriven.execution.name
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -21,18 +23,9 @@ class DefinitionTest {
     }
 
     @Test
-    fun testGetDefinitionById() {
-        assertThrows<IllegalArgumentException> { Definition.getDefinitionById("Any") }
-        assertDoesNotThrow { Definition.getDefinitionById("PaymentRetrieval") }
-        assertDoesNotThrow { Definition.getDefinitionById("PaymentRetrieval-Any") }
-    }
-
-    @Test
-    fun testGetNodeById() {
-        assertThrows<IllegalArgumentException> { Definition.getNodeById("Any") }
-        assertThrows<IllegalArgumentException> { Definition.getNodeById("PaymentRetrieval-RetrievePayment-0") }
-        assertTrue(Definition.getNodeById("PaymentRetrieval-RetrievePayment-1") is Consuming)
-        assertTrue(Definition.getNodeById("PaymentRetrieval-PaymentRetrieved-1") is Throwing)
+    fun testGetDefinitionByName() {
+        assertThrows<IllegalArgumentException> { Definition.getDefinitionByName(Any::class.name) }
+        assertDoesNotThrow { Definition.getDefinitionByName(Name("definition", "PaymentRetrieval")) }
     }
 
 }

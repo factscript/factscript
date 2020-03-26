@@ -13,7 +13,7 @@ import kotlin.reflect.full.memberFunctions
 data class Fact<F: Any> (
 
     val id: String,
-    val name: String,
+    val name: Name,
     val details: F
 
 ) {
@@ -32,13 +32,13 @@ data class Fact<F: Any> (
 
     companion object {
 
-        private val types = mutableMapOf<String, KClass<*>>()
+        private val types = mutableMapOf<Name, KClass<*>>()
 
         fun register(type: KClass<*>) {
             types[type.name] = type
         }
 
-        fun getType(name: String): KClass<*> {
+        fun getType(name: Name): KClass<*> {
             return types[name] ?: throw IllegalArgumentException()
         }
 
@@ -48,7 +48,7 @@ data class Fact<F: Any> (
 
         internal fun fromJson(tree: JsonNode): Fact<*> {
             val mapper = jacksonObjectMapper()
-            val type = getType(tree.get("name").textValue())
+            val type = getType(mapper.readValue(mapper.treeAsTokens(tree.get("name")), Name::class.java))
             mapper.registerSubtypes(type.java)
             val javaType = mapper.typeFactory.constructParametricType(Fact::class.java, type.java)
             return mapper.readValue(mapper.treeAsTokens(tree), javaType)

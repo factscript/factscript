@@ -12,7 +12,7 @@ import kotlin.collections.Map
  */
 data class Handler (val stream: StreamId, val handling: Handling)
 
-data class Handling (val fact: String, val details: Map<String, Any?> = emptyMap(), val correlating: MessageId? = null) {
+data class Handling (val fact: Name, val details: Map<String, Any?> = emptyMap(), val correlating: MessageId? = null) {
 
     constructor(fact: KClass<*>, details: Map<String, Any?> = emptyMap()): this (fact.name, details)
     constructor(fact: KClass<*>, correlating: MessageId): this (fact.name, emptyMap(), correlating)
@@ -24,7 +24,8 @@ data class Handling (val fact: String, val details: Map<String, Any?> = emptyMap
         private val digest = MessageDigest.getInstance("MD5")
 
         private fun hash(handling: Handling): String {
-            val buffer = StringBuffer(handling.fact)
+            val buffer = StringBuffer(handling.fact.context)
+            buffer.append("|").append(handling.fact.local)
             if (handling.correlating != null) {
                 buffer.append("|correlating=").append(handling.correlating.hash)
             } else {

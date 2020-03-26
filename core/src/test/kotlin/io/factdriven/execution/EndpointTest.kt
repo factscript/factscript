@@ -15,9 +15,9 @@ class EndpointTest {
     @Test
     fun testHandler() {
 
-        val handler = StreamId(SomeHandler::class)
-        assertEquals("SomeHandler", handler.name)
-        assertEquals(null, handler.id)
+        val streamId = StreamId(SomeHandler::class)
+        assertEquals(Name(context="execution", local="SomeHandler"), Name.from(streamId.name))
+        assertEquals(null, streamId.id)
 
     }
 
@@ -25,9 +25,9 @@ class EndpointTest {
     fun testHandling() {
 
         val handling = Handling(SomeFact::class)
-        assertEquals("SomeFact", handling.fact)
+        assertEquals(Name("execution","SomeFact"), handling.fact)
         assertEquals(emptyMap<String, Any>(), handling.details)
-        assertEquals("67d6e86c041f4fa48b81d1b979175cce", handling.hash)
+        assertEquals("71e98eb1ce39f2be2ae7908461ebcf98", handling.hash)
 
     }
 
@@ -35,9 +35,9 @@ class EndpointTest {
     fun testHandlingWithProperties() {
 
         val handling = Handling(SomeFact::class, mapOf("property" to "value"))
-        assertEquals("SomeFact", handling.fact)
+        assertEquals(Name("execution","SomeFact"), handling.fact)
         assertEquals(mapOf("property" to "value"), handling.details)
-        assertEquals("8667529794db0b306f69d49632f8b346", handling.hash)
+        assertEquals("10f95c1f34d7c81f26588b1d3ce19428", handling.hash)
 
     }
 
@@ -45,12 +45,12 @@ class EndpointTest {
     fun testEndpoint() {
 
         val endpoint = Handler(StreamId(SomeHandler::class), Handling(SomeFact::class))
-        assertEquals("SomeHandler", endpoint.stream.name)
-        assertEquals("SomeHandler", endpoint.stream.name)
+        assertEquals(Name(context="execution", local="SomeHandler"), Name.from(endpoint.stream.name))
+        assertEquals(Name(context="execution", local="SomeHandler"), Name.from(endpoint.stream.name))
         assertEquals(null, endpoint.stream.id)
-        assertEquals("SomeFact", endpoint.handling.fact)
+        assertEquals(Name("execution","SomeFact"), endpoint.handling.fact)
         assertEquals(emptyMap<String, Any>(), endpoint.handling.details)
-        assertEquals("67d6e86c041f4fa48b81d1b979175cce", endpoint.handling.hash)
+        assertEquals("71e98eb1ce39f2be2ae7908461ebcf98", endpoint.handling.hash)
 
     }
 
@@ -66,7 +66,7 @@ class MessageHandlingTest {
 
         val handling = definition.handling(message)
         assertEquals(1, handling.size)
-        assertEquals("RetrievePayment", handling[0].fact)
+        assertEquals(Name("execution", "RetrievePayment"), handling[0].fact)
         assertEquals(0, handling[0].details.size)
 
     }
