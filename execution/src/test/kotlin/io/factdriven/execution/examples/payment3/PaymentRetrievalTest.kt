@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 class PaymentRetrievalTest: PlayUsingCamundaTest() {
 
     init {
+        Definition.clear()
         Definition.init(PaymentRetrieval::class)
         Definition.init(CreditCardCharge::class)
     }

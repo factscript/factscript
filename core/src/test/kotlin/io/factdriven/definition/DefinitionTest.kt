@@ -25,7 +25,7 @@ class DefinitionTest {
     @Test
     fun testGetDefinitionByName() {
         assertThrows<IllegalArgumentException> { Definition.getDefinitionByName(Any::class.name) }
-        assertDoesNotThrow { Definition.getDefinitionByName(Name("definition", "PaymentRetrieval")) }
+        assertDoesNotThrow { Definition.getDefinitionByName(Name(PaymentRetrieval::class.java.`package`.name, "PaymentRetrieval")) }
     }
 
 }

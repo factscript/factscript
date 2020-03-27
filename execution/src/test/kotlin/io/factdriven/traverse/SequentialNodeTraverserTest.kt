@@ -1,7 +1,6 @@
 package io.factdriven.traverse
 
 import io.factdriven.definition.Definition
-import io.factdriven.execution.examples.payment1.PaymentRetrieval
 import io.factdriven.language.Given
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -13,10 +12,15 @@ import kotlin.reflect.jvm.javaMethod
 
 class SequentialNodeTraverserTest {
 
+    init {
+        Definition.init(io.factdriven.traverse.examples.payment1.PaymentRetrieval::class)
+        Definition.init(io.factdriven.traverse.examples.payment2.PaymentRetrieval::class)
+    }
+
     @DisplayName("Simple traverse with start and end")
     @Test
     fun testSimpleTraverse() {
-        val fullTraverse = SequentialNodeTraverser(getDefinition(PaymentRetrieval::class)).fullTraverse()
+        val fullTraverse = SequentialNodeTraverser(getDefinition(io.factdriven.traverse.examples.payment1.PaymentRetrieval::class)).fullTraverse()
 
         assertTrue(fullTraverse.size == 2)
 
@@ -64,7 +68,7 @@ class SequentialNodeTraverserTest {
     @DisplayName("Traverse of XOR")
     @Test
     fun testExampleWithXOR(){
-        val definition = getDefinition(io.factdriven.traverse.examples.payment.PaymentRetrieval::class)
+        val definition = getDefinition(io.factdriven.traverse.examples.payment2.PaymentRetrieval::class)
         val fullTraverse = SequentialNodeTraverser(definition).fullTraverse()
 
         assertTrue(fullTraverse.size == 3)

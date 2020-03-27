@@ -1,4 +1,4 @@
-package io.factdriven.traverse.examples.payment
+package io.factdriven.traverse.examples.payment1
 
 
 import io.factdriven.language.define
@@ -24,23 +24,10 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 on command RetrievePayment::class
 
-                select ("Payment (partly) uncovered?") either {
-                    given ("Yes") condition { amount == 0f }
-
-                    execute command PaymentRetrieved::class by {
-                        PaymentRetrieved(0f)
-                    }
-                } or {
-                    given ("No") // = default path w/o condition
-
-                    execute command PaymentRetrieved::class by {
-                        PaymentRetrieved2(0f)
-                    }
-                }
-
                 emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(1f)
+                    PaymentRetrieved(amount)
                 }
+
             }
 
         }

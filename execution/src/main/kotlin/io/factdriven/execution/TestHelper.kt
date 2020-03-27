@@ -7,7 +7,6 @@ import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngineConfiguration
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl
 import org.camunda.bpm.engine.impl.test.TestHelper
-import org.junit.jupiter.api.BeforeEach
 import kotlin.reflect.KClass
 
 /**
@@ -40,10 +39,20 @@ open class PlayUsingCamundaTest {
 
     protected fun send(type: KClass<*>, fact: Any): String {
 
+        plugin.postProcessEngineBuild(
+            engine
+        )
+
         val message = when(fact) {
-            is Fact<*> -> Message.from(type, fact)
+            is Fact<*> -> Message.from(
+                type,
+                fact
+            )
             is Message -> fact
-            else -> Message.from(type, Fact(fact))
+            else -> Message.from(
+                type,
+                Fact(fact)
+            )
         }
 
         Player.publish(message)
@@ -56,11 +65,6 @@ open class PlayUsingCamundaTest {
 
         return message.fact.id
 
-    }
-
-    @BeforeEach
-    fun createDeployment() {
-        plugin.postProcessEngineBuild(engine)
     }
 
 }

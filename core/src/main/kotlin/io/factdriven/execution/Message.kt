@@ -121,7 +121,7 @@ data class Name(val context: String, /* Name unique within given context */ val 
  * Globally unique type name
  */
 // TODO investigate a name annotation first
-val KClass<*>.name: Name get() = Name(java.`package`.name.substring(java.`package`.name.lastIndexOf('.') + 1), java.simpleName)
+val KClass<*>.name: Name get() = Name(java.`package`.name, java.simpleName)
 
 /*
  * Globally unique name of object's type

@@ -89,6 +89,10 @@ interface Definition: Node {
             return getDefinitionById(id).getNodeById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
         }
 
+        fun clear() {
+            (all as MutableMap).clear()
+        }
+
         fun init(entityType: KClass<*>) {
             entityType.companionObjectInstance
         }
