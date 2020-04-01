@@ -3,7 +3,7 @@ package io.factdriven.definition
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Gateway: Child {
+interface Gateway: Node {
 
     val gatewayType: GatewayType
 
@@ -11,7 +11,7 @@ interface Gateway: Child {
 
 enum class GatewayType { Exclusive }
 
-open class GatewayImpl(parent: Node): Gateway, ChildImpl(parent) {
+open class GatewayImpl(parent: Node): Gateway, NodeImpl(parent) {
 
     override lateinit var gatewayType: GatewayType
 

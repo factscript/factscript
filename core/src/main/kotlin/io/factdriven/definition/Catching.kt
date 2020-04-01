@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Catching : Child {
+interface Catching : Node {
 
     val catchingType: KClass<*>
 
@@ -26,7 +26,7 @@ interface Promising: Consuming {
 
 interface Executing: Throwing, Catching
 
-open class ConsumingImpl(parent: Node): Consuming, ChildImpl(parent) {
+open class ConsumingImpl(parent: Node): Consuming, NodeImpl(parent) {
 
     override lateinit var catchingType: KClass<*>
     override val catchingProperties = mutableListOf<String>()

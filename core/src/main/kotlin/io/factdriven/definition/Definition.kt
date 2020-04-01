@@ -102,25 +102,10 @@ interface Definition: Node {
 
 }
 
-interface Child: Node {
-
-    override val parent: Node
-
-}
-
-abstract class NodeImpl(override val entityType: KClass<*>): Node {
+open class NodeImpl(override val parent: Node?, override val entityType: KClass<*> = parent!!.entityType): Node {
 
     override val children: MutableList<Node> = mutableListOf()
-
-}
-
-open class ChildImpl(override val parent: Node, entityType: KClass<*> = parent.entityType): Child, NodeImpl(entityType) {
-
     override var label: String? = null
 
-}
-open class DefinitionImpl(entityType: KClass<*>, override val parent: Node? = null): Definition, NodeImpl(entityType) {
-
-    override var label: String? = null
 
 }
