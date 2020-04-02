@@ -100,13 +100,13 @@ fun Any.toJson(): String {
 /*
  * Unique, but human manageable and readable name for object types
  */
-data class Name(val context: String, /* Name unique within given context */ val local: String) {
+data class Type(val context: String, /* Name unique within given context */ val local: String) {
 
     companion object {
 
-        fun from(string: String): Name {
+        fun from(string: String): Type {
             val split = string.split("-")
-            return Name(split[0], split[1])
+            return Type(split[0], split[1])
         }
 
     }
@@ -115,18 +115,17 @@ data class Name(val context: String, /* Name unique within given context */ val 
         return "$context-$local"
     }
 
+    fun toLabel(): String {
+        return local.let { local -> local.replace("(.)([A-Z\\d])".toRegex()) { "${it.groupValues[1]} ${it.groupValues[2].toLowerCase()}" } }
+    }
+
 }
 
 /*
  * Globally unique type name
  */
 // TODO investigate a name annotation first
-val KClass<*>.name: Name get() = Name(java.`package`.name, java.simpleName)
-
-/*
- * Globally unique name of object's type
- */
-val Any.name: Name get() = this::class.name
+val KClass<*>.type: Type get() = Type(java.`package`.name, java.simpleName)
 
 fun <A: Any> List<Message>.applyTo(type: KClass<A>): A {
     return this.map { it.fact }.applyTo(type)

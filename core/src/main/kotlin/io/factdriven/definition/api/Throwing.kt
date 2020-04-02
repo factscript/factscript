@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Throwing: Node {
+interface Throwing: Executing {
 
     val throwing: KClass<*>
     val instance: Any.() -> Any

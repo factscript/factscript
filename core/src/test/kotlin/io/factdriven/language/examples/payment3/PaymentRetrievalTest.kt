@@ -10,16 +10,16 @@ import org.junit.jupiter.api.Test
 class PaymentRetrievalTest {
 
     init {
-        Definitions.init(PaymentRetrieval::class)
-        Definitions.init(CreditCardCharge::class)
+        Flows.init(PaymentRetrieval::class)
+        Flows.init(CreditCardCharge::class)
     }
 
     @Test
     fun testDefinition() {
 
-        val all = Definitions.all
+        val all = Flows.all
 
-        val definition = Definitions.getDefinitionByType(PaymentRetrieval::class)
+        val definition = Flows.getDefinitionByType(PaymentRetrieval::class)
         Assertions.assertEquals(PaymentRetrieval::class, definition.entityType)
         Assertions.assertEquals(3, definition.children.size)
 

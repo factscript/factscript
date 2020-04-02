@@ -5,10 +5,10 @@ import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.end
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.states.Transition
-import io.factdriven.definition.api.Node
+import io.factdriven.definition.api.Executing
 import io.factdriven.traverse.NodeTraverse
 
-class ExecuteTranslationStrategy : FlowTranslationStrategy<Node>{
+class ExecuteTranslationStrategy : FlowTranslationStrategy<Executing>{
 
     override fun translate(stateMachineBuilder: StateMachine.Builder, nodeTraverse: NodeTraverse) {
         stateMachineBuilder.state(nodeTraverse.name(),

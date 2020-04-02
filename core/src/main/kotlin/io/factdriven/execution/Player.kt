@@ -49,18 +49,18 @@ object Player {
 
     fun <I: Any> load(messages: List<Message>, type: KClass<I>): I {
         val instance = messages.applyTo(type)
-        log.debug("Loading aggregate ${type.name} [${messages.first().id}]\n${instance.toJson()}")
+        log.debug("Loading aggregate ${type.type} [${messages.first().id}]\n${instance.toJson()}")
         return instance
     }
 
     fun process(message: Message) {
-        log.debug("Processing message ${message.fact.name} [${message.id}]\n${message.toJson()}")
+        log.debug("Processing message ${message.fact.type} [${message.id}]\n${message.toJson()}")
         processor.process(message)
     }
 
     fun publish(vararg messages: Message) {
         messages.forEach { message ->
-            log.debug("Publishing message ${message.fact.name} [${message.id}]\n${message.toJson()}")
+            log.debug("Publishing message ${message.fact.type} [${message.id}]\n${message.toJson()}")
         }
         publisher.publish(*messages)
     }

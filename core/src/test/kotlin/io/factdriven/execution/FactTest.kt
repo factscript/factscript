@@ -17,8 +17,8 @@ class FactTest {
         val instance = SomeFact("value")
         val fact = Fact(instance)
         assertNotNull(fact.id)
-        assertEquals(Name(SomeFact::class.java.`package`.name, local="SomeFact"), fact.name)
-        assertEquals(SomeFact::class, fact.type)
+        assertEquals(Type(SomeFact::class.java.`package`.name, local="SomeFact"), fact.type)
+        assertEquals(SomeFact::class, fact.kClass)
         assertEquals(instance, fact.details)
 
     }

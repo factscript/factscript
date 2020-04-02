@@ -1,7 +1,6 @@
 package io.factdriven.language.examples.creditcard1
 
-import io.factdriven.definition.Definition
-import io.factdriven.definition.Definitions
+import io.factdriven.definition.Flows
 import io.factdriven.definition.getCatching
 import io.factdriven.definition.getThrowing
 import org.junit.jupiter.api.Assertions
@@ -15,7 +14,7 @@ class CreditCardChargeTest {
     @Test
     fun testDefinition() {
 
-        val definition = Definitions.getDefinitionByType(CreditCardCharge::class)
+        val definition = Flows.getDefinitionByType(CreditCardCharge::class)
         Assertions.assertEquals(CreditCardCharge::class, definition.entityType)
         Assertions.assertEquals(3, definition.children.size)
 

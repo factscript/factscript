@@ -3,8 +3,8 @@ package io.factdriven.execution
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.factdriven.definition.*
 import io.factdriven.definition.api.Consuming
+import io.factdriven.definition.api.Calling
 import io.factdriven.definition.api.Executing
-import io.factdriven.definition.api.Node
 import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.reflect.KClass
@@ -15,10 +15,10 @@ import kotlin.collections.Map
  */
 data class Handler (val stream: StreamId, val handling: Handling)
 
-data class Handling (val fact: Name, val details: Map<String, Any?> = emptyMap(), val correlating: MessageId? = null) {
+data class Handling (val fact: Type, val details: Map<String, Any?> = emptyMap(), val correlating: MessageId? = null) {
 
-    constructor(fact: KClass<*>, details: Map<String, Any?> = emptyMap()): this (fact.name, details)
-    constructor(fact: KClass<*>, correlating: MessageId): this (fact.name, emptyMap(), correlating)
+    constructor(fact: KClass<*>, details: Map<String, Any?> = emptyMap()): this (fact.type, details)
+    constructor(fact: KClass<*>, correlating: MessageId): this (fact.type, emptyMap(), correlating)
 
     val hash = hash(this) @JsonIgnore get
 
@@ -44,7 +44,7 @@ data class Handling (val fact: Name, val details: Map<String, Any?> = emptyMap()
 
 }
 
-fun Executing.handling(message: Message): Handling? {
+fun Calling.handling(message: Message): Handling? {
     return if (catching.isInstance(message.fact.details) && message.correlating != null)
         Handling(catching, message.correlating)
     else null
@@ -56,18 +56,18 @@ fun Consuming.handling(message: Message): Handling? {
     else null
 }
 
-fun Node.handling(message: Message): List<Handling> {
-    fun handling(node: Node): List<Handling> {
-        return when(node) {
-            is Consuming -> node.handling(message)?.let { listOf(it) } ?: emptyList()
-            is Executing -> node.handling(message)?.let { listOf(it) } ?: emptyList()
-            else -> node.children.map { handling(it) }.flatten()
+fun Executing.handling(message: Message): List<Handling> {
+    fun handling(executing: Executing): List<Handling> {
+        return when(executing) {
+            is Consuming -> executing.handling(message)?.let { listOf(it) } ?: emptyList()
+            is Calling -> executing.handling(message)?.let { listOf(it) } ?: emptyList()
+            else -> executing.children.map { handling(it) }.flatten()
         }
     }
     return handling(this)
 }
 
-fun Definitions.Companion.handling(message: Message): List<Handling> {
+fun Flows.Companion.handling(message: Message): List<Handling> {
     return all.values.map {
         it.handling(message)
     }.flatten()

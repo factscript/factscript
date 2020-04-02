@@ -1,6 +1,6 @@
 package io.factdriven.language
 
-import io.factdriven.definition.api.Node
+import io.factdriven.definition.api.Executing
 import io.factdriven.definition.impl.PromisingImpl
 import kotlin.reflect.KClass
 
@@ -42,7 +42,7 @@ interface PromiseReportSuccess<T: Any> {
 }
 
 
-class OnImpl<T: Any>(parent: Node): On<T>, Promise<T>, OnCommandPromise<T>, PromiseReport<T>, PromisingImpl(parent) {
+class OnImpl<T: Any>(parent: Executing): On<T>, Promise<T>, OnCommandPromise<T>, PromiseReport<T>, PromisingImpl(parent) {
 
     override fun <M : Any> command(type: KClass<M>): OnCommandPromise<T> {
         this.catching = type

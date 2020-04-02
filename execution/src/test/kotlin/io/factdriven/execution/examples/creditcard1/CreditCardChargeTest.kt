@@ -1,7 +1,6 @@
 package io.factdriven.execution.examples.creditcard1
 
-import io.factdriven.definition.Definition
-import io.factdriven.definition.Definitions
+import io.factdriven.definition.Flows
 import io.factdriven.execution.PlayUsingCamundaTest
 import io.factdriven.execution.Player
 import org.junit.jupiter.api.Assertions
@@ -13,8 +12,8 @@ import org.junit.jupiter.api.Test
 class CreditCardChargeTest: PlayUsingCamundaTest() {
 
     init {
-        Definitions.clear()
-        Definitions.init(CreditCardCharge::class)
+        Flows.clear()
+        Flows.init(CreditCardCharge::class)
     }
 
     @Test

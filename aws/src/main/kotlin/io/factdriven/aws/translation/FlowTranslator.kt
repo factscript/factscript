@@ -6,22 +6,22 @@ import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.conditions.NumericEqualsCondition
 import com.amazonaws.services.stepfunctions.builder.states.Choice
 import com.amazonaws.services.stepfunctions.builder.states.ChoiceState
-import io.factdriven.definition.Definition
-import io.factdriven.definition.api.Node
+import io.factdriven.definition.api.Flowing
+import io.factdriven.definition.api.Executing
 import io.factdriven.traverse.*
 
 class FlowTranslator {
 
     companion object {
-        fun translate(definition: Definition) : StateMachine {
+        fun translate(flowing: Flowing) : StateMachine {
             val stateMachineBuilder =  StepFunctionBuilder.stateMachine()
-            FlowTranslator().translateToStateMachine(stateMachineBuilder, definition)
+            FlowTranslator().translateToStateMachine(stateMachineBuilder, flowing)
             return stateMachineBuilder.build()
         }
     }
 
-    private fun translateToStateMachine(stateMachineBuilder: StateMachine.Builder, node: Node){
-        val sequentialNodeTraverser = SequentialNodeTraverser(node)
+    private fun translateToStateMachine(stateMachineBuilder: StateMachine.Builder, executing: Executing){
+        val sequentialNodeTraverser = SequentialNodeTraverser(executing)
         val fullTraverse = sequentialNodeTraverser.fullTraverse()
         var currentTraverse : Traverse? = fullTraverse.first()
 
@@ -65,7 +65,7 @@ class FlowTranslator {
         strategy.translate(stateMachineBuilder, traverse)
     }
 
-    private fun determineTranslationStrategy(node: Node): FlowTranslationStrategy<Node> {
+    private fun determineTranslationStrategy(executing: Executing): FlowTranslationStrategy<Executing> {
         return ExecuteTranslationStrategy()
     }
 }

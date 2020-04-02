@@ -1,29 +1,28 @@
 package io.factdriven.visualization.bpmn
 
-import io.factdriven.definition.*
 import io.factdriven.definition.api.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-fun translate(definition: Definition): Container {
+fun translate(flowing: Flowing): Container {
 
-    fun translate(node: Node, parent: Container) {
-        when(node) {
-            is Executing -> {
+    fun translate(executing: Executing, parent: Container) {
+        when(executing) {
+            is Calling -> {
                 BpmnTaskSymbol(
-                    node.id,
-                    node.typeName.context,
-                    node.typeName.local,
+                    executing.id,
+                    executing.type.context,
+                    executing.type.local,
                     parent,
                     BpmnTaskType.service
                 )
             }
             is Promising -> {
                 BpmnEventSymbol(
-                    node.id,
-                    node.typeName.context,
-                    node.typeName.local,
+                    executing.id,
+                    executing.type.context,
+                    executing.type.local,
                     parent,
                     BpmnEventType.message,
                     BpmnEventCharacteristic.catching
@@ -31,62 +30,62 @@ fun translate(definition: Definition): Container {
             }
             is Consuming -> {
                 BpmnTaskSymbol(
-                    node.id,
-                    node.typeName.context,
-                    node.typeName.local,
+                    executing.id,
+                    executing.type.context,
+                    executing.type.local,
                     parent,
                     BpmnTaskType.receive
                 )
             }
             is Throwing -> {
-                if (node.isLastChild) {
+                if (executing.isLastChild) {
                     BpmnEventSymbol(
-                        node.id,
-                        node.typeName.context,
-                        node.typeName.local,
+                        executing.id,
+                        executing.type.context,
+                        executing.type.local,
                         parent,
                         BpmnEventType.message,
                         BpmnEventCharacteristic.throwing
                     )
                 } else {
                     BpmnTaskSymbol(
-                        node.id,
-                        node.typeName.context,
-                        node.typeName.local,
+                        executing.id,
+                        executing.type.context,
+                        executing.type.local,
                         parent,
                         BpmnTaskType.send
                     )
                 }
             }
             is Branching -> {
-                val branch = Branch(node.id, "", "", parent)
+                val branch = Branch(executing.id, "", "", parent)
                 BpmnGatewaySymbol(
-                    "${node.id}-split",
+                    "${executing.id}-split",
                     "",
-                    node.label ?: "",
+                    executing.label ?: "",
                     branch,
                     BpmnGatewayType.exclusive
                 )
-                node.children.forEach { translate(it, branch) }
+                executing.children.forEach { translate(it, branch) }
                 BpmnGatewaySymbol(
-                    "${node.id}-join",
+                    "${executing.id}-join",
                     "",
                     "",
                     branch,
                     BpmnGatewayType.exclusive
                 )
             }
-            is Definition -> {
-                val sequence = Sequence(node.id, "", "", parent)
-                node.children.forEach { translate(it, sequence) }
+            is Flowing -> {
+                val sequence = Sequence(executing.id, "", "", parent)
+                executing.children.forEach { translate(it, sequence) }
             }
-            is Conditional -> { /* do nothing */ }
+            is Checking -> { /* do nothing */ }
             else -> throw IllegalArgumentException()
         }
     }
 
-    val sequence = Sequence(definition.id, definition.typeName.context, definition.typeName.local)
-    definition.children.forEach { translate(it, sequence) }
+    val sequence = Sequence(flowing.id, flowing.type.context, flowing.type.local)
+    flowing.children.forEach { translate(it, sequence) }
     return sequence
 
 }

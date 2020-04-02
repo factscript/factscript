@@ -1,9 +1,9 @@
 package io.factdriven.language
 
-import io.factdriven.definition.Definition
-import io.factdriven.definition.Definitions
-import io.factdriven.definition.api.Node
-import io.factdriven.definition.impl.NodeImpl
+import io.factdriven.definition.api.Flowing
+import io.factdriven.definition.Flows
+import io.factdriven.definition.api.Executing
+import io.factdriven.definition.impl.ExecutingImpl
 import kotlin.reflect.KClass
 
 /**
@@ -12,22 +12,12 @@ import kotlin.reflect.KClass
 @DslMarker annotation class FlowLang
 
 @FlowLang
-interface Flow<T:Any>: Api<T>, Execution<T> {
-
-    companion object {
-
-        inline fun <reified T: Any> define(type: KClass<T> = T::class, flow: Flow<T>.() -> Unit): Flow<T> {
-            val definition = FlowImpl(type).apply(flow)
-            Definitions.register(definition)
-            return definition
-        }
-
-    }
-
-}
+interface Flow<T:Any>: Api<T>, Execution<T>
 
 inline fun <reified T: Any> define(type: KClass<T> = T::class, flow: Flow<T>.() -> Unit): Flow<T> {
-    return Flow.define(type, flow)
+    val definition = FlowImpl(type).apply(flow)
+    Flows.register(definition)
+    return definition
 }
 
 @FlowLang
@@ -38,7 +28,7 @@ interface Api<T: Any> {
 }
 
 @FlowLang
-interface Execution<T: Any>: Definition {
+interface Execution<T: Any>: Flowing {
 
     val emit: Emit<T>
 
@@ -52,7 +42,7 @@ interface Execution<T: Any>: Definition {
 
 }
 
-open class FlowImpl<T:Any>(type: KClass<T>, override val parent: Node? = null): Flow<T>, NodeImpl(parent, type) {
+open class FlowImpl<T:Any>(type: KClass<T>, override val parent: Executing? = null): Flow<T>, ExecutingImpl(parent, type) {
 
     override val on: On<T>
         get() {

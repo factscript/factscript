@@ -13,12 +13,12 @@ import kotlin.reflect.full.memberFunctions
 data class Fact<F: Any> (
 
     val id: String,
-    val name: Name,
+    val type: Type,
     val details: F
 
 ) {
 
-    constructor(fact: F): this(UUID.randomUUID().toString(), fact.name, fact) {
+    constructor(fact: F): this(UUID.randomUUID().toString(), fact::class.type, fact) {
         register(fact::class)
     }
 
@@ -26,20 +26,20 @@ data class Fact<F: Any> (
         return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
     }
 
-    val type: KClass<*> @JsonIgnore get() {
-        return getType(name)
+    val kClass: KClass<*> @JsonIgnore get() {
+        return kClass(type)
     }
 
     companion object {
 
-        private val types = mutableMapOf<Name, KClass<*>>()
+        private val types = mutableMapOf<Type, KClass<*>>()
 
         fun register(type: KClass<*>) {
-            types[type.name] = type
+            types[type.type] = type
         }
 
-        fun getType(name: Name): KClass<*> {
-            return types[name] ?: throw IllegalArgumentException()
+        fun kClass(type: Type): KClass<*> {
+            return types[type] ?: throw IllegalArgumentException()
         }
 
         fun fromJson(json: String): Fact<*> {
@@ -48,7 +48,7 @@ data class Fact<F: Any> (
 
         internal fun fromJson(tree: JsonNode): Fact<*> {
             val mapper = jacksonObjectMapper()
-            val type = getType(mapper.readValue(mapper.treeAsTokens(tree.get("name")), Name::class.java))
+            val type = kClass(mapper.readValue(mapper.treeAsTokens(tree.get("type")), Type::class.java))
             mapper.registerSubtypes(type.java)
             val javaType = mapper.typeFactory.constructParametricType(Fact::class.java, type.java)
             return mapper.readValue(mapper.treeAsTokens(tree), javaType)
@@ -63,12 +63,12 @@ fun <A: Any> List<Fact<*>>.applyTo(type: KClass<A>): A {
     assert (isNotEmpty())
 
     fun apply(fact: Fact<*>, on: KClass<A>): A {
-        val constructor = on.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == fact.type }
+        val constructor = on.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == fact.kClass }
         return constructor?.call(fact.details) ?: throw java.lang.IllegalArgumentException()
     }
 
     fun A.apply(fact: Fact<*>) {
-        val method = type.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == fact.type }
+        val method = type.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == fact.kClass }
         method?.call(this, fact.details)
     }
 

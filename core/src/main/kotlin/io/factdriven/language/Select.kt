@@ -1,7 +1,7 @@
 package io.factdriven.language
 
 import io.factdriven.definition.api.Gateway.Exclusive
-import io.factdriven.definition.api.Node
+import io.factdriven.definition.api.Executing
 import io.factdriven.definition.impl.BranchingImpl
 import kotlin.reflect.KClass
 
@@ -32,7 +32,7 @@ interface SelectOr<T:Any> {
 
 }
 
-class SelectImpl<T: Any>(parent: Node): Select<T>, SelectOr<T>, BranchingImpl(parent) {
+class SelectImpl<T: Any>(parent: Executing): Select<T>, SelectOr<T>, BranchingImpl(parent) {
 
     override fun either(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
         gateway = Exclusive

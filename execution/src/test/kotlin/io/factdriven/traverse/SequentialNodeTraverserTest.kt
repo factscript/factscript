@@ -1,8 +1,7 @@
 package io.factdriven.traverse
 
-import io.factdriven.definition.Definition
-import io.factdriven.definition.Definitions
-import io.factdriven.definition.api.Node
+import io.factdriven.definition.Flows
+import io.factdriven.definition.api.Executing
 import io.factdriven.language.Given
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -17,8 +16,8 @@ import kotlin.reflect.jvm.javaMethod
 class SequentialNodeTraverserTest {
 
     init {
-        Definitions.init(io.factdriven.traverse.examples.payment1.PaymentRetrieval::class)
-        Definitions.init(io.factdriven.traverse.examples.payment2.PaymentRetrieval::class)
+        Flows.init(io.factdriven.traverse.examples.payment1.PaymentRetrieval::class)
+        Flows.init(io.factdriven.traverse.examples.payment2.PaymentRetrieval::class)
     }
 
     @DisplayName("Simple traverse with start and end")
@@ -103,10 +102,10 @@ class SequentialNodeTraverserTest {
     }
 
 
-    private fun getDefinition(kclass: KClass<*>) : Node {
+    private fun getDefinition(kclass: KClass<*>) : Executing {
         kclass.staticFunctions.stream()
                 .filter { t -> t.name == "init" }
                 .forEach { t -> t.javaMethod?.invoke(null, null) }
-        return Definitions.getDefinitionByType(kclass)
+        return Flows.getDefinitionByType(kclass)
     }
 }

@@ -1,6 +1,6 @@
 package io.factdriven.language
 
-import io.factdriven.definition.api.Node
+import io.factdriven.definition.api.Executing
 import io.factdriven.definition.impl.ThrowingImpl
 import kotlin.reflect.KClass
 
@@ -17,7 +17,7 @@ interface EmitEvent<T: Any> {
 
 }
 
-class EmitImpl<T: Any>(parent: Node): Emit<T>, Sentence<T>, ThrowingImpl(parent) {
+class EmitImpl<T: Any>(parent: Executing): Emit<T>, Sentence<T>, ThrowingImpl(parent) {
 
     override fun <M: Any> event(type: KClass<M>): Sentence<T> {
         this.throwing = type

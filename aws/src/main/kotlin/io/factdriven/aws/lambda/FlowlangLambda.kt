@@ -4,8 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import io.factdriven.aws.StateMachineService
 import io.factdriven.aws.translation.FlowTranslator
-import io.factdriven.definition.Definition
-import io.factdriven.definition.typeName
+import io.factdriven.definition.api.Flowing
 
 abstract class FlowlangLambda : RequestHandler<Any, String>{
 
@@ -17,9 +16,9 @@ abstract class FlowlangLambda : RequestHandler<Any, String>{
         return stateMachineService.createOrUpdateStateMachine(name, FlowTranslator.translate(definition))
     }
 
-    abstract fun definition() : Definition
+    abstract fun definition() : Flowing
 
-    open fun name(definition: Definition) : String {
-        return "${definition.typeName}StateMachine"
+    open fun name(flowing: Flowing) : String {
+        return "${flowing.type}StateMachine"
     }
 }

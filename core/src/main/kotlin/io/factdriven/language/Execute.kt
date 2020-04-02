@@ -1,7 +1,7 @@
 package io.factdriven.language
 
-import io.factdriven.definition.impl.ExecutingImpl
-import io.factdriven.definition.api.Node
+import io.factdriven.definition.impl.CallingImpl
+import io.factdriven.definition.api.Executing
 import kotlin.reflect.KClass
 
 /**
@@ -31,7 +31,7 @@ interface ExecuteAnd<T: Any> {
 
 }
 
-class ExecuteImpl<T: Any>(parent: Node): Execute<T>, Sentence<T>, ExecutingImpl(parent) {
+class ExecuteImpl<T: Any>(parent: Executing): Execute<T>, Sentence<T>, CallingImpl(parent) {
 
     override fun <M: Any> command(type: KClass<M>): Sentence<T> {
         this.throwing = type

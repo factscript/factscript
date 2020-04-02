@@ -1,12 +1,12 @@
 package io.factdriven.aws.lambda
 
 import io.factdriven.aws.example.function.PaymentRetrieval
-import io.factdriven.definition.Definition
-import io.factdriven.definition.Definitions
+import io.factdriven.definition.api.Flowing
+import io.factdriven.definition.Flows
 
 class PaymentRetrievalLambda : FlowlangLambda() {
-    override fun definition(): Definition {
+    override fun definition(): Flowing {
         PaymentRetrieval.init()
-        return Definitions.getDefinitionByType(PaymentRetrieval::class)
+        return Flows.getDefinitionByType(PaymentRetrieval::class)
     }
 }
