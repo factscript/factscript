@@ -4,12 +4,14 @@ import io.factdriven.definition.Definition
 import io.factdriven.language.Given
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import kotlin.reflect.KClass
 import kotlin.reflect.full.staticFunctions
 import kotlin.reflect.jvm.javaMethod
 
+@Disabled
 class SequentialNodeTraverserTest {
 
     init {
