@@ -1,6 +1,6 @@
 package io.factdriven.traverse
 
-import io.factdriven.definition.Node
+import io.factdriven.definition.api.Node
 import io.factdriven.definition.typeName
 import io.factdriven.language.Given
 import io.factdriven.language.Select

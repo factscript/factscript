@@ -1,8 +1,9 @@
 package io.factdriven.language
 
 import io.factdriven.definition.Definition
-import io.factdriven.definition.Node
-import io.factdriven.definition.NodeImpl
+import io.factdriven.definition.Definitions
+import io.factdriven.definition.api.Node
+import io.factdriven.definition.impl.NodeImpl
 import kotlin.reflect.KClass
 
 /**
@@ -17,7 +18,7 @@ interface Flow<T:Any>: Api<T>, Execution<T> {
 
         inline fun <reified T: Any> define(type: KClass<T> = T::class, flow: Flow<T>.() -> Unit): Flow<T> {
             val definition = FlowImpl(type).apply(flow)
-            Definition.register(definition)
+            Definitions.register(definition)
             return definition
         }
 
@@ -37,7 +38,7 @@ interface Api<T: Any> {
 }
 
 @FlowLang
-interface Execution<T: Any> {
+interface Execution<T: Any>: Definition {
 
     val emit: Emit<T>
 
@@ -51,7 +52,7 @@ interface Execution<T: Any> {
 
 }
 
-open class FlowImpl<T:Any>(type: KClass<T>, override val parent: Node? = null): Definition, Flow<T>, NodeImpl(parent, type) {
+open class FlowImpl<T:Any>(type: KClass<T>, override val parent: Node? = null): Flow<T>, NodeImpl(parent, type) {
 
     override val on: On<T>
         get() {

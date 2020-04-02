@@ -1,5 +1,8 @@
 package io.factdriven.definition
 
+import io.factdriven.definition.api.Consuming
+import io.factdriven.definition.api.Node
+import io.factdriven.definition.api.Throwing
 import io.factdriven.execution.Name
 import io.factdriven.execution.name
 
@@ -23,8 +26,8 @@ val Node.id: String get() {
  */
 val Node.typeName: Name get() {
     return when (this) {
-        is Throwing -> throwingType.name
-        is Consuming -> catchingType.name
+        is Throwing -> throwing.name
+        is Consuming -> catching.name
         else -> entityType.name
     }
 }

@@ -1,7 +1,7 @@
 package io.factdriven.language
 
-import io.factdriven.definition.ExecutingImpl
-import io.factdriven.definition.Node
+import io.factdriven.definition.impl.ExecutingImpl
+import io.factdriven.definition.api.Node
 import kotlin.reflect.KClass
 
 /**
@@ -34,13 +34,13 @@ interface ExecuteAnd<T: Any> {
 class ExecuteImpl<T: Any>(parent: Node): Execute<T>, Sentence<T>, ExecutingImpl(parent) {
 
     override fun <M: Any> command(type: KClass<M>): Sentence<T> {
-        this.throwingType = type
+        this.throwing = type
         return this
     }
 
     override fun <M : Any> by(instance: T.() -> M) {
         @Suppress("UNCHECKED_CAST")
-        this.constructor = instance as Any.() -> Any
+        this.instance = instance as Any.() -> Any
     }
 
 }

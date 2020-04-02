@@ -13,19 +13,19 @@ import java.lang.IllegalArgumentException
 class DefinitionTest {
 
     init {
-        Definition.init(PaymentRetrieval::class)
+        Definitions.init(PaymentRetrieval::class)
     }
 
     @Test
     fun testGetDefinitionByType() {
-        assertThrows<IllegalArgumentException> { Definition.getDefinitionByType(Any::class) }
-        assertDoesNotThrow { Definition.getDefinitionByType(PaymentRetrieval::class) }
+        assertThrows<IllegalArgumentException> { Definitions.getDefinitionByType(Any::class) }
+        assertDoesNotThrow { Definitions.getDefinitionByType(PaymentRetrieval::class) }
     }
 
     @Test
     fun testGetDefinitionByName() {
-        assertThrows<IllegalArgumentException> { Definition.getDefinitionByName(Any::class.name) }
-        assertDoesNotThrow { Definition.getDefinitionByName(Name(PaymentRetrieval::class.java.`package`.name, "PaymentRetrieval")) }
+        assertThrows<IllegalArgumentException> { Definitions.getDefinitionByName(Any::class.name) }
+        assertDoesNotThrow { Definitions.getDefinitionByName(Name(PaymentRetrieval::class.java.`package`.name, "PaymentRetrieval")) }
     }
 
 }

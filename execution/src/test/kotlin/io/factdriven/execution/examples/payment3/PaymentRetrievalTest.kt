@@ -1,6 +1,7 @@
 package io.factdriven.execution.examples.payment3
 
 import io.factdriven.definition.Definition
+import io.factdriven.definition.Definitions
 import io.factdriven.execution.PlayUsingCamundaTest
 import io.factdriven.execution.Player
 import org.junit.jupiter.api.Assertions
@@ -12,9 +13,9 @@ import org.junit.jupiter.api.Test
 class PaymentRetrievalTest: PlayUsingCamundaTest() {
 
     init {
-        Definition.clear()
-        Definition.init(PaymentRetrieval::class)
-        Definition.init(CreditCardCharge::class)
+        Definitions.clear()
+        Definitions.init(PaymentRetrieval::class)
+        Definitions.init(CreditCardCharge::class)
     }
 
     @Test

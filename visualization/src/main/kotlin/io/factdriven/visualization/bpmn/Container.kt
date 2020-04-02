@@ -1,6 +1,7 @@
 package io.factdriven.visualization.bpmn
 
 import io.factdriven.definition.*
+import io.factdriven.definition.api.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -57,7 +58,7 @@ fun translate(definition: Definition): Container {
                     )
                 }
             }
-            is Gateway -> {
+            is Branching -> {
                 val branch = Branch(node.id, "", "", parent)
                 BpmnGatewaySymbol(
                     "${node.id}-split",
@@ -79,7 +80,7 @@ fun translate(definition: Definition): Container {
                 val sequence = Sequence(node.id, "", "", parent)
                 node.children.forEach { translate(it, sequence) }
             }
-            is Condition -> { /* do nothing */ }
+            is Conditional -> { /* do nothing */ }
             else -> throw IllegalArgumentException()
         }
     }

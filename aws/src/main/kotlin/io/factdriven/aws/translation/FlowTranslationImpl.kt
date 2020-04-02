@@ -5,8 +5,7 @@ import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.end
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.states.Transition
-import io.factdriven.definition.Node
-import io.factdriven.definition.typeName
+import io.factdriven.definition.api.Node
 import io.factdriven.traverse.NodeTraverse
 
 class ExecuteTranslationStrategy : FlowTranslationStrategy<Node>{

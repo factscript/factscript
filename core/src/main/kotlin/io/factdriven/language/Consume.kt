@@ -1,7 +1,7 @@
 package io.factdriven.language
 
-import io.factdriven.definition.ConsumingImpl
-import io.factdriven.definition.Node
+import io.factdriven.definition.impl.ConsumingImpl
+import io.factdriven.definition.api.Node
 import kotlin.reflect.KClass
 
 /**
@@ -49,18 +49,18 @@ interface ConsumeEventHavingMatch<T: Any> {
 class ConsumeImpl<T: Any>(parent: Node): Consume<T>, ConsumeEventHaving<T>, ConsumeEventHavingMatch<T>, ConsumingImpl(parent) {
 
     override fun <M : Any> event(type: KClass<M>): ConsumeEventHaving<T> {
-        this.catchingType = type
+        this.catching = type
         return this
     }
 
     override fun having(property: String): ConsumeEventHavingMatch<T> {
-        this.catchingProperties.add(property)
+        this.properties.add(property)
         return this
     }
 
     override fun match(value: T.() -> Any?) {
         @Suppress("UNCHECKED_CAST")
-        this.matchingValues.add(value as (Any.() -> Any?))
+        this.matching.add(value as (Any.() -> Any?))
     }
 
     override fun first(path: Flow<T>.() -> Unit): ConsumeOr<T> {

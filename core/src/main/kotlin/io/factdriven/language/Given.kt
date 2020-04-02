@@ -1,6 +1,7 @@
 package io.factdriven.language
 
-import io.factdriven.definition.*
+import io.factdriven.definition.api.Node
+import io.factdriven.definition.impl.ConditionalImpl
 import kotlin.reflect.KClass
 
 /**
@@ -23,7 +24,7 @@ interface ConditionalExecution<T: Any>: Execution<T> {
 
 }
 
-class GivenImpl<T: Any>(parent: Node): Given<T>, ConditionImpl(parent) {
+class GivenImpl<T: Any>(parent: Node): Given<T>, ConditionalImpl(parent) {
 
     override fun invoke(case: String): Given<T> {
         this.label = case

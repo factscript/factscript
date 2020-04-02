@@ -1,5 +1,7 @@
 package io.factdriven.definition
 
+import io.factdriven.definition.api.Node
+import io.factdriven.definition.api.Promising
 import io.factdriven.execution.Name
 import io.factdriven.execution.name
 import java.lang.IllegalArgumentException
@@ -9,46 +11,9 @@ import kotlin.reflect.full.companionObjectInstance
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Node {
+interface Definition: Node
 
-    val parent: Node?
-    val label: String?
-    val entityType: KClass<*>
-    val children: List<Node>
-
-    fun getPromising(): Promising {
-        return children.find { it is Promising } as Promising
-    }
-
-    fun getCatching(type: KClass<*>): Consuming {
-        val catching = children.find { it is Consuming && it.catchingType == type } as Consuming?
-        return catching ?: throw IllegalArgumentException("Node catching ${type.name} not defined!")
-    }
-
-    fun getThrowing(type: KClass<*>): Throwing {
-        val throwing = children.find { it is Throwing && it.throwingType == type } as Throwing?
-        return throwing ?: throw IllegalArgumentException("Node throwing ${type.name} not defined!")
-    }
-
-    fun getExecuting(type: KClass<*>): Executing {
-        val executing = children.find { it is Executing && it.throwingType == type } as Executing?
-        return executing ?: throw IllegalArgumentException("Node executing ${type.name} not defined!")
-    }
-
-    fun getNodeById(id: String): Node? {
-        if (this.id == id)
-            return this
-        children.forEach {
-            val node = it.getNodeById(id)
-            if (node != null)
-                return node
-        }
-        return null
-    }
-
-}
-
-interface Definition: Node {
+interface Definitions {
 
     companion object {
 
@@ -81,7 +46,7 @@ interface Definition: Node {
 
         fun getPromisingNodeByCatchingType(catchingType: KClass<*>): Promising {
             return all.values.filter { definition ->
-                definition.children.any { it is Promising && it.catchingType == catchingType }
+                definition.children.any { it is Promising && it.catching == catchingType }
             }[0].getPromising()
         }
 
@@ -99,13 +64,5 @@ interface Definition: Node {
 
 
     }
-
-}
-
-open class NodeImpl(override val parent: Node?, override val entityType: KClass<*> = parent!!.entityType): Node {
-
-    override val children: MutableList<Node> = mutableListOf()
-    override var label: String? = null
-
 
 }

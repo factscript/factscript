@@ -2,6 +2,9 @@ package io.factdriven.execution
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.factdriven.definition.*
+import io.factdriven.definition.api.Consuming
+import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.reflect.KClass
@@ -42,30 +45,29 @@ data class Handling (val fact: Name, val details: Map<String, Any?> = emptyMap()
 }
 
 fun Executing.handling(message: Message): Handling? {
-    return if (catchingType.isInstance(message.fact.details) && message.correlating != null)
-        Handling(catchingType, message.correlating)
+    return if (catching.isInstance(message.fact.details) && message.correlating != null)
+        Handling(catching, message.correlating)
     else null
 }
 
 fun Consuming.handling(message: Message): Handling? {
-    return if (catchingType.isInstance(message.fact.details))
-        Handling(catchingType, catchingProperties.map { it to message.fact.details.getValue(it) }.toMap())
+    return if (catching.isInstance(message.fact.details))
+        Handling(catching, properties.map { it to message.fact.details.getValue(it) }.toMap())
     else null
 }
 
-fun Definition.handling(message: Message): List<Handling> {
+fun Node.handling(message: Message): List<Handling> {
     fun handling(node: Node): List<Handling> {
         return when(node) {
             is Consuming -> node.handling(message)?.let { listOf(it) } ?: emptyList()
             is Executing -> node.handling(message)?.let { listOf(it) } ?: emptyList()
-            is Definition -> children.map { handling(it) }.flatten()
-            else -> emptyList()
+            else -> node.children.map { handling(it) }.flatten()
         }
     }
     return handling(this)
 }
 
-fun Definition.Companion.handling(message: Message): List<Handling> {
+fun Definitions.Companion.handling(message: Message): List<Handling> {
     return all.values.map {
         it.handling(message)
     }.flatten()

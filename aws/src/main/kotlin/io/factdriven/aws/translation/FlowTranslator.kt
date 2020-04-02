@@ -7,8 +7,7 @@ import com.amazonaws.services.stepfunctions.builder.conditions.NumericEqualsCond
 import com.amazonaws.services.stepfunctions.builder.states.Choice
 import com.amazonaws.services.stepfunctions.builder.states.ChoiceState
 import io.factdriven.definition.Definition
-import io.factdriven.definition.Node
-import io.factdriven.definition.typeName
+import io.factdriven.definition.api.Node
 import io.factdriven.traverse.*
 
 class FlowTranslator {

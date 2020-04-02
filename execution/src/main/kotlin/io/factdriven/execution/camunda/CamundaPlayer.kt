@@ -1,6 +1,10 @@
 package io.factdriven.execution.camunda
 
 import io.factdriven.definition.*
+import io.factdriven.definition.api.Consuming
+import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
+import io.factdriven.definition.api.Throwing
 import io.factdriven.execution.*
 import io.factdriven.visualization.bpmn.*
 import org.camunda.bpm.engine.ProcessEngine
@@ -65,7 +69,7 @@ class CamundaProcessor: Processor {
 
     private fun route(message: Message) {
 
-        val messages = Definition.handling(message).map { handling ->
+        val messages = Definitions.handling(message).map { handling ->
 
             fun messagesHandledByExternalTasks() : List<Message> {
                 val externalTasksHandlingMessage =  engine.externalTaskService
@@ -201,7 +205,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
     override fun notify(execution: DelegateExecution) {
 
         val nodeId = target.getValue(execution).toString()
-        val handling = when (val node = Definition.getNodeById(nodeId)) {
+        val handling = when (val node = Definitions.getNodeById(nodeId)) {
             is Consuming -> node.endpoint(execution)
             is Executing -> node.endpoint(execution)
             else -> null
@@ -214,16 +218,16 @@ class CamundaFlowTransitionListener: ExecutionListener {
         val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
         val messages = Message.list.fromJson(messageString)
         val handlerInstance = Player.load(messages, entityType)
-        val details = catchingProperties.mapIndexed { propertyIndex, propertyName ->
-            propertyName to matchingValues[propertyIndex].invoke(handlerInstance)
+        val details = properties.mapIndexed { propertyIndex, propertyName ->
+            propertyName to matching[propertyIndex].invoke(handlerInstance)
         }.toMap()
-        return Handling(catchingType, details)
+        return Handling(catching, details)
     }
 
     private fun Executing.endpoint(execution: DelegateExecution): Handling {
         val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
         val messages = Message.list.fromJson(messageString)
-        return Handling(catchingType, MessageId.nextId(messages.last().id))
+        return Handling(catching, MessageId.nextId(messages.last().id))
     }
 
 }
@@ -232,16 +236,16 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val definition = Definition.getDefinitionById(execution.currentActivityId)
-        val node = Definition.getNodeById(execution.currentActivityId)
+        val definition = Definitions.getDefinitionById(execution.currentActivityId)
+        val node = Definitions.getNodeById(execution.currentActivityId)
         val messages = Message.list.fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
         fun aggregate() = messages.applyTo(node.entityType)
 
         fun message(node: Node): Message? {
             return when(node) {
                 is Throwing -> {
-                    val fact = node.constructor.invoke(aggregate())
-                    val correlating = definition.getPromising().successType?.isInstance(fact) ?: false
+                    val fact = node.instance.invoke(aggregate())
+                    val correlating = definition.getPromising().succeeding?.isInstance(fact) ?: false
                     Message.from(messages, Fact(fact), if (correlating) messages.first().id else null)
                 }
                 else -> null
@@ -314,7 +318,7 @@ class CamundaFlowExecutionPlugin: ProcessEnginePlugin {
 
     override fun postProcessEngineBuild(engine: ProcessEngine) {
 
-        Definition.all.values.forEach { definition ->
+        Definitions.all.values.forEach { definition ->
             val bpmn = transform(translate(definition))
             engine.repositoryService
                 .createDeployment()
