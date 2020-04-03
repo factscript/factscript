@@ -16,7 +16,7 @@ class EndpointTest {
     fun testHandler() {
 
         val streamId = StreamId(SomeHandler::class)
-        assertEquals(Type(SomeHandler::class.java.`package`.name, local="SomeHandler"), Type.from(streamId.name))
+        assertEquals(Type.from(SomeHandler::class), Type.from(streamId.name))
         assertEquals(null, streamId.id)
 
     }
@@ -25,9 +25,9 @@ class EndpointTest {
     fun testHandling() {
 
         val handling = Handling(SomeFact::class)
-        assertEquals(Type(SomeFact::class.java.`package`.name,"SomeFact"), handling.fact)
+        assertEquals(Type.from(SomeFact::class), handling.fact)
         assertEquals(emptyMap<String, Any>(), handling.details)
-        assertEquals("7bcd0970753f751ef3eb18181c3447c6", handling.hash)
+        assertEquals("0fa0565b21d4b135e15ed3cb61bfebfe", handling.hash)
 
     }
 
@@ -35,9 +35,9 @@ class EndpointTest {
     fun testHandlingWithProperties() {
 
         val handling = Handling(SomeFact::class, mapOf("property" to "value"))
-        assertEquals(Type(SomeFact::class.java.`package`.name,"SomeFact"), handling.fact)
+        assertEquals(Type.from(SomeFact::class), handling.fact)
         assertEquals(mapOf("property" to "value"), handling.details)
-        assertEquals("4e5675bf410e9dc7e67513f0803a7c87", handling.hash)
+        assertEquals("992044e9fb7d4e7eafdff46cd8757b07", handling.hash)
 
     }
 
@@ -45,12 +45,12 @@ class EndpointTest {
     fun testEndpoint() {
 
         val endpoint = Handler(StreamId(SomeHandler::class), Handling(SomeFact::class))
-        assertEquals(Type(SomeHandler::class.java.`package`.name, local="SomeHandler"), Type.from(endpoint.stream.name))
-        assertEquals(Type(SomeHandler::class.java.`package`.name, local="SomeHandler"), Type.from(endpoint.stream.name))
+        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.stream.name))
+        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.stream.name))
         assertEquals(null, endpoint.stream.id)
-        assertEquals(Type(SomeFact::class.java.`package`.name,"SomeFact"), endpoint.handling.fact)
+        assertEquals(Type.from(SomeFact::class), endpoint.handling.fact)
         assertEquals(emptyMap<String, Any>(), endpoint.handling.details)
-        assertEquals("7bcd0970753f751ef3eb18181c3447c6", endpoint.handling.hash)
+        assertEquals("0fa0565b21d4b135e15ed3cb61bfebfe", endpoint.handling.hash)
 
     }
 

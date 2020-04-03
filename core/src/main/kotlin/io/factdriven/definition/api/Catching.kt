@@ -5,7 +5,7 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Catching : Executing {
+interface Catching : Node {
 
     val catching: KClass<*>
 

@@ -104,15 +104,24 @@ data class Type(val context: String, /* Name unique within given context */ val 
 
     companion object {
 
+        fun from(kClass: KClass<*>): Type {
+            val name = kClass.java.name
+            val index = name.lastIndexOf('.')
+            return Type(name.substring(0, index), name.substring(index + 1))
+        }
+
         fun from(string: String): Type {
-            val split = string.split("-")
-            return Type(split[0], split[1])
+            return from(Class.forName(string).kotlin)
         }
 
     }
 
     override fun toString(): String {
-        return "$context-$local"
+        return "$context.$local"
+    }
+
+    fun toKClass(): KClass<*> {
+        return Class.forName(toString()).kotlin
     }
 
     fun toLabel(): String {
@@ -121,11 +130,7 @@ data class Type(val context: String, /* Name unique within given context */ val 
 
 }
 
-/*
- * Globally unique type name
- */
-// TODO investigate a name annotation first
-val KClass<*>.type: Type get() = Type(java.`package`.name, java.simpleName)
+val KClass<*>.type: Type get() = Type.from(this)
 
 fun <A: Any> List<Message>.applyTo(type: KClass<A>): A {
     return this.map { it.fact }.applyTo(type)

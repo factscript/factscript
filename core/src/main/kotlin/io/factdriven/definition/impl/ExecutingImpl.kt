@@ -1,7 +1,7 @@
 package io.factdriven.definition.impl
 
 import io.factdriven.definition.api.Consuming
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import io.factdriven.definition.api.Throwing
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
@@ -10,9 +10,9 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-abstract class ExecutingImpl(override val parent: Executing?, override val entityType: KClass<*> = parent!!.entityType): Executing {
+abstract class ExecutingImpl(override val parent: Node?, override val entityType: KClass<*> = parent!!.entityType): Node {
 
-    override val children: MutableList<Executing> = mutableListOf()
+    override val children: MutableList<Node> = mutableListOf()
     override var label: String = ""; get() = if (field != "") field else type.toLabel()
 
     override val id: String get() {
@@ -32,14 +32,6 @@ abstract class ExecutingImpl(override val parent: Executing?, override val entit
                 else -> entityType.type
             }
         }
-
-    override val isFirstChild: Boolean get() {
-        return parent == null || parent!!.children.first() == this
-    }
-
-    override val isLastChild: Boolean get() {
-        return parent == null || parent!!.children.last() == this
-    }
 
     override val index: Int get() {
         return parent?.children?.indexOf(this) ?: 0

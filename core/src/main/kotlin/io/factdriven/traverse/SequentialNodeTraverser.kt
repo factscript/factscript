@@ -1,12 +1,12 @@
 package io.factdriven.traverse
 
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import io.factdriven.language.Given
 import io.factdriven.language.Select
 import java.util.*
 
-class SequentialNodeTraverser (executing: Executing){
-    val startingNode = executing
+class SequentialNodeTraverser (node: Node){
+    val startingNode = node
     val traverseHistory: ArrayList<Traverse> = ArrayList()
 
     fun fullTraverse() : List<Traverse>{
@@ -15,24 +15,24 @@ class SequentialNodeTraverser (executing: Executing){
         return traverseHistory
     }
 
-    private fun fullTraverse(executing: Executing){
-        if(isBlockStructureInitiator(executing)){
-            blockStructureTraverse(executing)
+    private fun fullTraverse(node: Node){
+        if(isBlockStructureInitiator(node)){
+            blockStructureTraverse(node)
         } else {
-            nodeSequenceTraverse(executing)
+            nodeSequenceTraverse(node)
         }
     }
 
-    private fun isBlockStructureInitiator(executing: Executing): Boolean {
-        return executing is Select <*>
+    private fun isBlockStructureInitiator(node: Node): Boolean {
+        return node is Select <*>
     }
 
-    private fun blockStructureTraverse(executing: Executing) {
-        val blockTraverse = BlockTraverse(executing)
-        for (condition in executing.children) {
+    private fun blockStructureTraverse(node: Node) {
+        val blockTraverse = BlockTraverse(node)
+        for (condition in node.children) {
             val pathHistory = SequentialNodeTraverser(condition).fullTraverse()
             val given = findGiven(pathHistory)
-            val traverse = PathTraverse(block = blockTraverse, initiator = executing, path = pathHistory, addition = given)
+            val traverse = PathTraverse(block = blockTraverse, initiator = node, path = pathHistory, addition = given)
 
             blockTraverse.paths.add(traverse)
         }
@@ -40,7 +40,7 @@ class SequentialNodeTraverser (executing: Executing){
         traverseHistory.add(blockTraverse)
     }
 
-    private fun findGiven(pathHistory: List<Traverse>): Executing? {
+    private fun findGiven(pathHistory: List<Traverse>): Node? {
         for (traverse in pathHistory) {
             if(traverse is NodeTraverse && traverse.current is Given<*>){
                 return traverse.current
@@ -49,8 +49,8 @@ class SequentialNodeTraverser (executing: Executing){
         return null
     }
 
-    private fun nodeSequenceTraverse(executing: Executing) {
-        val children = executing.children
+    private fun nodeSequenceTraverse(node: Node) {
+        val children = node.children
         for (child in children) {
             if(isBlockStructureInitiator(child)){
                 fullTraverse(child)
@@ -104,7 +104,7 @@ class SequentialNodeTraverser (executing: Executing){
         paths.last().path.last().nextTraverse = next
     }
 
-    private fun determineNext(child: Executing, children: List<Executing>): List<Executing> {
+    private fun determineNext(child: Node, children: List<Node>): List<Node> {
         if(children.last() == child){
             return emptyList()
         }
@@ -125,16 +125,16 @@ abstract class Traverse () {
         return  nextTraverse == null
     }
     abstract fun next() : Traverse?
-    abstract fun currentNode() : Executing
+    abstract fun currentNode() : Node
     abstract fun name(): String
 }
-class NodeTraverse (val current: Executing,
-                    val nextExecutings: List<Executing>) : Traverse(){
+class NodeTraverse (val current: Node,
+                    val nextNodes: List<Node>) : Traverse(){
     override fun next(): Traverse? {
         return nextTraverse
     }
 
-    override fun currentNode(): Executing {
+    override fun currentNode(): Node {
         return current
     }
 
@@ -146,13 +146,13 @@ class NodeTraverse (val current: Executing,
     }
 }
 
-class BlockTraverse (val current: Executing): Traverse(){
+class BlockTraverse (val current: Node): Traverse(){
     val paths: ArrayList<PathTraverse> = ArrayList()
     override fun next(): Traverse? {
         return paths.first()
     }
 
-    override fun currentNode(): Executing {
+    override fun currentNode(): Node {
         return current
     }
 
@@ -161,12 +161,12 @@ class BlockTraverse (val current: Executing): Traverse(){
     }
 }
 
-class PathTraverse (val block: BlockTraverse, val initiator: Executing, val addition: Executing?, val path: List<Traverse>): Traverse(){
+class PathTraverse (val block: BlockTraverse, val initiator: Node, val addition: Node?, val path: List<Traverse>): Traverse(){
     override fun next(): Traverse? {
         return if (path.isEmpty()) nextTraverse else path.first()
     }
 
-    override fun currentNode(): Executing {
+    override fun currentNode(): Node {
         return initiator
     }
 

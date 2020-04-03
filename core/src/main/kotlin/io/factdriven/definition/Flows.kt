@@ -1,7 +1,7 @@
 package io.factdriven.definition
 
 import io.factdriven.definition.api.Flowing
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import io.factdriven.definition.api.Promising
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
@@ -46,7 +46,7 @@ interface Flows {
             }[0].getPromising()
         }
 
-        fun getNodeById(id: String): Executing {
+        fun getNodeById(id: String): Node {
             return getDefinitionById(id).getNodeById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
         }
 

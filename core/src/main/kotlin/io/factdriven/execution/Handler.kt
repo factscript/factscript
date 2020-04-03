@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import io.factdriven.definition.*
 import io.factdriven.definition.api.Consuming
 import io.factdriven.definition.api.Calling
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.reflect.KClass
@@ -56,12 +56,12 @@ fun Consuming.handling(message: Message): Handling? {
     else null
 }
 
-fun Executing.handling(message: Message): List<Handling> {
-    fun handling(executing: Executing): List<Handling> {
-        return when(executing) {
-            is Consuming -> executing.handling(message)?.let { listOf(it) } ?: emptyList()
-            is Calling -> executing.handling(message)?.let { listOf(it) } ?: emptyList()
-            else -> executing.children.map { handling(it) }.flatten()
+fun Node.handling(message: Message): List<Handling> {
+    fun handling(node: Node): List<Handling> {
+        return when(node) {
+            is Consuming -> node.handling(message)?.let { listOf(it) } ?: emptyList()
+            is Calling -> node.handling(message)?.let { listOf(it) } ?: emptyList()
+            else -> node.children.map { handling(it) }.flatten()
         }
     }
     return handling(this)

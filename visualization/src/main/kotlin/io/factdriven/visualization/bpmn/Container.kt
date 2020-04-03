@@ -7,22 +7,22 @@ import io.factdriven.definition.api.*
  */
 fun translate(flowing: Flowing): Container {
 
-    fun translate(executing: Executing, parent: Container) {
-        when(executing) {
+    fun translate(node: Node, parent: Container) {
+        when(node) {
             is Calling -> {
                 BpmnTaskSymbol(
-                    executing.id,
-                    executing.type.context,
-                    executing.type.local,
+                    node.id,
+                    node.type.context,
+                    node.type.local,
                     parent,
                     BpmnTaskType.service
                 )
             }
             is Promising -> {
                 BpmnEventSymbol(
-                    executing.id,
-                    executing.type.context,
-                    executing.type.local,
+                    node.id,
+                    node.type.context,
+                    node.type.local,
                     parent,
                     BpmnEventType.message,
                     BpmnEventCharacteristic.catching
@@ -30,45 +30,45 @@ fun translate(flowing: Flowing): Container {
             }
             is Consuming -> {
                 BpmnTaskSymbol(
-                    executing.id,
-                    executing.type.context,
-                    executing.type.local,
+                    node.id,
+                    node.type.context,
+                    node.type.local,
                     parent,
                     BpmnTaskType.receive
                 )
             }
             is Throwing -> {
-                if (executing.isLastChild) {
+                if (node.isLast()) {
                     BpmnEventSymbol(
-                        executing.id,
-                        executing.type.context,
-                        executing.type.local,
+                        node.id,
+                        node.type.context,
+                        node.type.local,
                         parent,
                         BpmnEventType.message,
                         BpmnEventCharacteristic.throwing
                     )
                 } else {
                     BpmnTaskSymbol(
-                        executing.id,
-                        executing.type.context,
-                        executing.type.local,
+                        node.id,
+                        node.type.context,
+                        node.type.local,
                         parent,
                         BpmnTaskType.send
                     )
                 }
             }
             is Branching -> {
-                val branch = Branch(executing.id, "", "", parent)
+                val branch = Branch(node.id, "", "", parent)
                 BpmnGatewaySymbol(
-                    "${executing.id}-split",
+                    "${node.id}-split",
                     "",
-                    executing.label ?: "",
+                    node.label ?: "",
                     branch,
                     BpmnGatewayType.exclusive
                 )
-                executing.children.forEach { translate(it, branch) }
+                node.children.forEach { translate(it, branch) }
                 BpmnGatewaySymbol(
-                    "${executing.id}-join",
+                    "${node.id}-join",
                     "",
                     "",
                     branch,
@@ -76,8 +76,8 @@ fun translate(flowing: Flowing): Container {
                 )
             }
             is Flowing -> {
-                val sequence = Sequence(executing.id, "", "", parent)
-                executing.children.forEach { translate(it, sequence) }
+                val sequence = Sequence(node.id, "", "", parent)
+                node.children.forEach { translate(it, sequence) }
             }
             is Checking -> { /* do nothing */ }
             else -> throw IllegalArgumentException()

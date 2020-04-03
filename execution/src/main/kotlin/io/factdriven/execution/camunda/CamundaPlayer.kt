@@ -3,7 +3,7 @@ package io.factdriven.execution.camunda
 import io.factdriven.definition.*
 import io.factdriven.definition.api.Consuming
 import io.factdriven.definition.api.Calling
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import io.factdriven.definition.api.Throwing
 import io.factdriven.execution.*
 import io.factdriven.visualization.bpmn.*
@@ -241,10 +241,10 @@ class CamundaFlowNodeStartListener: ExecutionListener {
         val messages = Message.list.fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
         fun aggregate() = messages.applyTo(node.entityType)
 
-        fun message(executing: Executing): Message? {
-            return when(executing) {
+        fun message(node: Node): Message? {
+            return when(node) {
                 is Throwing -> {
-                    val fact = executing.instance.invoke(aggregate())
+                    val fact = node.instance.invoke(aggregate())
                     val correlating = definition.getPromising().succeeding?.isInstance(fact) ?: false
                     Message.from(messages, Fact(fact), if (correlating) messages.first().id else null)
                 }

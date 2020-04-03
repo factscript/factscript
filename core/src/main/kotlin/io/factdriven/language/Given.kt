@@ -1,6 +1,6 @@
 package io.factdriven.language
 
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import io.factdriven.definition.impl.CheckingImpl
 import kotlin.reflect.KClass
 
@@ -24,7 +24,7 @@ interface ConditionalExecution<T: Any>: Execution<T> {
 
 }
 
-class GivenImpl<T: Any>(parent: Executing): Given<T>, CheckingImpl(parent) {
+class GivenImpl<T: Any>(parent: Node): Given<T>, CheckingImpl(parent) {
 
     override fun invoke(case: String): Given<T> {
         this.label = case
@@ -39,7 +39,7 @@ class GivenImpl<T: Any>(parent: Executing): Given<T>, CheckingImpl(parent) {
 
 }
 
-class ConditionalExecutionImpl<T:Any>(type: KClass<T>, override val parent: Executing? = null): ConditionalExecution<T>, FlowImpl<T>(type, parent) {
+class ConditionalExecutionImpl<T:Any>(type: KClass<T>, override val parent: Node? = null): ConditionalExecution<T>, FlowImpl<T>(type, parent) {
 
     override val given: Given<T>
         get() {

@@ -1,7 +1,7 @@
 package io.factdriven.language
 
 import io.factdriven.definition.impl.ConsumingImpl
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import kotlin.reflect.KClass
 
 /**
@@ -46,7 +46,7 @@ interface ConsumeEventHavingMatch<T: Any> {
 
 }
 
-class ConsumeImpl<T: Any>(parent: Executing): Consume<T>, ConsumeEventHaving<T>, ConsumeEventHavingMatch<T>, ConsumingImpl(parent) {
+class ConsumeImpl<T: Any>(parent: Node): Consume<T>, ConsumeEventHaving<T>, ConsumeEventHavingMatch<T>, ConsumingImpl(parent) {
 
     override fun <M : Any> event(type: KClass<M>): ConsumeEventHaving<T> {
         this.catching = type

@@ -7,7 +7,7 @@ import com.amazonaws.services.stepfunctions.builder.conditions.NumericEqualsCond
 import com.amazonaws.services.stepfunctions.builder.states.Choice
 import com.amazonaws.services.stepfunctions.builder.states.ChoiceState
 import io.factdriven.definition.api.Flowing
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import io.factdriven.traverse.*
 
 class FlowTranslator {
@@ -20,8 +20,8 @@ class FlowTranslator {
         }
     }
 
-    private fun translateToStateMachine(stateMachineBuilder: StateMachine.Builder, executing: Executing){
-        val sequentialNodeTraverser = SequentialNodeTraverser(executing)
+    private fun translateToStateMachine(stateMachineBuilder: StateMachine.Builder, node: Node){
+        val sequentialNodeTraverser = SequentialNodeTraverser(node)
         val fullTraverse = sequentialNodeTraverser.fullTraverse()
         var currentTraverse : Traverse? = fullTraverse.first()
 
@@ -65,7 +65,7 @@ class FlowTranslator {
         strategy.translate(stateMachineBuilder, traverse)
     }
 
-    private fun determineTranslationStrategy(executing: Executing): FlowTranslationStrategy<Executing> {
+    private fun determineTranslationStrategy(node: Node): FlowTranslationStrategy<Node> {
         return ExecuteTranslationStrategy()
     }
 }

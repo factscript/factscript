@@ -1,7 +1,7 @@
 package io.factdriven.traverse
 
 import io.factdriven.definition.Flows
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import io.factdriven.language.Given
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -102,7 +102,7 @@ class SequentialNodeTraverserTest {
     }
 
 
-    private fun getDefinition(kclass: KClass<*>) : Executing {
+    private fun getDefinition(kclass: KClass<*>) : Node {
         kclass.staticFunctions.stream()
                 .filter { t -> t.name == "init" }
                 .forEach { t -> t.javaMethod?.invoke(null, null) }

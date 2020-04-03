@@ -2,7 +2,7 @@ package io.factdriven.language
 
 import io.factdriven.definition.api.Flowing
 import io.factdriven.definition.Flows
-import io.factdriven.definition.api.Executing
+import io.factdriven.definition.api.Node
 import io.factdriven.definition.impl.ExecutingImpl
 import kotlin.reflect.KClass
 
@@ -42,7 +42,7 @@ interface Execution<T: Any>: Flowing {
 
 }
 
-open class FlowImpl<T:Any>(type: KClass<T>, override val parent: Executing? = null): Flow<T>, ExecutingImpl(parent, type) {
+open class FlowImpl<T:Any>(type: KClass<T>, override val parent: Node? = null): Flow<T>, ExecutingImpl(parent, type) {
 
     override val on: On<T>
         get() {
