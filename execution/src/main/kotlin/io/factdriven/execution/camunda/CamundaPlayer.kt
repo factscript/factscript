@@ -217,7 +217,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
     private fun Consuming.endpoint(execution: DelegateExecution): Handling {
         val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
         val messages = Message.list.fromJson(messageString)
-        val handlerInstance = Player.load(messages, entityType)
+        val handlerInstance = Player.load(messages, entity)
         val details = properties.mapIndexed { propertyIndex, propertyName ->
             propertyName to matching[propertyIndex].invoke(handlerInstance)
         }.toMap()
@@ -239,7 +239,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
         val definition = Flows.getDefinitionById(execution.currentActivityId)
         val node = Flows.getNodeById(execution.currentActivityId)
         val messages = Message.list.fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
-        fun aggregate() = messages.applyTo(node.entityType)
+        fun aggregate() = messages.applyTo(node.entity)
 
         fun message(node: Node): Message? {
             return when(node) {

@@ -27,18 +27,18 @@ class PaymentRetrievalTest {
         val all = Flows.all
 
         val definition = Flows.getDefinitionByType(PaymentRetrieval::class)
-        assertEquals(PaymentRetrieval::class, definition.entityType)
+        assertEquals(PaymentRetrieval::class, definition.entity)
         assertEquals(3, definition.children.size)
 
         val instance = PaymentRetrieval(RetrievePayment(3F))
 
         val on = definition.children[0] as Catching
-        assertEquals(PaymentRetrieval::class, on.entityType)
+        assertEquals(PaymentRetrieval::class, on.entity)
         assertEquals(RetrievePayment::class, on.catching)
         assertEquals(definition, on.parent)
 
         val branching = definition.children[1] as Branching
-        assertEquals(PaymentRetrieval::class, branching.entityType)
+        assertEquals(PaymentRetrieval::class, branching.entity)
         assertEquals(Gateway.Exclusive, branching.gateway)
         assertEquals("Payment (partly) uncovered?", branching.label)
         assertEquals(2, branching.children.size)
@@ -46,7 +46,7 @@ class PaymentRetrievalTest {
         Assertions.assertTrue(ConditionalExecution::class.isInstance(branching.children[1]))
 
         val emit = definition.children[2] as Throwing
-        assertEquals(PaymentRetrieval::class, emit.entityType)
+        assertEquals(PaymentRetrieval::class, emit.entity)
         assertEquals(PaymentRetrieved::class, emit.throwing)
         assertEquals(PaymentRetrieved(3F), emit.instance.invoke(instance))
         assertEquals(definition, emit.parent)

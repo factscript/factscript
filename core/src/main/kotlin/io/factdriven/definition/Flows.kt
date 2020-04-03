@@ -17,10 +17,10 @@ interface Flows {
 
         fun register(vararg flowings: Flowing) {
             flowings.forEach { definition ->
-                all.keys.filter { it.type == definition.type }.forEach {
+                all.keys.filter { it.type == definition.entity.type }.forEach {
                     (all as MutableMap<KClass<*>, Flowing>).remove(it)
                 }
-                (all as MutableMap<KClass<*>, Flowing>)[definition.entityType] = definition
+                (all as MutableMap<KClass<*>, Flowing>)[definition.entity] = definition
             }
         }
 

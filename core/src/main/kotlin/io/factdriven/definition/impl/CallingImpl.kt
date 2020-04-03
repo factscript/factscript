@@ -7,9 +7,6 @@ import kotlin.reflect.KClass
 
 open class CallingImpl(parent: Node): Calling, ThrowingImpl(parent) {
 
-    override val catching: KClass<*>
-        get() = Flows.getPromisingNodeByCatchingType(
-            throwing
-        ).succeeding!!
+    override val catching: KClass<*> get() = Flows.getPromisingNodeByCatchingType(throwing).succeeding!!
 
 }

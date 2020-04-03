@@ -1,6 +1,7 @@
 package io.factdriven.visualization.bpmn
 
 import io.factdriven.definition.api.*
+import io.factdriven.execution.type
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -12,8 +13,8 @@ fun translate(flowing: Flowing): Container {
             is Calling -> {
                 BpmnTaskSymbol(
                     node.id,
-                    node.type.context,
-                    node.type.local,
+                    node.throwing.type.context,
+                    node.throwing.type.local,
                     parent,
                     BpmnTaskType.service
                 )
@@ -21,8 +22,8 @@ fun translate(flowing: Flowing): Container {
             is Promising -> {
                 BpmnEventSymbol(
                     node.id,
-                    node.type.context,
-                    node.type.local,
+                    node.catching.type.context,
+                    node.catching.type.local,
                     parent,
                     BpmnEventType.message,
                     BpmnEventCharacteristic.catching
@@ -31,8 +32,8 @@ fun translate(flowing: Flowing): Container {
             is Consuming -> {
                 BpmnTaskSymbol(
                     node.id,
-                    node.type.context,
-                    node.type.local,
+                    node.catching.type.context,
+                    node.catching.type.local,
                     parent,
                     BpmnTaskType.receive
                 )
@@ -41,8 +42,8 @@ fun translate(flowing: Flowing): Container {
                 if (node.isLast()) {
                     BpmnEventSymbol(
                         node.id,
-                        node.type.context,
-                        node.type.local,
+                        node.throwing.type.context,
+                        node.throwing.type.local,
                         parent,
                         BpmnEventType.message,
                         BpmnEventCharacteristic.throwing
@@ -50,8 +51,8 @@ fun translate(flowing: Flowing): Container {
                 } else {
                     BpmnTaskSymbol(
                         node.id,
-                        node.type.context,
-                        node.type.local,
+                        node.throwing.type.context,
+                        node.throwing.type.local,
                         parent,
                         BpmnTaskType.send
                     )
@@ -76,7 +77,7 @@ fun translate(flowing: Flowing): Container {
                 )
             }
             is Flowing -> {
-                val sequence = Sequence(node.id, "", "", parent)
+                val sequence = Sequence(node.id, node.entity.type.context, node.entity.type.local, parent)
                 node.children.forEach { translate(it, sequence) }
             }
             is Checking -> { /* do nothing */ }
@@ -84,7 +85,7 @@ fun translate(flowing: Flowing): Container {
         }
     }
 
-    val sequence = Sequence(flowing.id, flowing.type.context, flowing.type.local)
+    val sequence = Sequence(flowing.id, flowing.entity.type.context, flowing.entity.type.local)
     flowing.children.forEach { translate(it, sequence) }
     return sequence
 

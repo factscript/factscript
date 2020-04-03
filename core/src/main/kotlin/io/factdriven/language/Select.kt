@@ -37,7 +37,7 @@ class SelectImpl<T: Any>(parent: Node): Select<T>, SelectOr<T>, BranchingImpl(pa
     override fun either(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
         gateway = Exclusive
         @Suppress("UNCHECKED_CAST")
-        val flow = ConditionalExecutionImpl<T>(entityType as KClass<T>, this).apply(path)
+        val flow = ConditionalExecutionImpl<T>(entity as KClass<T>, this).apply(path)
         children.add(flow)
         return this
     }

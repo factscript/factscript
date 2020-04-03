@@ -6,9 +6,10 @@ import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.conditions.NumericEqualsCondition
 import com.amazonaws.services.stepfunctions.builder.states.Choice
 import com.amazonaws.services.stepfunctions.builder.states.ChoiceState
+import io.factdriven.definition.api.Branching
 import io.factdriven.definition.api.Flowing
 import io.factdriven.definition.api.Node
-import io.factdriven.traverse.*
+import io.factdriven.definition.api.isFirst
 
 class FlowTranslator {
 
@@ -20,48 +21,44 @@ class FlowTranslator {
         }
     }
 
-    private fun translateToStateMachine(stateMachineBuilder: StateMachine.Builder, node: Node){
-        val sequentialNodeTraverser = SequentialNodeTraverser(node)
-        val fullTraverse = sequentialNodeTraverser.fullTraverse()
-        var currentTraverse : Traverse? = fullTraverse.first()
-
-        translateTraverse(currentTraverse, stateMachineBuilder)
+    private fun translateToStateMachine(stateMachineBuilder: StateMachine.Builder, flowing: Flowing){
+        translateTraverse(flowing, stateMachineBuilder)
     }
 
-    private fun translateTraverse(traverse: Traverse?, stateMachineBuilder: StateMachine.Builder) {
-        var currentTraverse = traverse
+    private fun translateTraverse(node: Node?, stateMachineBuilder: StateMachine.Builder) {
+        var currentTraverse = node
         while (currentTraverse != null) {
-            if (currentTraverse is NodeTraverse) {
-                if (currentTraverse.isStart()) {
-                    stateMachineBuilder.startAt(currentTraverse.name())
+            if (currentTraverse is Branching) {
+                translateBlock(stateMachineBuilder, currentTraverse)
+            } else if (!(currentTraverse is Flowing)) {
+                if (currentTraverse.isFirst()) {
+                    stateMachineBuilder.startAt(currentTraverse.label)
                 }
                 translate(stateMachineBuilder, currentTraverse)
-            } else if (currentTraverse is BlockTraverse) {
-                translateBlock(stateMachineBuilder, currentTraverse)
             }
-            currentTraverse = currentTraverse.next()
+            currentTraverse = currentTraverse.next
         }
     }
 
-    private fun translateBlock(stateMachineBuilder: StateMachine.Builder, currentTraverse: BlockTraverse) {
+    private fun translateBlock(stateMachineBuilder: StateMachine.Builder, currentTraverse: Branching) {
 
         val choices = ArrayList<Choice.Builder>()
 
-        for(path in currentTraverse.paths){
+        for(path in currentTraverse.children){
             val transition = Choice.builder().condition(NumericEqualsCondition.builder()
                     .expectedValue(0L).variable("$.output.my"))
-                    .transition(next(path.next()?.name()))
+                    .transition(next(path.next?.label))
             choices.add(transition)
         }
 
-        stateMachineBuilder.state(currentTraverse.name(),
+        stateMachineBuilder.state(currentTraverse.label,
                 ChoiceState.builder().choices(*choices.map { it }.toTypedArray()))
 
-        translateTraverse(currentTraverse.next(), stateMachineBuilder)
+        translateTraverse(currentTraverse.next, stateMachineBuilder)
     }
 
-    private fun translate(stateMachineBuilder: StateMachine.Builder, traverse: NodeTraverse){
-        val strategy = determineTranslationStrategy(traverse.current)
+    private fun translate(stateMachineBuilder: StateMachine.Builder, traverse: Node){
+        val strategy = determineTranslationStrategy(traverse)
         strategy.translate(stateMachineBuilder, traverse)
     }
 

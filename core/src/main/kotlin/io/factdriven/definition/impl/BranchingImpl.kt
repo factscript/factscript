@@ -4,8 +4,9 @@ import io.factdriven.definition.api.Branching
 import io.factdriven.definition.api.Node
 import io.factdriven.definition.api.Gateway
 
-open class BranchingImpl(parent: Node): Branching, ExecutingImpl(parent) {
+open class BranchingImpl(parent: Node): Branching, NodeImpl(parent) {
 
     override lateinit var gateway: Gateway
+    override lateinit var label: String protected set
 
 }
