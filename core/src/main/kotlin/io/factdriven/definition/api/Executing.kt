@@ -5,4 +5,4 @@ import io.factdriven.execution.type
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Calling: Throwing, Catching
+interface Executing: Throwing, Catching

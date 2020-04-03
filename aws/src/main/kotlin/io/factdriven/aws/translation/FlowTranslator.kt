@@ -9,7 +9,6 @@ import com.amazonaws.services.stepfunctions.builder.states.ChoiceState
 import io.factdriven.definition.api.Branching
 import io.factdriven.definition.api.Flowing
 import io.factdriven.definition.api.Node
-import io.factdriven.definition.api.isFirst
 
 class FlowTranslator {
 
@@ -32,7 +31,7 @@ class FlowTranslator {
                 translateBlock(stateMachineBuilder, currentTraverse)
             } else if (!(currentTraverse is Flowing)) {
                 if (currentTraverse.isFirst()) {
-                    stateMachineBuilder.startAt(currentTraverse.label)
+                    stateMachineBuilder.startAt(currentTraverse.id)
                 }
                 translate(stateMachineBuilder, currentTraverse)
             }
@@ -47,11 +46,11 @@ class FlowTranslator {
         for(path in currentTraverse.children){
             val transition = Choice.builder().condition(NumericEqualsCondition.builder()
                     .expectedValue(0L).variable("$.output.my"))
-                    .transition(next(path.next?.label))
+                    .transition(next(path.next?.id))
             choices.add(transition)
         }
 
-        stateMachineBuilder.state(currentTraverse.label,
+        stateMachineBuilder.state(currentTraverse.id,
                 ChoiceState.builder().choices(*choices.map { it }.toTypedArray()))
 
         translateTraverse(currentTraverse.next, stateMachineBuilder)

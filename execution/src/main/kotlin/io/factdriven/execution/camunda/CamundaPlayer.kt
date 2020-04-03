@@ -1,10 +1,7 @@
 package io.factdriven.execution.camunda
 
 import io.factdriven.definition.*
-import io.factdriven.definition.api.Consuming
-import io.factdriven.definition.api.Calling
-import io.factdriven.definition.api.Node
-import io.factdriven.definition.api.Throwing
+import io.factdriven.definition.api.*
 import io.factdriven.execution.*
 import io.factdriven.visualization.bpmn.*
 import org.camunda.bpm.engine.ProcessEngine
@@ -207,7 +204,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
         val nodeId = target.getValue(execution).toString()
         val handling = when (val node = Flows.getNodeById(nodeId)) {
             is Consuming -> node.endpoint(execution)
-            is Calling -> node.endpoint(execution)
+            is Executing -> node.endpoint(execution)
             else -> null
         }
         execution.setVariable(MESSAGE_NAME_VAR, handling?.hash)
@@ -224,7 +221,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
         return Handling(catching, details)
     }
 
-    private fun Calling.endpoint(execution: DelegateExecution): Handling {
+    private fun Executing.endpoint(execution: DelegateExecution): Handling {
         val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
         val messages = Message.list.fromJson(messageString)
         return Handling(catching, MessageId.nextId(messages.last().id))
@@ -245,7 +242,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
             return when(node) {
                 is Throwing -> {
                     val fact = node.instance.invoke(aggregate())
-                    val correlating = definition.getPromising().succeeding?.isInstance(fact) ?: false
+                    val correlating = definition.findPromising()?.succeeding?.isInstance(fact) ?: false
                     Message.from(messages, Fact(fact), if (correlating) messages.first().id else null)
                 }
                 else -> null

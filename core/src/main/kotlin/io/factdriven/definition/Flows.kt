@@ -1,8 +1,6 @@
 package io.factdriven.definition
 
-import io.factdriven.definition.api.Flowing
-import io.factdriven.definition.api.Node
-import io.factdriven.definition.api.Promising
+import io.factdriven.definition.api.*
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import java.lang.IllegalArgumentException
@@ -43,11 +41,11 @@ interface Flows {
         fun getPromisingNodeByCatchingType(catchingType: KClass<*>): Promising {
             return all.values.filter { definition ->
                 definition.children.any { it is Promising && it.catching == catchingType }
-            }[0].getPromising()
+            }[0].findPromising()!!
         }
 
         fun getNodeById(id: String): Node {
-            return getDefinitionById(id).getNodeById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
+            return getDefinitionById(id).findById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
         }
 
         fun clear() {

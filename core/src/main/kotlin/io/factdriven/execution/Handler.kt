@@ -3,7 +3,7 @@ package io.factdriven.execution
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.factdriven.definition.*
 import io.factdriven.definition.api.Consuming
-import io.factdriven.definition.api.Calling
+import io.factdriven.definition.api.Executing
 import io.factdriven.definition.api.Node
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -44,7 +44,7 @@ data class Handling (val fact: Type, val details: Map<String, Any?> = emptyMap()
 
 }
 
-fun Calling.handling(message: Message): Handling? {
+fun Executing.handling(message: Message): Handling? {
     return if (catching.isInstance(message.fact.details) && message.correlating != null)
         Handling(catching, message.correlating)
     else null
@@ -60,7 +60,7 @@ fun Node.handling(message: Message): List<Handling> {
     fun handling(node: Node): List<Handling> {
         return when(node) {
             is Consuming -> node.handling(message)?.let { listOf(it) } ?: emptyList()
-            is Calling -> node.handling(message)?.let { listOf(it) } ?: emptyList()
+            is Executing -> node.handling(message)?.let { listOf(it) } ?: emptyList()
             else -> node.children.map { handling(it) }.flatten()
         }
     }

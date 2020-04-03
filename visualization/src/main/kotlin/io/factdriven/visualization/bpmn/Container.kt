@@ -10,7 +10,7 @@ fun translate(flowing: Flowing): Container {
 
     fun translate(node: Node, parent: Container) {
         when(node) {
-            is Calling -> {
+            is Executing -> {
                 BpmnTaskSymbol(
                     node.id,
                     node.throwing.type.context,
