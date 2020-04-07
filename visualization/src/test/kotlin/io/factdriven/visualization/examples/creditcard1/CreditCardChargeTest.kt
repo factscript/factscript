@@ -12,7 +12,7 @@ class CreditCardChargeTest {
     @Test
     fun testDefinition() {
 
-        render(Flows.findByClass(CreditCardCharge::class))
+        render(Flows.init(CreditCardCharge::class))
 
     }
 

@@ -18,46 +18,43 @@ interface Flows {
             }
         }
 
-        fun init(vararg type: KClass<*>) {
-            type.forEach {
-                it.companionObjectInstance
-            }
+        fun init(type: KClass<*>): Flowing {
+            type.companionObjectInstance
+            return get(type)
         }
 
-        fun get(id: String): Flowing {
-            return findByType(Type(id.split("-")[0], id.split("-")[1]))
+        fun init(type: KClass<*>, vararg types: KClass<*>): List<Flowing> {
+            val result = mutableListOf(init(type))
+            types.forEach { result.add(init(it)) }
+            return result
         }
 
         fun all(): Iterable<Flowing> {
             return all.values.asIterable()
         }
 
-        fun <N: Node> find(id: String, type: KClass<in N> = Node::class): N {
-            return get(id).findById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
+        fun get(id: String): Flowing {
+            return get(Type(id.split("-")[0], id.split("-")[1]))
         }
 
-        fun findByType(type: Type): Flowing {
+        fun get(type: Type): Flowing {
             val entityType = all.keys.find { it.type == type }
-            return if (entityType != null) findByClass(entityType) else throw IllegalArgumentException("Flow '${type}' is not defined!")
+            return if (entityType != null) get(entityType) else throw IllegalArgumentException("Flow '${type}' is not defined!")
         }
 
-        fun findByClass(type: KClass<*>): Flowing {
-            return all[type] ?: {
-                init(type)
-                all[type] ?: throw IllegalArgumentException("Flow '${type.type}' is not defined!")
-            }.invoke()
+        fun get(type: KClass<*>? = null, handling: KClass<*>? = null): Flowing {
+            val result =  all.values.filter { definition ->
+                (definition.entity == type || type == null) && definition.children.any { it is Promising && (it.catching == handling || handling == null) }
+            }
+            return if (result.isNotEmpty()) result[0] else throw IllegalArgumentException("Flow '${type}' is not defined!")
         }
 
-        fun findCatching(catchingType: KClass<*>): Flowing {
-            return all.values.filter { definition ->
-                definition.children.any { it is Promising && it.catching == catchingType }
-            }[0]
+        fun <N: Node> node(id: String): N {
+            return get(id).get<N>(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
         }
 
         fun handling(message: Message): List<Handling> {
-            return all.values.map {
-                it.handling(message)
-            }.flatten()
+            return all.values.map { it.handling(message) }.flatten()
         }
 
     }

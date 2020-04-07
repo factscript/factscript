@@ -202,7 +202,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
     override fun notify(execution: DelegateExecution) {
 
         val nodeId = target.getValue(execution).toString()
-        val handling = when (val node = Flows.find<Node>(nodeId)) {
+        val handling = when (val node = Flows.get(nodeId).get(nodeId)) {
             is Consuming -> node.endpoint(execution)
             is Executing -> node.endpoint(execution)
             else -> null
@@ -233,8 +233,9 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val definition = Flows.get(execution.currentActivityId)
-        val node = Flows.find<Node>(execution.currentActivityId)
+        val id = execution.currentActivityId
+        val definition = Flows.get(id)
+        val node = definition.get(id)
         val messages = Message.list.fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
         fun aggregate() = messages.applyTo(node.entity)
 
@@ -242,7 +243,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
             return when(node) {
                 is Throwing -> {
                     val fact = node.instance.invoke(aggregate())
-                    val correlating = definition.findPromising()?.succeeding?.isInstance(fact) ?: false
+                    val correlating = definition.find(nodeOfType = Promising::class)?.succeeding?.isInstance(fact) ?: false
                     Message.from(messages, Fact(fact), if (correlating) messages.first().id else null)
                 }
                 else -> null

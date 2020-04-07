@@ -13,7 +13,7 @@ class PaymentRetrievalTest {
     fun testView() {
 
         Flows.init(CreditCardCharge::class)
-        render(Flows.findByClass(PaymentRetrieval::class))
+        render(Flows.init(PaymentRetrieval::class))
 
     }
 

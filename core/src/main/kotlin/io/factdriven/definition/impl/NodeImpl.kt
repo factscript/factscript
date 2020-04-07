@@ -4,7 +4,7 @@ import io.factdriven.definition.api.*
 import io.factdriven.execution.type
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
-import kotlin.reflect.full.isSuperclassOf
+import kotlin.reflect.full.isSubclassOf
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -16,43 +16,51 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
     override val id: String get() = id()
     override val label: String get() = label()
 
-    override val index: Int get() = index()
+    override val position: Int get() = index()
 
     override val first: Node get() = first()
     override val last: Node get() = last()
     override val previous: Node? get() = previous()
     override val next: Node? get() = next()
 
-    override fun findCatching(catching: KClass<*>): Catching? {
-        return children.find { it is Catching && it.catching == catching } as Catching?
+    @Suppress("UNCHECKED_CAST")
+    override fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>?): N? =
+        when {
+            nodeOfType.isSubclassOf(Throwing::class) -> {
+                children.find { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
+            }
+            nodeOfType.isSubclassOf(Promising::class) -> {
+                children.find { it is Promising && (it.succeeding == dealingWith || dealingWith == null) }
+            }
+            else -> {
+                children.find { it is Catching && (it.catching == dealingWith || dealingWith == null) }
+            }
+        } as N?
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>?): List<N> =
+        when {
+            nodesOfType.isSubclassOf(Throwing::class) -> {
+                children.filter { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
+            }
+            nodesOfType.isSubclassOf(Promising::class) -> {
+                children.filter { it is Promising && (it.succeeding == dealingWith || dealingWith == null) }
+            }
+            else -> {
+                children.filter { it is Catching && (it.catching == dealingWith || dealingWith == null) }
+            }
+        } as List<N>
+
+    override fun get(id: String): Node {
+        return get(id, Node::class)
     }
 
-    override fun findConsuming(consuming: KClass<*>): Consuming? {
-        return children.find { it is Consuming && it.catching == consuming } as Consuming?
-    }
-
-    override fun findThrowing(throwing: KClass<*>): Throwing? {
-        return children.find { it is Throwing && it.throwing == throwing } as Throwing?
-    }
-
-    override fun findExecuting(executing: KClass<*>): Executing? {
-        return children.find { it is Throwing && it.throwing == executing } as Executing?
-    }
-
-    override fun findPromising(promising: KClass<*>): Promising? {
-        return children.find { it is Promising && it.succeeding != null && promising.isSuperclassOf(it.succeeding!!) } as Promising?
-    }
-
-    override fun <N: Node> findById(id: String, type: KClass<in N>): N? {
-        if (type.isInstance(this) && this.id == id)
-            return this as N
-        children.forEach {
-            val node = it.findById(id, type)
-            if (node != null)
-                return node
-        }
-        return null
-    }
+    @Suppress("UNCHECKED_CAST")
+    override fun <N: Node> get(id: String, type: KClass<in N>): N =
+        (if (type.isInstance(this) && this.id == id)
+            this
+        else
+            children.find { type.isInstance(it) && it.id == id } ?: throw IllegalArgumentException("Node '${id}' is not defined!")) as N
 
     override fun isFirst(): Boolean = this == first
 
@@ -66,7 +74,7 @@ private fun Node.id(): String {
     id.append(entity.type.local)
     if (parent != null)
         id.append("-").append(parent?.children?.count {
-            it.entity.type == entity.type && it.index <= index
+            it.entity.type == entity.type && it.position <= position
         } ?: 0)
     return id.toString()
 }
@@ -88,9 +96,9 @@ private fun Node.last(): Node {
 }
 
 private fun Node.previous(): Node? {
-    return  if (!isFirst()) parent!!.children[index - 1] else null
+    return  if (!isFirst()) parent!!.children[position - 1] else null
 }
 
 private fun Node.next(): Node? {
-    return if (!isLast()) parent!!.children[index + 1] else null
+    return if (!isLast()) parent!!.children[position + 1] else null
 }
