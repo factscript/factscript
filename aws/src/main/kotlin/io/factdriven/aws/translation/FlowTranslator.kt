@@ -7,21 +7,21 @@ import com.amazonaws.services.stepfunctions.builder.conditions.NumericEqualsCond
 import com.amazonaws.services.stepfunctions.builder.states.Choice
 import com.amazonaws.services.stepfunctions.builder.states.ChoiceState
 import io.factdriven.definition.api.Branching
-import io.factdriven.definition.api.Flowing
+import io.factdriven.definition.api.Flow
 import io.factdriven.definition.api.Node
 
 class FlowTranslator {
 
     companion object {
-        fun translate(flowing: Flowing) : StateMachine {
+        fun translate(flow: Flow) : StateMachine {
             val stateMachineBuilder =  StepFunctionBuilder.stateMachine()
-            FlowTranslator().translateToStateMachine(stateMachineBuilder, flowing)
+            FlowTranslator().translateToStateMachine(stateMachineBuilder, flow)
             return stateMachineBuilder.build()
         }
     }
 
-    private fun translateToStateMachine(stateMachineBuilder: StateMachine.Builder, flowing: Flowing){
-        translateTraverse(flowing, stateMachineBuilder)
+    private fun translateToStateMachine(stateMachineBuilder: StateMachine.Builder, flow: Flow){
+        translateTraverse(flow, stateMachineBuilder)
     }
 
     private fun translateTraverse(node: Node?, stateMachineBuilder: StateMachine.Builder) {
@@ -29,7 +29,7 @@ class FlowTranslator {
         while (currentTraverse != null) {
             if (currentTraverse is Branching) {
                 translateBlock(stateMachineBuilder, currentTraverse)
-            } else if (!(currentTraverse is Flowing)) {
+            } else if (!(currentTraverse is Flow)) {
                 if (currentTraverse.isFirst()) {
                     stateMachineBuilder.startAt(currentTraverse.id)
                 }

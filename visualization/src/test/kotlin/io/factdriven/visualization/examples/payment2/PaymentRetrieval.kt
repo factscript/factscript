@@ -1,6 +1,6 @@
 package io.factdriven.visualization.examples.payment2
 
-import io.factdriven.language.define
+import io.factdriven.flow
 import java.util.*
 
 /**
@@ -15,7 +15,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
         init {
 
-            define <PaymentRetrieval> {
+            flow<PaymentRetrieval> {
 
                 on command RetrievePayment::class
 

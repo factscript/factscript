@@ -1,6 +1,6 @@
 package io.factdriven.language
 
-import io.factdriven.definition.impl.ConsumingImpl
+import io.factdriven.implementation.ConsumingImpl
 import io.factdriven.definition.api.Node
 import kotlin.reflect.KClass
 

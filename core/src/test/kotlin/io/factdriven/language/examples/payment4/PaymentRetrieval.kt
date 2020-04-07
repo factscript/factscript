@@ -1,6 +1,6 @@
 package io.factdriven.language.examples.payment4
 
-import io.factdriven.language.define
+import io.factdriven.flow
 import java.util.*
 
 /**
@@ -16,17 +16,17 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
         init {
 
-            define <PaymentRetrieval> {
+            flow<PaymentRetrieval> {
 
                 on command RetrievePayment::class
 
-                select ("Payment (partly) uncovered?") either {
-                    given ("Yes") condition { covered < total }
+                select("Payment (partly) uncovered?") either {
+                    given("Yes") condition { covered < total }
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(id, total - covered)
                     }
                 } or {
-                    given ("No") // = default path w/o condition
+                    given("No") // = default path w/o condition
                 }
 
                 emit event PaymentRetrieved::class by {

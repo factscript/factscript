@@ -1,4 +1,4 @@
-package io.factdriven.definition.impl
+package io.factdriven.implementation
 
 import io.factdriven.definition.api.Node
 import io.factdriven.definition.api.Throwing

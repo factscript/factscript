@@ -1,7 +1,7 @@
 package io.factdriven.language
 
 import io.factdriven.definition.api.Node
-import io.factdriven.definition.impl.CheckingImpl
+import io.factdriven.implementation.CheckingImpl
 import kotlin.reflect.KClass
 
 /**

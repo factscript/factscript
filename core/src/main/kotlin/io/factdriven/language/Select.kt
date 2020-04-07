@@ -2,7 +2,7 @@ package io.factdriven.language
 
 import io.factdriven.definition.api.Gateway.Exclusive
 import io.factdriven.definition.api.Node
-import io.factdriven.definition.impl.BranchingImpl
+import io.factdriven.implementation.BranchingImpl
 import kotlin.reflect.KClass
 
 /**

@@ -1,4 +1,4 @@
-package io.factdriven.definition.impl
+package io.factdriven.implementation
 
 import io.factdriven.Flows
 import io.factdriven.definition.api.Executing

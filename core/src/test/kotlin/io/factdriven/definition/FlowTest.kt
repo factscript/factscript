@@ -11,10 +11,10 @@ import java.lang.IllegalArgumentException
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class FlowingTest {
+class FlowTest {
 
     init {
-        Flows.init(PaymentRetrieval::class)
+        Flows.initialize(PaymentRetrieval::class)
     }
 
     @Test

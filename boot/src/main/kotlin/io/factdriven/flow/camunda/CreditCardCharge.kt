@@ -1,6 +1,6 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.language.define
+import io.factdriven.flow
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -23,7 +23,7 @@ data class CreditCardCharge (
 
         fun init() {
 
-            define <CreditCardCharge> {
+            flow<CreditCardCharge> {
 
                 on command ChargeCreditCard::class promise {
                     report success CreditCardCharged::class
@@ -31,7 +31,7 @@ data class CreditCardCharge (
 
                 consume event ConfirmationReceived::class having "reference" match { reference }
 
-                emit  event CreditCardCharged::class by {
+                emit event CreditCardCharged::class by {
                     CreditCardCharged(reference = reference, charge = charge)
                 }
 

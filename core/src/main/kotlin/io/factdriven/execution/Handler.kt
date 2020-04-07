@@ -1,7 +1,7 @@
 package io.factdriven.execution
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import io.factdriven.definition.*
+import io.factdriven.Flows
 import io.factdriven.definition.api.Consuming
 import io.factdriven.definition.api.Executing
 import io.factdriven.definition.api.Node
@@ -42,6 +42,11 @@ data class Handling (val fact: Type, val details: Map<String, Any?> = emptyMap()
 
     }
 
+}
+
+
+fun Flows.handling(message: Message): List<Handling> {
+    return Flows.all().map { it.handling(message) }.flatten()
 }
 
 fun Executing.handling(message: Message): Handling? {

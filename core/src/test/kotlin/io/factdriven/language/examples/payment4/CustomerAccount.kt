@@ -1,6 +1,6 @@
 package io.factdriven.language.examples.payment4
 
-import io.factdriven.language.define
+import io.factdriven.flow
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -24,7 +24,7 @@ data class CustomerAccount(val fact: CreateAccount) {
 
         init {
 
-            define <CustomerAccount> {
+            flow<CustomerAccount> {
 
                 on command WithdrawAmount::class promise {
                     report success AmountWithdrawn::class

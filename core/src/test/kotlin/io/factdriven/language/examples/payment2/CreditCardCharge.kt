@@ -1,6 +1,6 @@
 package io.factdriven.language.examples.payment2
 
-import io.factdriven.language.define
+import io.factdriven.flow
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -19,11 +19,11 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
         init {
 
-            define <CreditCardCharge> {
+            flow<CreditCardCharge> {
 
                 on command ChargeCreditCard::class
 
-                consume event(CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
 
                 emit event CreditCardCharged::class by {
                     CreditCardCharged(reference, amount)

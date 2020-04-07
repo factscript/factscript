@@ -1,6 +1,6 @@
 package io.factdriven.visualization.examples.creditcard1
 
-import io.factdriven.language.define
+import io.factdriven.flow
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -13,7 +13,7 @@ class CreditCardCharge(fact: ChargeCreditCard) {
     companion object {
 
         init {
-            define <CreditCardCharge> {
+            flow<CreditCardCharge> {
                 on command ChargeCreditCard::class
                 consume event ConfirmationReceived::class having "reference" match { reference }
                 emit event CreditCardCharged::class by {

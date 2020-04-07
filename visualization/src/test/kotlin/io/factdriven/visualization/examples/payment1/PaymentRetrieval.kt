@@ -1,6 +1,6 @@
 package io.factdriven.visualization.examples.payment1
 
-import io.factdriven.language.define
+import io.factdriven.flow
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -12,7 +12,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
     companion object {
 
         init {
-            define <PaymentRetrieval> {
+            flow<PaymentRetrieval> {
                 on command RetrievePayment::class
                 emit event PaymentRetrieved::class by {
                     PaymentRetrieved(amount)

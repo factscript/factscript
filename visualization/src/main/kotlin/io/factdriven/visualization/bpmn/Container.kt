@@ -6,7 +6,7 @@ import io.factdriven.execution.type
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-fun translate(flowing: Flowing): Container {
+fun translate(flow: Flow): Container {
 
     fun translate(node: Node, parent: Container) {
         when(node) {
@@ -76,7 +76,7 @@ fun translate(flowing: Flowing): Container {
                     BpmnGatewayType.exclusive
                 )
             }
-            is Flowing -> {
+            is Flow -> {
                 val sequence = Sequence(node.id, node.entity.type.context, node.entity.type.local, parent)
                 node.children.forEach { translate(it, sequence) }
             }
@@ -85,8 +85,8 @@ fun translate(flowing: Flowing): Container {
         }
     }
 
-    val sequence = Sequence(flowing.id, flowing.entity.type.context, flowing.entity.type.local)
-    flowing.children.forEach { translate(it, sequence) }
+    val sequence = Sequence(flow.id, flow.entity.type.context, flow.entity.type.local)
+    flow.children.forEach { translate(it, sequence) }
     return sequence
 
 }

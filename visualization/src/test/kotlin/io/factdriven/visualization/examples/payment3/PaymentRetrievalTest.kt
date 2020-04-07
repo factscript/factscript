@@ -11,7 +11,7 @@ class PaymentRetrievalTest {
 
     @Test
     fun testView() {
-        render(Flows.init(CreditCardCharge::class, PaymentRetrieval::class)[1])
+        render(Flows.initialize(CreditCardCharge::class, PaymentRetrieval::class)[1])
     }
 
 }
