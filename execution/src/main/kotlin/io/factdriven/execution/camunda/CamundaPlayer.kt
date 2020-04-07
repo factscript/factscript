@@ -1,7 +1,7 @@
 package io.factdriven.execution.camunda
 
 import io.factdriven.Flows
-import io.factdriven.definition.api.*
+import io.factdriven.definition.*
 import io.factdriven.execution.*
 import io.factdriven.visualization.bpmn.*
 import org.camunda.bpm.engine.ProcessEngine

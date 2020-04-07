@@ -1,7 +1,5 @@
 package io.factdriven.language
 
-import io.factdriven.definition.api.Node
-import io.factdriven.implementation.ThrowingImpl
 import kotlin.reflect.KClass
 
 /**
@@ -17,16 +15,3 @@ interface EmitEvent<T: Any> {
 
 }
 
-class EmitImpl<T: Any>(parent: Node): Emit<T>, Sentence<T>, ThrowingImpl(parent) {
-
-    override fun <M: Any> event(type: KClass<M>): Sentence<T> {
-        this.throwing = type
-        return this
-    }
-
-    override fun <M : Any> by(instance: T.() -> M) {
-        @Suppress("UNCHECKED_CAST")
-        this.instance = instance as Any.() -> Any
-    }
-
-}

@@ -1,8 +1,8 @@
 package io.factdriven.language.examples.creditcard1
 
 import io.factdriven.Flows
-import io.factdriven.definition.api.Catching
-import io.factdriven.definition.api.Throwing
+import io.factdriven.definition.Catching
+import io.factdriven.definition.Throwing
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 

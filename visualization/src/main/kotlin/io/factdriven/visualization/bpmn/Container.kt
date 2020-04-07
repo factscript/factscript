@@ -1,6 +1,6 @@
 package io.factdriven.visualization.bpmn
 
-import io.factdriven.definition.api.*
+import io.factdriven.definition.*
 import io.factdriven.execution.type
 
 /**

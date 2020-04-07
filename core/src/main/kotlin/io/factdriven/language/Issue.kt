@@ -1,7 +1,5 @@
 package io.factdriven.language
 
-import io.factdriven.definition.api.Node
-import io.factdriven.implementation.ThrowingImpl
 import kotlin.reflect.KClass
 
 /**
@@ -14,19 +12,5 @@ interface Issue<T: Any>: IssueCommand<T>
 interface IssueCommand<T: Any> {
 
     infix fun <M: Any> command(type: KClass<M>): Sentence<T>
-
-}
-
-class IssueImpl<T: Any>(parent: Node): Issue<T>, Sentence<T>, ThrowingImpl(parent) {
-
-    override fun <M: Any> command(type: KClass<M>): Sentence<T> {
-        this.throwing = type
-        return this
-    }
-
-    override fun <M : Any> by(instance: T.() -> M) {
-        @Suppress("UNCHECKED_CAST")
-        this.instance = instance as Any.() -> Any
-    }
 
 }

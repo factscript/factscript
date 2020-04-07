@@ -1,6 +1,4 @@
-package io.factdriven.definition.api
-
-import io.factdriven.execution.type
+package io.factdriven.definition
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

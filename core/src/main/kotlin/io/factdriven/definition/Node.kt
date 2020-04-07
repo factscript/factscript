@@ -1,4 +1,4 @@
-package io.factdriven.definition.api
+package io.factdriven.definition
 
 import kotlin.reflect.KClass
 

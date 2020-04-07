@@ -1,6 +1,6 @@
-package io.factdriven.definition.api
+package io.factdriven.definition
 
-import io.factdriven.execution.type
+import io.factdriven.definition.Node
 import kotlin.reflect.KClass
 
 /**

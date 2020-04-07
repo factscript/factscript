@@ -1,6 +1,6 @@
 package io.factdriven.visualization
 
-import io.factdriven.definition.api.Flow
+import io.factdriven.definition.Flow
 import io.factdriven.visualization.bpmn.transform
 import io.factdriven.visualization.bpmn.translate
 import org.camunda.bpm.model.bpmn.Bpmn

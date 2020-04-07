@@ -1,6 +1,6 @@
-package io.factdriven.definition.api
+package io.factdriven.definition
 
-import io.factdriven.definition.api.Consuming
+import io.factdriven.definition.Consuming
 import kotlin.reflect.KClass
 
 interface Promising: Consuming {

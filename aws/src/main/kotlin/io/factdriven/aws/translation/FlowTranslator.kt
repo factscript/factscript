@@ -6,9 +6,9 @@ import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.conditions.NumericEqualsCondition
 import com.amazonaws.services.stepfunctions.builder.states.Choice
 import com.amazonaws.services.stepfunctions.builder.states.ChoiceState
-import io.factdriven.definition.api.Branching
-import io.factdriven.definition.api.Flow
-import io.factdriven.definition.api.Node
+import io.factdriven.definition.Branching
+import io.factdriven.definition.Flow
+import io.factdriven.definition.Node
 
 class FlowTranslator {
 

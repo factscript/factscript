@@ -2,9 +2,9 @@ package io.factdriven.execution
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.factdriven.Flows
-import io.factdriven.definition.api.Consuming
-import io.factdriven.definition.api.Executing
-import io.factdriven.definition.api.Node
+import io.factdriven.definition.Consuming
+import io.factdriven.definition.Executing
+import io.factdriven.definition.Node
 import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.reflect.KClass

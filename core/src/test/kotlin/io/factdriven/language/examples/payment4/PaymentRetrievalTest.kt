@@ -1,10 +1,10 @@
 package io.factdriven.language.examples.payment4
 
 import io.factdriven.Flows
-import io.factdriven.definition.api.Catching
-import io.factdriven.definition.api.Branching
-import io.factdriven.definition.api.Gateway
-import io.factdriven.definition.api.Throwing
+import io.factdriven.definition.Catching
+import io.factdriven.definition.Branching
+import io.factdriven.definition.Gateway
+import io.factdriven.definition.Throwing
 import io.factdriven.language.ConditionalExecution
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*

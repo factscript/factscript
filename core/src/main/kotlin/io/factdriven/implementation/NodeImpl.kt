@@ -1,6 +1,9 @@
 package io.factdriven.implementation
 
-import io.factdriven.definition.api.*
+import io.factdriven.definition.Catching
+import io.factdriven.definition.Node
+import io.factdriven.definition.Promising
+import io.factdriven.definition.Throwing
 import io.factdriven.execution.type
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
@@ -9,7 +12,8 @@ import kotlin.reflect.full.isSubclassOf
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-abstract class NodeImpl(override val parent: Node?, override val entity: KClass<*> = parent!!.entity): Node {
+abstract class NodeImpl(override val parent: Node?, override val entity: KClass<*> = parent!!.entity):
+    Node {
 
     override val children: MutableList<Node> = mutableListOf()
 

@@ -1,6 +1,6 @@
-package io.factdriven.definition.api
+package io.factdriven.definition
 
-import io.factdriven.definition.api.Catching
+import io.factdriven.definition.Catching
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
