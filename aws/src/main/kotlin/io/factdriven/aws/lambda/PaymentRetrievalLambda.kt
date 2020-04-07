@@ -7,6 +7,6 @@ import io.factdriven.definition.Flows
 class PaymentRetrievalLambda : FlowlangLambda() {
     override fun definition(): Flowing {
         PaymentRetrieval.init()
-        return Flows.getDefinitionByType(PaymentRetrieval::class)
+        return Flows.findByClass(PaymentRetrieval::class)
     }
 }

@@ -12,7 +12,7 @@ class CreditCardChargeTest {
     @Test
     fun testDefinition() {
 
-        val definition = Flows.getDefinitionByType(CreditCardCharge::class)
+        val definition = Flows.findByClass(CreditCardCharge::class)
         Assertions.assertEquals(CreditCardCharge::class, definition.entity)
         Assertions.assertEquals(3, definition.children.size)
 

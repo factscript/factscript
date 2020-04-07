@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 class PaymentRetrievalTest: PlayUsingCamundaTest() {
 
     init {
-        Flows.clear()
         Flows.init(PaymentRetrieval::class)
     }
 

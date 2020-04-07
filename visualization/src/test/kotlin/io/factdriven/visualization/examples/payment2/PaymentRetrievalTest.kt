@@ -12,7 +12,7 @@ class PaymentRetrievalTest {
     @Test
     fun testView() {
 
-        render(Flows.getDefinitionByType(PaymentRetrieval::class))
+        render(Flows.findByClass(PaymentRetrieval::class))
 
     }
 

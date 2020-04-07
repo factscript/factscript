@@ -18,14 +18,14 @@ class FlowingTest {
 
     @Test
     fun testGetDefinitionByType() {
-        assertThrows<IllegalArgumentException> { Flows.getDefinitionByType(Any::class) }
-        assertDoesNotThrow { Flows.getDefinitionByType(PaymentRetrieval::class) }
+        assertThrows<IllegalArgumentException> { Flows.findByClass(Any::class) }
+        assertDoesNotThrow { Flows.findByClass(PaymentRetrieval::class) }
     }
 
     @Test
     fun testGetDefinitionByName() {
-        assertThrows<IllegalArgumentException> { Flows.getDefinitionByName(Any::class.type) }
-        assertDoesNotThrow { Flows.getDefinitionByName(Type(PaymentRetrieval::class.java.`package`.name, "PaymentRetrieval")) }
+        assertThrows<IllegalArgumentException> { Flows.findByType(Any::class.type) }
+        assertDoesNotThrow { Flows.findByType(Type(PaymentRetrieval::class.java.`package`.name, "PaymentRetrieval")) }
     }
 
 }

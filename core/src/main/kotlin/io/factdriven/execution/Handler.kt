@@ -67,8 +67,3 @@ fun Node.handling(message: Message): List<Handling> {
     return handling(this)
 }
 
-fun Flows.Companion.handling(message: Message): List<Handling> {
-    return all.values.map {
-        it.handling(message)
-    }.flatten()
-}

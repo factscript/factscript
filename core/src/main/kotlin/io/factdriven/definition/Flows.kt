@@ -1,8 +1,7 @@
 package io.factdriven.definition
 
 import io.factdriven.definition.api.*
-import io.factdriven.execution.Type
-import io.factdriven.execution.type
+import io.factdriven.execution.*
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
@@ -11,51 +10,55 @@ interface Flows {
 
     companion object {
 
-        val all: Map<KClass<*>, Flowing> = mutableMapOf()
+        private val all: MutableMap<KClass<*>, Flowing> = mutableMapOf()
 
-        fun register(vararg flowings: Flowing) {
-            flowings.forEach { definition ->
-                all.keys.filter { it.type == definition.entity.type }.forEach {
-                    (all as MutableMap<KClass<*>, Flowing>).remove(it)
-                }
-                (all as MutableMap<KClass<*>, Flowing>)[definition.entity] = definition
+        fun register(vararg flowing: Flowing) {
+            flowing.forEach {
+                all[it.entity] = it
             }
         }
 
-        fun getDefinitionById(id: String): Flowing {
-            return getDefinitionByName(Type(id.split("-")[0], id.split("-")[1]))
+        fun init(vararg type: KClass<*>) {
+            type.forEach {
+                it.companionObjectInstance
+            }
         }
 
-        fun getDefinitionByName(type: Type): Flowing {
+        fun get(id: String): Flowing {
+            return findByType(Type(id.split("-")[0], id.split("-")[1]))
+        }
+
+        fun all(): Iterable<Flowing> {
+            return all.values.asIterable()
+        }
+
+        fun <N: Node> find(id: String, type: KClass<in N> = Node::class): N {
+            return get(id).findById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
+        }
+
+        fun findByType(type: Type): Flowing {
             val entityType = all.keys.find { it.type == type }
-            return if (entityType != null) getDefinitionByType(entityType) else throw IllegalArgumentException("Flow '${type}' is not defined!")
+            return if (entityType != null) findByClass(entityType) else throw IllegalArgumentException("Flow '${type}' is not defined!")
         }
 
-        fun getDefinitionByType(entityType: KClass<*>): Flowing {
-            return all[entityType] ?: {
-                init(entityType)
-                all[entityType] ?: throw IllegalArgumentException("Flow '${entityType.type}' is not defined!")
+        fun findByClass(type: KClass<*>): Flowing {
+            return all[type] ?: {
+                init(type)
+                all[type] ?: throw IllegalArgumentException("Flow '${type.type}' is not defined!")
             }.invoke()
         }
 
-        fun getPromisingNodeByCatchingType(catchingType: KClass<*>): Promising {
+        fun findCatching(catchingType: KClass<*>): Flowing {
             return all.values.filter { definition ->
                 definition.children.any { it is Promising && it.catching == catchingType }
-            }[0].findPromising()!!
+            }[0]
         }
 
-        fun getNodeById(id: String): Node {
-            return getDefinitionById(id).findById(id) ?: throw IllegalArgumentException("Node '${id}' is not defined!")
+        fun handling(message: Message): List<Handling> {
+            return all.values.map {
+                it.handling(message)
+            }.flatten()
         }
-
-        fun clear() {
-            (all as MutableMap).clear()
-        }
-
-        fun init(entityType: KClass<*>) {
-            entityType.companionObjectInstance
-        }
-
 
     }
 

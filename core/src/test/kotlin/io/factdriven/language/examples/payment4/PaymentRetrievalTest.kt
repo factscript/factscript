@@ -24,9 +24,7 @@ class PaymentRetrievalTest {
     @Test
     fun testDefinition() {
 
-        val all = Flows.all
-
-        val definition = Flows.getDefinitionByType(PaymentRetrieval::class)
+        val definition = Flows.findByClass(PaymentRetrieval::class)
         assertEquals(PaymentRetrieval::class, definition.entity)
         assertEquals(3, definition.children.size)
 

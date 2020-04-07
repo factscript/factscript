@@ -61,7 +61,7 @@ class MessageHandlingTest {
     @Test
     fun testHandling() {
 
-        val definition = Flows.getDefinitionByType(PaymentRetrieval::class)
+        val definition = Flows.findByClass(PaymentRetrieval::class)
         val message = Message.from(PaymentRetrieval::class, Fact(RetrievePayment(5F)))
 
         val handling = definition.handling(message)

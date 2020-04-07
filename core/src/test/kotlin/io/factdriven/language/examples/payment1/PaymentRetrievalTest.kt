@@ -1,7 +1,6 @@
 package io.factdriven.language.examples.payment1
 
 import io.factdriven.definition.Flows
-import io.factdriven.definition.api.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -13,7 +12,7 @@ class PaymentRetrievalTest {
     @Test
     fun testDefinition() {
 
-        val definition = Flows.getDefinitionByType(PaymentRetrieval::class)
+        val definition = Flows.findByClass(PaymentRetrieval::class)
         Assertions.assertEquals(PaymentRetrieval::class, definition.entity)
         Assertions.assertEquals(2, definition.children.size)
 

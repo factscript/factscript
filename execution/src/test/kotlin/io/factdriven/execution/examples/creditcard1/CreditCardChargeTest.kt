@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test
 class CreditCardChargeTest: PlayUsingCamundaTest() {
 
     init {
-        Flows.clear()
         Flows.init(CreditCardCharge::class)
     }
 
