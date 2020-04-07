@@ -1,6 +1,6 @@
 package io.factdriven.language.examples.payment4
 
-import io.factdriven.definition.*
+import io.factdriven.Flows
 import io.factdriven.definition.api.Catching
 import io.factdriven.definition.api.Branching
 import io.factdriven.definition.api.Gateway

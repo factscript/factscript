@@ -1,6 +1,6 @@
 package io.factdriven.execution.examples.payment1
 
-import io.factdriven.definition.Flows
+import io.factdriven.Flows
 import io.factdriven.execution.PlayUsingCamundaTest
 import io.factdriven.execution.Player
 import org.junit.jupiter.api.Assertions

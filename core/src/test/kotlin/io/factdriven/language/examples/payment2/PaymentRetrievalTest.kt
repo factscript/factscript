@@ -1,6 +1,6 @@
 package io.factdriven.language.examples.payment2
 
-import io.factdriven.definition.Flows
+import io.factdriven.Flows
 import io.factdriven.definition.api.Catching
 import io.factdriven.definition.api.Consuming
 import io.factdriven.definition.api.Throwing
@@ -15,7 +15,7 @@ class PaymentRetrievalTest {
     @Test
     fun testDefinition() {
 
-        val definition = Flows.init(PaymentRetrieval::class)
+        val definition = Flows.get(PaymentRetrieval::class)
         Assertions.assertEquals(PaymentRetrieval::class, definition.entity)
         Assertions.assertEquals(4, definition.children.size)
 

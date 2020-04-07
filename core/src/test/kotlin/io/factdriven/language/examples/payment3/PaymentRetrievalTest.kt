@@ -1,6 +1,6 @@
 package io.factdriven.language.examples.payment3
 
-import io.factdriven.definition.*
+import io.factdriven.Flows
 import io.factdriven.definition.api.Catching
 import io.factdriven.definition.api.Executing
 import io.factdriven.definition.api.Throwing

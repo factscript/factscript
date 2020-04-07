@@ -1,6 +1,6 @@
 package io.factdriven.execution
 
-import io.factdriven.definition.Flows
+import io.factdriven.Flows
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -61,7 +61,7 @@ class MessageHandlingTest {
     @Test
     fun testHandling() {
 
-        val definition = Flows.init(PaymentRetrieval::class)
+        val definition = Flows.get(PaymentRetrieval::class)
         val message = Message.from(PaymentRetrieval::class, Fact(RetrievePayment(5F)))
 
         val handling = definition.handling(message)

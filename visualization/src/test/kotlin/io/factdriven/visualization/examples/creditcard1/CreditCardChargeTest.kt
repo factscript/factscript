@@ -1,6 +1,6 @@
 package io.factdriven.visualization.examples.creditcard1
 
-import io.factdriven.definition.Flows
+import io.factdriven.Flows
 import io.factdriven.visualization.render
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ class CreditCardChargeTest {
     @Test
     fun testDefinition() {
 
-        render(Flows.init(CreditCardCharge::class))
+        render(Flows.get(CreditCardCharge::class))
 
     }
 

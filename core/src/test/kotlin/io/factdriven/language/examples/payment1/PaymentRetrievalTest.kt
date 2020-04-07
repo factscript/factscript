@@ -1,6 +1,6 @@
 package io.factdriven.language.examples.payment1
 
-import io.factdriven.definition.Flows
+import io.factdriven.Flows
 import io.factdriven.definition.api.Catching
 import io.factdriven.definition.api.Throwing
 import org.junit.jupiter.api.Assertions

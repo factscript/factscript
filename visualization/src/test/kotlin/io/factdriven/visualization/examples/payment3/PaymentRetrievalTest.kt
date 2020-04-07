@@ -1,6 +1,6 @@
 package io.factdriven.visualization.examples.payment3
 
-import io.factdriven.definition.Flows
+import io.factdriven.Flows
 import io.factdriven.visualization.render
 import org.junit.jupiter.api.Test
 

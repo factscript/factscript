@@ -1,7 +1,7 @@
 package io.factdriven.language
 
 import io.factdriven.definition.api.Flowing
-import io.factdriven.definition.Flows
+import io.factdriven.Flows
 import io.factdriven.definition.api.Node
 import io.factdriven.definition.impl.NodeImpl
 import kotlin.reflect.KClass

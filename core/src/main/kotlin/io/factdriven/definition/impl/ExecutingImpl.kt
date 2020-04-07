@@ -1,6 +1,6 @@
 package io.factdriven.definition.impl
 
-import io.factdriven.definition.Flows
+import io.factdriven.Flows
 import io.factdriven.definition.api.Executing
 import io.factdriven.definition.api.Node
 import io.factdriven.definition.api.Promising
