@@ -93,7 +93,7 @@ data class MessageId(val streamId: StreamId, val version: Int = 0) {
 
 }
 
-fun Any.toJson(): String {
+val Any.json: String get() {
     return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
 }
 

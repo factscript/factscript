@@ -22,10 +22,6 @@ data class Fact<F: Any> (
         register(fact::class)
     }
 
-    fun toJson(): String {
-        return jacksonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(this)
-    }
-
     val kClass: KClass<*> @JsonIgnore get() {
         return kClass(type)
     }

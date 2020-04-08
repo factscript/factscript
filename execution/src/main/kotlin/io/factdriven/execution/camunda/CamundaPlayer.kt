@@ -129,7 +129,7 @@ class CamundaProcessor: Processor {
             with(messages.toMutableList()) {
                 add(message)
                 return mapOf(
-                    MESSAGES_VAR to SpinValues.jsonValue(toJson()).create()
+                    MESSAGES_VAR to SpinValues.jsonValue(json).create()
                 )
             }
 
@@ -184,7 +184,7 @@ class CamundaPublisher: Publisher {
 
             val job = MessageEntity()
             job.jobHandlerType = CamundaBpmFlowJobHandler.TYPE
-            job.jobHandlerConfiguration = CamundaBpmFlowJobHandlerConfiguration(message.toJson())
+            job.jobHandlerConfiguration = CamundaBpmFlowJobHandlerConfiguration(message.json)
             Context.getCommandContext().jobManager.send(job)
             return job.id
 
@@ -252,7 +252,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
         message(node)?.let {
             messages.add(it)
-            execution.setVariable(MESSAGES_VAR, SpinValues.jsonValue(messages.toJson()))
+            execution.setVariable(MESSAGES_VAR, SpinValues.jsonValue(messages.json))
             Player.publish(it)
         }
 

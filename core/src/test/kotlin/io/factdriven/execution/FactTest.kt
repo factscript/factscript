@@ -28,7 +28,7 @@ class FactTest {
 
         val fact = Fact(SomeFact("value"))
         assertEquals(SomeFact("value"), fact.details)
-        assertEquals(fact, Fact.fromJson(fact.toJson()))
+        assertEquals(fact, Fact.fromJson(fact.json))
 
     }
 

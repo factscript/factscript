@@ -24,8 +24,8 @@ class MessageTest {
     fun testJson() {
 
         val message = Message.from(Any::class, Fact(SomeFact("value")))
-        assertNotNull(message.toJson())
-        assertEquals(message, Message.fromJson(message.toJson()))
+        assertNotNull(message.json)
+        assertEquals(message, Message.fromJson(message.json))
 
     }
 
@@ -35,7 +35,7 @@ class MessageTest {
         val messages = listOf(Message.from(Any::class, Fact(SomeFact("value1"))), Message.from(Any::class,
             Fact(SomeFact("value2"))
         ))
-        assertEquals(messages, Message.list.fromJson(messages.toJson()))
+        assertEquals(messages, Message.list.fromJson(messages.json))
 
     }
 
