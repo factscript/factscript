@@ -4,6 +4,7 @@ import io.factdriven.definition.Catching
 import io.factdriven.definition.Node
 import io.factdriven.definition.Promising
 import io.factdriven.definition.Throwing
+import io.factdriven.execution.label
 import io.factdriven.execution.type
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
@@ -84,7 +85,7 @@ private fun Node.id(): String {
 }
 
 private fun Node.label(): String {
-    return entity.type.toLabel()
+    return entity.type.label
 }
 
 private fun Node.index(): Int {

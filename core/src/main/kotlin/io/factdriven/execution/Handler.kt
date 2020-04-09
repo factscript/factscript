@@ -5,6 +5,7 @@ import io.factdriven.Flows
 import io.factdriven.definition.Consuming
 import io.factdriven.definition.Executing
 import io.factdriven.definition.Node
+import io.factdriven.implementation.utils.getValue
 import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.reflect.KClass
@@ -13,7 +14,7 @@ import kotlin.collections.Map
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-data class Handler (val stream: StreamId, val handling: Handling)
+data class Handler (val stream: EntityId, val handling: Handling)
 
 data class Handling (val fact: Type, val details: Map<String, Any?> = emptyMap(), val correlating: MessageId? = null) {
 

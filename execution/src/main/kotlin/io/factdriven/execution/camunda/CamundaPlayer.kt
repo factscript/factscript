@@ -3,6 +3,8 @@ package io.factdriven.execution.camunda
 import io.factdriven.Flows
 import io.factdriven.definition.*
 import io.factdriven.execution.*
+import io.factdriven.implementation.utils.Json
+import io.factdriven.implementation.utils.json
 import io.factdriven.visualization.bpmn.*
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngines
@@ -47,7 +49,7 @@ class CamundaRepository: Repository {
             .variableName(MESSAGES_VAR)
             .disableCustomObjectDeserialization()
             .singleResult().value as JacksonJsonNode?
-        return messages?.let { Message.list.fromJson(messages.unwrap()) } ?: throw IllegalArgumentException()
+        return messages?.let { Messages.fromJson(Json(messages.unwrap())) } ?: throw IllegalArgumentException()
     }
 
 }
@@ -74,7 +76,7 @@ class CamundaProcessor: Processor {
                     .topic(handling.hash, Long.MAX_VALUE)
                     .execute()
                 return externalTasksHandlingMessage.map { task ->
-                    Message.handle(message, Handler(StreamId(task.processDefinitionKey, task.businessKey), handling))
+                    Message(message, Handler(EntityId(task.processDefinitionKey, task.businessKey), handling))
                 }
             }
 
@@ -95,7 +97,7 @@ class CamundaProcessor: Processor {
 
                 return eventSubscriptionsHandlingMessage.mapIndexed { index, subscription ->
                     val processDefinitionKey = subscription.activityId.substring(0, subscription.activityId.indexOf("-"))
-                    Message.handle(message, Handler(StreamId(processDefinitionKey, businessKeysOfRunningProcessInstances[index]), handling))
+                    Message(message, Handler(EntityId(processDefinitionKey, businessKeysOfRunningProcessInstances[index]), handling))
                 }
 
             }
@@ -213,7 +215,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
     private fun Consuming.endpoint(execution: DelegateExecution): Handling {
         val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
-        val messages = Message.list.fromJson(messageString)
+        val messages = Messages.fromJson(messageString)
         val handlerInstance = Player.load(messages, entity)
         val details = properties.mapIndexed { propertyIndex, propertyName ->
             propertyName to matching[propertyIndex].invoke(handlerInstance)
@@ -223,8 +225,8 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
     private fun Executing.endpoint(execution: DelegateExecution): Handling {
         val messageString = execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized
-        val messages = Message.list.fromJson(messageString)
-        return Handling(catching, MessageId.nextId(messages.last().id))
+        val messages = Messages.fromJson(messageString)
+        return Handling(catching, MessageId.nextAfter(messages.last().id))
     }
 
 }
@@ -236,15 +238,15 @@ class CamundaFlowNodeStartListener: ExecutionListener {
         val id = execution.currentActivityId
         val definition = Flows.get(id)
         val node = definition.get(id)
-        val messages = Message.list.fromJson(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!).toMutableList()
-        fun aggregate() = messages.applyTo(node.entity)
+        val messages = Messages.fromJson(Json(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!)).toMutableList()
+        fun aggregate() = messages.fromJson(node.entity)
 
         fun message(node: Node): Message? {
             return when(node) {
                 is Throwing -> {
                     val fact = node.instance.invoke(aggregate())
                     val correlating = definition.find(nodeOfType = Promising::class)?.succeeding?.isInstance(fact) ?: false
-                    Message.from(messages, Fact(fact), if (correlating) messages.first().id else null)
+                    Message(messages, Fact(fact), if (correlating) messages.first().id else null)
                 }
                 else -> null
             }

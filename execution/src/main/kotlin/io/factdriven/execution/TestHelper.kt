@@ -44,12 +44,12 @@ open class PlayUsingCamundaTest {
         )
 
         val message = when(fact) {
-            is Fact<*> -> Message.from(
+            is Fact<*> -> Message(
                 type,
                 fact
             )
             is Message -> fact
-            else -> Message.from(
+            else -> Message(
                 type,
                 Fact(fact)
             )

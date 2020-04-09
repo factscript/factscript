@@ -1,5 +1,6 @@
 package io.factdriven.execution
 
+import io.factdriven.implementation.utils.json
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -14,7 +15,7 @@ class MessageTest {
     fun testMessage() {
 
         val fact = Fact(SomeFact("value"))
-        val message = Message.from(Any::class, fact)
+        val message = Message(Any::class, fact)
         assertNotNull(message.id)
         assertEquals(fact, message.fact)
 
@@ -23,7 +24,7 @@ class MessageTest {
     @Test
     fun testJson() {
 
-        val message = Message.from(Any::class, Fact(SomeFact("value")))
+        val message = Message(Any::class, Fact(SomeFact("value")))
         assertNotNull(message.json)
         assertEquals(message, Message.fromJson(message.json))
 
@@ -32,10 +33,10 @@ class MessageTest {
     @Test
     fun testJsonList() {
 
-        val messages = listOf(Message.from(Any::class, Fact(SomeFact("value1"))), Message.from(Any::class,
+        val messages = listOf(Message(Any::class, Fact(SomeFact("value1"))), Message(Any::class,
             Fact(SomeFact("value2"))
         ))
-        assertEquals(messages, Message.list.fromJson(messages.json))
+        assertEquals(messages, Messages.fromJson(messages.json))
 
     }
 
@@ -60,8 +61,8 @@ class ApplyMessagesToClassTest {
     @Test
     fun testApplyTo() {
 
-        val messages = listOf(Message.from(Any::class, Fact(SomeFact("value"))), Message.from(Any::class, Fact(SomeOtherFact("otherValue"))))
-        val instance = messages.applyTo(SomeClass::class)
+        val messages = listOf(Message(Any::class, Fact(SomeFact("value"))), Message(Any::class, Fact(SomeOtherFact("otherValue"))))
+        val instance = messages.fromJson(SomeClass::class)
 
         assertEquals("value", instance.someProperty)
         assertEquals("otherValue", instance.someOtherProperty)

@@ -15,8 +15,8 @@ class EndpointTest {
     @Test
     fun testHandler() {
 
-        val streamId = StreamId(SomeHandler::class)
-        assertEquals(Type.from(SomeHandler::class), Type.from(streamId.name))
+        val streamId = EntityId(SomeHandler::class)
+        assertEquals(Type.from(SomeHandler::class), Type.from(streamId.type))
         assertEquals(null, streamId.id)
 
     }
@@ -44,9 +44,9 @@ class EndpointTest {
     @Test
     fun testEndpoint() {
 
-        val endpoint = Handler(StreamId(SomeHandler::class), Handling(SomeFact::class))
-        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.stream.name))
-        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.stream.name))
+        val endpoint = Handler(EntityId(SomeHandler::class), Handling(SomeFact::class))
+        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.stream.type))
+        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.stream.type))
         assertEquals(null, endpoint.stream.id)
         assertEquals(Type.from(SomeFact::class), endpoint.handling.fact)
         assertEquals(emptyMap<String, Any>(), endpoint.handling.details)
@@ -62,7 +62,7 @@ class MessageHandlingTest {
     fun testHandling() {
 
         val definition = Flows.get(PaymentRetrieval::class)
-        val message = Message.from(PaymentRetrieval::class, Fact(RetrievePayment(5F)))
+        val message = Message(PaymentRetrieval::class, Fact(RetrievePayment(5F)))
 
         val handling = definition.handling(message)
         assertEquals(1, handling.size)

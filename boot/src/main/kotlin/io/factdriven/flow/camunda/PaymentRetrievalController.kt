@@ -3,7 +3,7 @@ package io.factdriven.flow.camunda
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
 import io.factdriven.execution.Player
-import io.factdriven.execution.json
+import io.factdriven.implementation.utils.json
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
@@ -26,7 +26,7 @@ class PaymentRetrievalController {
     }
 
     private fun send(type: KClass<*>, fact: Any): Message {
-        val message = Message.from(type, Fact(fact))
+        val message = Message(type, Fact(fact))
         Player.process(message)
         return message
     }

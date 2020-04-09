@@ -1,5 +1,6 @@
 package io.factdriven.execution
 
+import io.factdriven.implementation.utils.json
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -18,7 +19,7 @@ class FactTest {
         val fact = Fact(instance)
         assertNotNull(fact.id)
         assertEquals(Type.from(SomeFact::class), fact.type)
-        assertEquals(SomeFact::class, fact.kClass)
+        assertEquals(SomeFact::class, fact.type.kClass)
         assertEquals(instance, fact.details)
 
     }
@@ -54,7 +55,7 @@ class ApplyFactsToClassTest {
     fun testApplyTo() {
 
         val facts = listOf(Fact(SomeFact("value")), Fact(SomeOtherFact("otherValue")))
-        val instance = facts.applyTo(SomeClass::class)
+        val instance = facts.fromJson(SomeClass::class)
 
         assertEquals("value", instance.someProperty)
         assertEquals("otherValue", instance.someOtherProperty)

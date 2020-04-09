@@ -13,7 +13,7 @@ class PlayerTest {
     @Test
     fun testProcessor() {
 
-        val message = Message.from(Any::class, Fact(SomeFact("someValue")))
+        val message = Message(Any::class, Fact(SomeFact("someValue")))
         var result: Message? = null
 
         val processor = object: Processor {
@@ -31,7 +31,7 @@ class PlayerTest {
     @Test
     fun testPublisher() {
 
-        val message = Message.from(Any::class, Fact(SomeFact("someValue")))
+        val message = Message(Any::class, Fact(SomeFact("someValue")))
         var result: Message? = null
 
         val publisher = object: Publisher {
@@ -49,7 +49,7 @@ class PlayerTest {
     @Test
     fun testRepository() {
 
-        val message = Message.from(Any::class, Fact(SomeFact("someValue")))
+        val message = Message(Any::class, Fact(SomeFact("someValue")))
 
         val repository = object: Repository {
             override fun load(id: String): List<Message> {

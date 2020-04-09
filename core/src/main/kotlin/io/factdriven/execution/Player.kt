@@ -1,5 +1,6 @@
 package io.factdriven.execution
 
+import io.factdriven.implementation.utils.json
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
@@ -48,7 +49,7 @@ object Player {
     }
 
     fun <I: Any> load(messages: List<Message>, type: KClass<I>): I {
-        val instance = messages.applyTo(type)
+        val instance = messages.fromJson(type)
         log.debug("Loading aggregate ${type.type} [${messages.first().id}]\n${instance.json}")
         return instance
     }
