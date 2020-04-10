@@ -26,12 +26,12 @@ class PaymentRetrieval(fact: RetrievePayment) {
                         ChargeCreditCard(id, total - covered)
                     }
                 } or {
+                    given("No") // = default path w/o condition
+                } or {
                     given("Third") // = default path w/o condition
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(id, total - covered)
                     }
-                } or {
-                    given("No") // = default path w/o condition
                 }
 
                 emit event PaymentRetrieved::class by {

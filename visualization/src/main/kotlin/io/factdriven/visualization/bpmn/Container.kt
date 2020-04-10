@@ -169,15 +169,18 @@ class Sequence(id: String, context: String, name: String, parent: Container? = n
 
     override fun position(child: Element): Position {
         val predecessors = children.subList(0, children.indexOf(child))
+        val branch = children.find { it is Branch } as Branch?
+        val branchHeight = branch?.dimension?.height ?: 0
+        val branchMargin = if (branch != null) maxOf(branch.fork.dimension.height, branch.sequences[0].dimension.height) else 0
         if (child is Branch) {
             return Position(
                 position.x + predecessors.sumBy { it.dimension.width },
-                center.y - maxOf(child.fork.dimension.height, child.sequences[0].dimension.height) / 2
+                center.y - (+ branchHeight) / 2
             )
         } else {
             return Position(
                 position.x + predecessors.sumBy { it.dimension.width },
-                position.y + (dimension.height - child.dimension.height) / 2
+                center.y - (child.dimension.height + branchHeight - branchMargin) / 2
             )
         }
     }
@@ -212,11 +215,11 @@ class Branch(id: String, context: String, name: String, override val parent: Con
             sequences.sumBy { it.dimension.height }
         )
 
-    val fork: Element
-        get() = children.first()
+    val fork: Symbol
+        get() = children.first() as Symbol
 
-    val join: Element
-        get() = children.last()
+    val join: Symbol
+        get() = children.last() as Symbol
 
     val sequences: List<Sequence>
         get() = children.subList(1, children.size - 1) as List<Sequence>
@@ -235,8 +238,12 @@ class Branch(id: String, context: String, name: String, override val parent: Con
     override fun add(child: Element) {
         if (child is Symbol) {
             if (children.size == 0) {
-                val last = parent.children.elementAtOrNull(parent.children.size - 2) as Symbol?
-                last?.connect(child)
+                val last = parent.children.elementAtOrNull(parent.children.size - 2)
+                if (last is Symbol) {
+                    last.connect(child)
+                } else if (last is Branch) {
+                   last.join.connect(child)
+                }
             } else {
                 val split = children.first() as Symbol
                 val sequences =
