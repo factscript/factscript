@@ -1,10 +1,10 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.execution.Player
-import io.factdriven.execution.camunda.CamundaFlowExecutionPlugin
-import io.factdriven.execution.camunda.CamundaProcessor
-import io.factdriven.execution.camunda.CamundaPublisher
-import io.factdriven.execution.camunda.CamundaRepository
+import io.factdriven.Messages
+import io.factdriven.impl.execution.camunda.CamundaFlowExecutionPlugin
+import io.factdriven.impl.execution.camunda.CamundaMessageProcessor
+import io.factdriven.impl.execution.camunda.CamundaMessagePublisher
+import io.factdriven.impl.execution.camunda.CamundaMessageStore
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication
@@ -28,9 +28,9 @@ class PaymentRetrievalApplication {
 
 fun main(args: Array<String>) {
     runApplication<PaymentRetrievalApplication>(*args) {
-        Player.register(CamundaProcessor())
-        Player.register(CamundaPublisher())
-        Player.register(CamundaRepository())
+        Messages.register(CamundaMessageProcessor())
+        Messages.register(CamundaMessagePublisher())
+        Messages.register(CamundaMessageStore())
         PaymentRetrieval.init()
         CreditCardCharge.init()
     }

@@ -1,7 +1,7 @@
 package io.factdriven.visualization.bpmn
 
-import io.factdriven.execution.Receptor
-import io.factdriven.execution.Type
+import io.factdriven.impl.execution.Receptor
+import io.factdriven.impl.execution.Type
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
@@ -179,7 +179,7 @@ fun transform(container: Container): BpmnModelInstance {
         modelElementInstance.addChildElement(extensionElements)
 
         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-            camundaClass = "io.factdriven.execution.camunda.CamundaFlowNodeStartListener"
+            camundaClass = "io.factdriven.impl.execution.camunda.CamundaFlowNodeStartListener"
             camundaEvent = "start"
         }
 
@@ -299,7 +299,7 @@ fun transform(container: Container): BpmnModelInstance {
         val extensionElements = modelInstance.newInstance(ExtensionElements::class.java)
 
         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
-            camundaClass = "io.factdriven.execution.camunda.CamundaFlowTransitionListener"
+            camundaClass = "io.factdriven.impl.execution.camunda.CamundaFlowTransitionListener"
             camundaEvent = "take"
             val camundaField = modelInstance.newInstance(CamundaField::class.java)
             with(camundaField) {

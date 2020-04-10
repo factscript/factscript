@@ -1,9 +1,9 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.execution.Fact
-import io.factdriven.execution.Message
-import io.factdriven.execution.Player
-import io.factdriven.implementation.utils.json
+import io.factdriven.impl.execution.Fact
+import io.factdriven.impl.execution.Message
+import io.factdriven.Messages
+import io.factdriven.impl.utils.json
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
@@ -27,7 +27,7 @@ class PaymentRetrievalController {
 
     private fun send(type: KClass<*>, fact: Any): Message {
         val message = Message(type, Fact(fact))
-        Player.process(message)
+        Messages.process(message)
         return message
     }
 

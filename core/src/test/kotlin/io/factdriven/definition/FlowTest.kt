@@ -1,8 +1,8 @@
 package io.factdriven.definition
 
 import io.factdriven.Flows
-import io.factdriven.execution.Type
-import io.factdriven.execution.type
+import io.factdriven.impl.execution.Type
+import io.factdriven.impl.execution.type
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

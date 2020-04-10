@@ -1,8 +1,8 @@
 package io.factdriven
 
 import io.factdriven.definition.Promising
-import io.factdriven.execution.*
-import io.factdriven.implementation.ExecutionImpl
+import io.factdriven.impl.execution.*
+import io.factdriven.impl.definition.ExecutionImpl
 import io.factdriven.language.Flow
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
