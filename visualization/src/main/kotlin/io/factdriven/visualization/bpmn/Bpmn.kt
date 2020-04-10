@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-const val visualizeContainers = true
+const val visualizeContainers = false
 
 val zero = Position(
     160 - margin.width,
