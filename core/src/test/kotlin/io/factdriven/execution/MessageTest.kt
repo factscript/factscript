@@ -62,7 +62,7 @@ class ApplyMessagesToClassTest {
     fun testApplyTo() {
 
         val messages = listOf(Message(Any::class, Fact(SomeFact("value"))), Message(Any::class, Fact(SomeOtherFact("otherValue"))))
-        val instance = messages.fromJson(SomeClass::class)
+        val instance = messages.newInstance<SomeClass>()
 
         assertEquals("value", instance.someProperty)
         assertEquals("otherValue", instance.someOtherProperty)

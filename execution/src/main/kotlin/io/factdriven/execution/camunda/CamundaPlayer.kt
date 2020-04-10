@@ -239,7 +239,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
         val definition = Flows.get(id)
         val node = definition.get(id)
         val messages = Messages.fromJson(Json(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!)).toMutableList()
-        fun aggregate() = messages.fromJson(node.entity)
+        fun aggregate() = messages.newInstance(node.entity)
 
         fun message(node: Node): Message? {
             return when(node) {

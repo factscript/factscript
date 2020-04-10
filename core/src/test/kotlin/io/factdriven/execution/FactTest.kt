@@ -55,7 +55,7 @@ class ApplyFactsToClassTest {
     fun testApplyTo() {
 
         val facts = listOf(Fact(SomeFact("value")), Fact(SomeOtherFact("otherValue")))
-        val instance = facts.fromJson(SomeClass::class)
+        val instance = facts.newInstance<SomeClass>()
 
         assertEquals("value", instance.someProperty)
         assertEquals("otherValue", instance.someOtherProperty)

@@ -49,7 +49,7 @@ object Player {
     }
 
     fun <I: Any> load(messages: List<Message>, type: KClass<I>): I {
-        val instance = messages.fromJson(type)
+        val instance = messages.newInstance(type)
         log.debug("Loading aggregate ${type.type} [${messages.first().id}]\n${instance.json}")
         return instance
     }

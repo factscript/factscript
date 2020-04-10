@@ -1,33 +1,40 @@
 package io.factdriven.execution
 
+import io.factdriven.implementation.utils.apply
+import io.factdriven.implementation.utils.construct
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
-import kotlin.reflect.full.memberFunctions
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-fun <A: Any> List<Any>.fromJson(type: KClass<A>): A {
+fun <A: Any> List<Any>.newInstance(entityType: KClass<A>): A {
+    return entityType.newInstance(this)
+}
 
-    assert (isNotEmpty())
+inline fun <reified A: Any> List<Any>.newInstance(): A {
+    return A::class.newInstance(this)
+}
 
-    fun Any.fact(): Fact<*> = if (this is Message) fact else if (this is Fact<*>) this else throw IllegalArgumentException()
-
-    fun apply(fact: Fact<*>, on: KClass<A>): A {
-        val constructor = on.constructors.find { it.parameters.size == 1 && it.parameters[0].type.classifier == fact.type.kClass }
-        return constructor?.call(fact.details) ?: throw java.lang.IllegalArgumentException()
+fun <A: Any> KClass<A>.newInstance(facts: List<Any>): A {
+    val fact: Any.() -> Fact<*> = {
+        when (this) {
+            is Message -> fact
+            is Fact<*> -> this
+            else -> throw IllegalArgumentException()
+        }
     }
+    return newInstance(*facts.map { it.fact() } .toTypedArray())
+}
 
-    fun A.apply(fact: Fact<*>) {
-        val method = type.memberFunctions.find { it.parameters.size == 2 && it.parameters[1].type.classifier == fact.type.kClass }
-        method?.call(this, fact.details)
-    }
+fun <A: Any> KClass<A>.newInstance(vararg message: Message): A {
+    return newInstance(*message.map { it.fact }.toTypedArray())
+}
 
-    val iterator = iterator()
-    val entity = apply(iterator.next().fact(), type)
-    iterator.forEachRemaining {
-        entity.apply(it.fact())
+fun <A: Any> KClass<A>.newInstance(vararg fact: Fact<*>): A {
+    val entity = construct(fact.first().details)
+    fact.asList().subList(1, fact.size).forEach { f ->
+        entity.apply(f.details)
     }
     return entity
-
 }
