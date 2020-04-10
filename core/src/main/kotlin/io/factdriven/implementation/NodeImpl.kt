@@ -1,9 +1,8 @@
 package io.factdriven.implementation
 
-import io.factdriven.definition.Catching
-import io.factdriven.definition.Node
-import io.factdriven.definition.Promising
-import io.factdriven.definition.Throwing
+import io.factdriven.definition.*
+import io.factdriven.execution.Receptor
+import io.factdriven.execution.Message
 import io.factdriven.execution.label
 import io.factdriven.execution.type
 import java.lang.IllegalArgumentException
@@ -70,6 +69,10 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
     override fun isFirst(): Boolean = this == first
 
     override fun isLast(): Boolean = this == last
+
+    override fun findReceptorsFor(message: Message): List<Receptor> {
+        return children.map { it.findReceptorsFor(message) }.flatten()
+    }
 
 }
 

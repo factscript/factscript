@@ -50,6 +50,10 @@ object Flows {
         return flows.values.asIterable()
     }
 
+    fun handling(message: Message): List<Receptor> {
+        return Flows.all().map { it.findReceptorsFor(message) }.flatten()
+    }
+
 }
 
 inline fun <reified T: Any> flow(type: KClass<T> = T::class, flow: Flow<T>.() -> Unit): Flow<T> {

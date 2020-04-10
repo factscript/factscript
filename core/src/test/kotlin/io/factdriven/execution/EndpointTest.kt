@@ -24,9 +24,9 @@ class EndpointTest {
     @Test
     fun testHandling() {
 
-        val handling = Handling(SomeFact::class)
-        assertEquals(Type.from(SomeFact::class), handling.fact)
-        assertEquals(emptyMap<String, Any>(), handling.details)
+        val handling = Receptor(SomeFact::class)
+        assertEquals(Type.from(SomeFact::class), handling.receiving)
+        assertEquals(emptyMap<String, Any>(), handling.expecting)
         assertEquals("0fa0565b21d4b135e15ed3cb61bfebfe", handling.hash)
 
     }
@@ -34,9 +34,9 @@ class EndpointTest {
     @Test
     fun testHandlingWithProperties() {
 
-        val handling = Handling(SomeFact::class, mapOf("property" to "value"))
-        assertEquals(Type.from(SomeFact::class), handling.fact)
-        assertEquals(mapOf("property" to "value"), handling.details)
+        val handling = Receptor(SomeFact::class, mapOf("property" to "value"))
+        assertEquals(Type.from(SomeFact::class), handling.receiving)
+        assertEquals(mapOf("property" to "value"), handling.expecting)
         assertEquals("992044e9fb7d4e7eafdff46cd8757b07", handling.hash)
 
     }
@@ -44,19 +44,19 @@ class EndpointTest {
     @Test
     fun testEndpoint() {
 
-        val endpoint = Handler(EntityId(SomeHandler::class), Handling(SomeFact::class))
-        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.stream.type))
-        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.stream.type))
-        assertEquals(null, endpoint.stream.id)
-        assertEquals(Type.from(SomeFact::class), endpoint.handling.fact)
-        assertEquals(emptyMap<String, Any>(), endpoint.handling.details)
-        assertEquals("0fa0565b21d4b135e15ed3cb61bfebfe", endpoint.handling.hash)
+        val endpoint = Receiver(EntityId(SomeHandler::class), Receptor(SomeFact::class))
+        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.entity.type))
+        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.entity.type))
+        assertEquals(null, endpoint.entity.id)
+        assertEquals(Type.from(SomeFact::class), endpoint.receptor.receiving)
+        assertEquals(emptyMap<String, Any>(), endpoint.receptor.expecting)
+        assertEquals("0fa0565b21d4b135e15ed3cb61bfebfe", endpoint.receptor.hash)
 
     }
 
 }
 
-class MessageHandlingTest {
+class MessageReceptorTest {
 
     @Test
     fun testHandling() {
@@ -64,10 +64,10 @@ class MessageHandlingTest {
         val definition = Flows.get(PaymentRetrieval::class)
         val message = Message(PaymentRetrieval::class, Fact(RetrievePayment(5F)))
 
-        val handling = definition.handling(message)
+        val handling = definition.findReceptorsFor(message)
         assertEquals(1, handling.size)
-        assertEquals(Type(RetrievePayment::class.java.`package`.name, "RetrievePayment"), handling[0].fact)
-        assertEquals(0, handling[0].details.size)
+        assertEquals(Type(RetrievePayment::class.java.`package`.name, "RetrievePayment"), handling[0].receiving)
+        assertEquals(0, handling[0].expecting.size)
 
     }
 

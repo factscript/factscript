@@ -1,5 +1,7 @@
 package io.factdriven.definition
 
+import io.factdriven.execution.Receptor
+import io.factdriven.execution.Message
 import kotlin.reflect.KClass
 
 /**
@@ -28,5 +30,7 @@ interface Node {
 
     fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>? = null): N?
     fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>? = null): List<N>
+
+    fun findReceptorsFor(message: Message): List<Receptor>
 
 }
