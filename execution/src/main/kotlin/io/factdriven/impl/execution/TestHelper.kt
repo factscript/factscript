@@ -26,6 +26,7 @@ open class PlayUsingCamundaTest {
             val configuration = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration() as ProcessEngineConfigurationImpl
             configuration.processEnginePlugins = listOf(CamundaFlowExecutionPlugin())
             configuration.isJobExecutorActivate = true
+            configuration.beans = mapOf("condition" to CamundaCondition())
             engine = configuration.buildProcessEngine()
             Messages.register(CamundaMessageStore())
             Messages.register(CamundaMessagePublisher())

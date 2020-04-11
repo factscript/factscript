@@ -19,7 +19,7 @@ class ConditionalExecutionImpl<T:Any> (entity: KClass<T>, override val parent: N
 
     override val given: Given<T>
         get() {
-            val child = CheckingImpl<T>(this)
+            val child = ConditionalImpl<T>(this)
             children.add(child)
             return child
         }

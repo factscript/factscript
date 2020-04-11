@@ -4,12 +4,14 @@ import io.factdriven.execution.Receptor
 import io.factdriven.execution.Type
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
+import org.camunda.bpm.model.bpmn.impl.instance.ConditionExpressionImpl
 import org.camunda.bpm.model.bpmn.instance.*
 import org.camunda.bpm.model.bpmn.instance.bpmndi.*
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaExecutionListener
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaField
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds
 import org.camunda.bpm.model.bpmn.instance.di.Waypoint
+import org.camunda.bpm.model.xml.impl.type.ModelElementTypeImpl
 import kotlin.reflect.KClass
 
 
@@ -98,7 +100,7 @@ enum class BpmnGatewayType {
     exclusive
 }
 
-class BpmnGatewaySymbol(id: String, context: String, name: String, parent: Container, val gatewayType: BpmnGatewayType): BpmnSymbol(id, context, name, parent)  {
+class BpmnGatewaySymbol(id: String, context: String, name: String, parent: Container, val gatewayType: BpmnGatewayType, val splitting: Boolean = false): BpmnSymbol(id, context, name, parent)  {
 
     override val inner = Dimension(50, 50)
 
@@ -331,6 +333,35 @@ fun transform(container: Container): BpmnModelInstance {
                 bpmnEdge.addChildElement(this)
             }
         }
+
+        with(connector.conditional) {
+            if (this != null) {
+
+                sequenceFlow.name = label.replace(" ", "\n")
+
+                if (condition != null) {
+                    sequenceFlow.conditionExpression = modelInstance.newInstance(ConditionExpression::class.java);
+                    sequenceFlow.conditionExpression.textContent = "#{condition.evaluate(execution, '${id}')}"
+                } else {
+                    (flowNodes[connector.source] as ExclusiveGateway).default = sequenceFlow
+                }
+
+                val bpmnLabel = modelInstance.newInstance(BpmnLabel::class.java)
+                bpmnEdge.addChildElement(bpmnLabel)
+
+                with(modelInstance.newInstance(Bounds::class.java)) {
+                    x = (connector.source.rightCenter.x + zero.x).toDouble()
+                    val waypoint = if (connector.waypoints.size > 1) connector.waypoints[1] else connector.waypoints[0]
+                    val diff = (label.toCharArray().filter { it == ' ' }.size * 13 + 18) * -1
+                    y = (waypoint.y + zero.y).toDouble() + diff
+                    height = 14.toDouble()
+                    width = 20.toDouble()
+                    bpmnLabel.addChildElement(this)
+                }
+
+            }
+        }
+
 
     }
 

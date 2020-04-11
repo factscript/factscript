@@ -19,8 +19,8 @@ interface Node {
     val children: List<Node>
     val position: Int
 
-    fun get(id: String): Node
-    fun <N: Node> get(id: String, type: KClass<in N> = Node::class): N
+    fun get(id: String): Node?
+    fun <N: Node> get(id: String, type: KClass<in N> = Node::class): N?
 
     val first: Node
     val last: Node

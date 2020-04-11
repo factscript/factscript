@@ -5,6 +5,7 @@ import io.factdriven.Messages
 import io.factdriven.definition.*
 import io.factdriven.execution.*
 import io.factdriven.impl.definition.idSeparator
+import io.factdriven.impl.definition.positionSeparator
 import io.factdriven.impl.utils.Json
 import io.factdriven.impl.utils.json
 import io.factdriven.visualization.bpmn.*
@@ -214,6 +215,38 @@ class CamundaMessagePublisher: MessagePublisher {
 
 }
 
+val DelegateExecution.history: List<Message> get() {
+    return Messages.fromJson(getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized)
+}
+
+val DelegateExecution.flow: Flow get() {
+    return Flows.get(nodeId)
+}
+
+val DelegateExecution.node: Node get() {
+    return node(nodeId)
+}
+
+val DelegateExecution.nodeId: String get() {
+    return currentActivityId.replace("${positionSeparator}Fork", "").replace("${positionSeparator}Join", "")
+}
+
+fun <N: Node> DelegateExecution.node(id: String): N {
+    return flow.get(id) as N
+}
+
+val DelegateExecution.state: Any get() {
+    return history.newInstance(node.entity)
+}
+
+class CamundaCondition {
+
+    fun evaluate(execution: DelegateExecution, id: String): Boolean {
+        return execution.node<Conditional>(id).condition!!.invoke(execution.state)
+    }
+
+}
+
 
 class CamundaFlowTransitionListener: ExecutionListener {
 
@@ -253,9 +286,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
 
     override fun notify(execution: DelegateExecution) {
 
-        val id = execution.currentActivityId
-        val definition = Flows.get(id)
-        val node = definition.get(id)
+        val node = execution.node
         val messages = Messages.fromJson(Json(execution.getVariableTyped<JsonValue>(MESSAGES_VAR, false).valueSerialized!!)).toMutableList()
         fun aggregate() = messages.newInstance(node.entity)
 
@@ -263,7 +294,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
             return when(node) {
                 is Throwing -> {
                     val fact = node.instance.invoke(aggregate())
-                    val correlating = definition.find(nodeOfType = Promising::class)?.succeeding?.isInstance(fact) ?: false
+                    val correlating = execution.flow.find(nodeOfType = Promising::class)?.succeeding?.isInstance(fact) ?: false
                     Message(
                         messages,
                         Fact(fact),
@@ -332,6 +363,7 @@ class CamundaFlowExecutionPlugin: ProcessEnginePlugin {
         configuration.customJobHandlers = configuration.customJobHandlers ?: mutableListOf()
         configuration.processEnginePlugins = configuration.processEnginePlugins + SpinProcessEnginePlugin()
         configuration.customJobHandlers.add(CamundaBpmFlowJobHandler())
+        configuration.beans = mapOf("condition" to CamundaCondition())
     }
 
     override fun postInit(configuration: ProcessEngineConfigurationImpl) {

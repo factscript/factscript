@@ -3,8 +3,8 @@ package io.factdriven.definition
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Checking : Node {
+interface Conditional : Node {
 
-    val condition: Any.() -> Boolean
+    val condition: (Any.() -> Boolean)?
 
 }

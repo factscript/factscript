@@ -1,16 +1,19 @@
-package io.factdriven.visualization.examples.payment4
+package io.factdriven.impl.execution.examples.payment4
 
 import io.factdriven.flow
-import java.util.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 class PaymentRetrieval(fact: RetrievePayment) {
 
-    var id = UUID.randomUUID().toString()
-    var total = fact.amount
-    var covered = 0F
+    val reference = "SomeReference"
+    val amount = fact.amount
+    var retrieved = false; private set
+
+    fun apply(fact: PaymentRetrieved) {
+        retrieved = true
+    }
 
     companion object {
 
@@ -21,16 +24,16 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 on command RetrievePayment::class
 
                 select("Payment (partly) uncovered?") either {
-                    given("Yes") condition { covered < total }
+                    given("Yes") condition { amount > 0 }
                     execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(id, total - covered)
+                        ChargeCreditCard(reference, amount)
                     }
                 } or {
                     given("No") // = default path w/o condition
                 }
 
                 emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(total)
+                    PaymentRetrieved(amount)
                 }
 
             }

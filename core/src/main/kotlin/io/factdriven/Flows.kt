@@ -6,6 +6,7 @@ import io.factdriven.execution.Receptor
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.impl.definition.ExecutionImpl
+import io.factdriven.impl.definition.idSeparator
 import io.factdriven.language.Flow
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
@@ -33,7 +34,8 @@ object Flows {
     }
 
     fun get(id: String): io.factdriven.definition.Flow {
-        return get(Type(id.split("-")[0], id.split("-")[1]))
+        val split = id.split(idSeparator)
+        return get(Type(split[0], split[1]))
     }
 
     fun get(type: Type): io.factdriven.definition.Flow {

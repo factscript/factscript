@@ -2,6 +2,7 @@ package io.factdriven.visualization.bpmn
 
 import io.factdriven.definition.*
 import io.factdriven.execution.type
+import io.factdriven.impl.definition.positionSeparator
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -61,15 +62,16 @@ fun translate(flow: Flow): Container {
             is Branching -> {
                 val branch = Branch(node.id, "", "", parent)
                 BpmnGatewaySymbol(
-                    "${node.id}_Fork",
+                    "${node.id}${positionSeparator}Fork",
                     "",
                     node.label ?: "",
                     branch,
-                    BpmnGatewayType.exclusive
+                    BpmnGatewayType.exclusive,
+                    true
                 )
                 node.children.forEach { translate(it, branch) }
                 BpmnGatewaySymbol(
-                    "${node.id}_Join",
+                    "${node.id}${positionSeparator}Join",
                     "",
                     "",
                     branch,
@@ -80,7 +82,9 @@ fun translate(flow: Flow): Container {
                 val sequence = Sequence(node.id, node.entity.type.context, node.entity.type.name, parent)
                 node.children.forEach { translate(it, sequence) }
             }
-            is Checking -> { /* do nothing */ }
+            is Conditional -> {
+                (parent as Sequence).conditional = node
+            }
             else -> throw IllegalArgumentException()
         }
     }
@@ -157,6 +161,8 @@ class Sequence(id: String, context: String, name: String, parent: Container? = n
     init {
         parent?.add(this)
     }
+
+    var conditional: Conditional? = null
 
     override val dimension: Dimension
         get() = if (children.isEmpty()) Dimension(
@@ -351,6 +357,16 @@ class Connector(val source: Symbol, val target: Symbol): Graphical,
     Identified {
 
     override val id = source.id + "-" + target.id
+
+    val conditional: Conditional? get() {
+        return if (source is BpmnGatewaySymbol) {
+            if (target is BpmnGatewaySymbol) {
+                (source.parent.children.find { it is Sequence && it.children.isEmpty() } as Sequence).conditional
+            } else {
+                (target.parent as Sequence).conditional
+            }
+        } else null
+    }
 
     val waypoints: List<Position> get() {
         val from = source.waypoint(this)

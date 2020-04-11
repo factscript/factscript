@@ -62,16 +62,23 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
             }
         } as List<N>
 
-    override fun get(id: String): Node {
+    override fun get(id: String): Node? {
         return get(id, Node::class)
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <N: Node> get(id: String, type: KClass<in N>): N =
-        (if (type.isInstance(this) && this.id == id)
-            this
-        else
-            children.find { type.isInstance(it) && it.id == id } ?: throw IllegalArgumentException("Node '${id}' is not defined!")) as N
+    override fun <N: Node> get(id: String, type: KClass<in N>): N? {
+        if (type.isInstance(this) && this.id == id)
+            return this as N?
+        else {
+            children.forEach {
+                val result = it.get(id, type)
+                if (result != null)
+                    return result
+            }
+        }
+        return null
+    }
 
     override fun isFirstChild(): Boolean = this == first
 

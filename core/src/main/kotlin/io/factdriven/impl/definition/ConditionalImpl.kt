@@ -1,28 +1,28 @@
 package io.factdriven.impl.definition
 
-import io.factdriven.definition.Checking
+import io.factdriven.definition.Conditional
 import io.factdriven.definition.Node
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.Given
 import io.factdriven.language.GivenCondition
 
-open class CheckingImpl<T: Any>(parent: Node):
+open class ConditionalImpl<T: Any>(parent: Node):
 
     Given<T>,
 
-    Checking,
+    Conditional,
     NodeImpl(parent)
 
 {
 
-    override lateinit var condition: Any.() -> Boolean
+    override var condition: (Any.() -> Boolean)? = null
     override lateinit var label: String protected set
 
     override val type: Type
         get() = Type(
             entity.type.context,
-            Given::class.java.simpleName.toLowerCase()
+            Given::class.java.simpleName
         )
 
     override fun invoke(case: String): Given<T> {
