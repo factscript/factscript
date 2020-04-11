@@ -1,6 +1,7 @@
 package io.factdriven.impl.execution
 
 import io.factdriven.Flows
+import io.factdriven.execution.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -34,7 +35,8 @@ class EndpointTest {
     @Test
     fun testHandlingWithProperties() {
 
-        val handling = Receptor(SomeFact::class, mapOf("property" to "value"))
+        val handling =
+            Receptor(SomeFact::class, mapOf("property" to "value"))
         assertEquals(Type.from(SomeFact::class), handling.receiving)
         assertEquals(mapOf("property" to "value"), handling.expecting)
         assertEquals("0da4919659baf91c58457bd5950cc41b", handling.hash)
@@ -44,7 +46,10 @@ class EndpointTest {
     @Test
     fun testEndpoint() {
 
-        val endpoint = Receiver(EntityId(SomeHandler::class), Receptor(SomeFact::class))
+        val endpoint = Receiver(
+            EntityId(SomeHandler::class),
+            Receptor(SomeFact::class)
+        )
         assertEquals(Type.from(SomeHandler::class), endpoint.entity.type)
         assertEquals(Type.from(SomeHandler::class), endpoint.entity.type)
         assertEquals(null, endpoint.entity.id)
@@ -62,11 +67,18 @@ class MessageReceptorTest {
     fun testHandling() {
 
         val definition = Flows.get(PaymentRetrieval::class)
-        val message = Message(PaymentRetrieval::class, Fact(RetrievePayment(5F)))
+        val message = Message(
+            PaymentRetrieval::class,
+            Fact(RetrievePayment(5F))
+        )
 
         val handling = definition.findReceptorsFor(message)
         assertEquals(1, handling.size)
-        assertEquals(Type(RetrievePayment::class.java.`package`.name, "RetrievePayment"), handling[0].receiving)
+        assertEquals(
+            Type(
+                RetrievePayment::class.java.`package`.name,
+                "RetrievePayment"
+            ), handling[0].receiving)
         assertEquals(0, handling[0].expecting.size)
 
     }

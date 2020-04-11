@@ -3,9 +3,9 @@ package io.factdriven
 import io.factdriven.execution.MessageProcessor
 import io.factdriven.execution.MessagePublisher
 import io.factdriven.execution.MessageStore
-import io.factdriven.impl.execution.Message
-import io.factdriven.impl.execution.newInstance
-import io.factdriven.impl.execution.type
+import io.factdriven.execution.Message
+import io.factdriven.execution.newInstance
+import io.factdriven.execution.type
 import io.factdriven.impl.utils.Json
 import io.factdriven.impl.utils.json
 import org.slf4j.Logger

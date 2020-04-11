@@ -1,7 +1,7 @@
 package io.factdriven.visualization.bpmn
 
-import io.factdriven.impl.execution.Receptor
-import io.factdriven.impl.execution.Type
+import io.factdriven.execution.Receptor
+import io.factdriven.execution.Type
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
@@ -202,7 +202,9 @@ fun transform(container: Container): BpmnModelInstance {
                             if (message == null) {
                                 with(modelInstance.newInstance(Message::class.java)) {
                                     setAttributeValue("id", symbol.name)
-                                    setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) Receptor(Type(symbol.context, symbol.name)).hash else "#{message}")
+                                    setAttributeValue("name", if (symbol.position() == BpmnEventPosition.start) Receptor(
+                                        Type(symbol.context, symbol.name)
+                                    ).hash else "#{message}")
                                     definitions.addChildElement(this)
                                     messages[symbol.name] = this
                                     messageEventDefinition.message = this

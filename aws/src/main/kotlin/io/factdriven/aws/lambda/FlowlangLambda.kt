@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler
 import io.factdriven.aws.StateMachineService
 import io.factdriven.aws.translation.FlowTranslator
 import io.factdriven.definition.Flow
-import io.factdriven.impl.execution.type
+import io.factdriven.execution.type
 
 abstract class FlowlangLambda : RequestHandler<Any, String>{
 

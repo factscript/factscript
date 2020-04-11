@@ -1,8 +1,8 @@
 package io.factdriven.definition
 
 import io.factdriven.Flows
-import io.factdriven.impl.execution.Type
-import io.factdriven.impl.execution.type
+import io.factdriven.execution.Type
+import io.factdriven.execution.type
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -26,7 +26,12 @@ class FlowTest {
     @Test
     fun testGetDefinitionByName() {
         assertThrows<IllegalArgumentException> { Flows.get(Any::class.type) }
-        assertDoesNotThrow { Flows.get(Type(PaymentRetrieval::class.java.`package`.name, "PaymentRetrieval")) }
+        assertDoesNotThrow { Flows.get(
+            Type(
+                PaymentRetrieval::class.java.`package`.name,
+                "PaymentRetrieval"
+            )
+        ) }
     }
 
 }

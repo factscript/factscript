@@ -1,4 +1,4 @@
-package io.factdriven.impl.execution
+package io.factdriven.execution
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.math.BigInteger

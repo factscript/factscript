@@ -1,7 +1,7 @@
 package io.factdriven.visualization.bpmn
 
 import io.factdriven.definition.*
-import io.factdriven.impl.execution.type
+import io.factdriven.execution.type
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

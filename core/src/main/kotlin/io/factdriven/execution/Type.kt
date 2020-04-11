@@ -1,4 +1,4 @@
-package io.factdriven.impl.execution
+package io.factdriven.execution
 
 import io.factdriven.impl.definition.idSeparator
 import kotlin.reflect.KClass
@@ -18,7 +18,8 @@ data class Type(val context: String, /* Name unique within given context */ val 
         fun from(kClass: KClass<*>): Type {
             val name = kClass.java.name
             val index = name.lastIndexOf('.')
-            val type = Type(name.substring(0, index), name.substring(index + 1))
+            val type =
+                Type(name.substring(0, index), name.substring(index + 1))
             types[type] = kClass
             return type
         }
@@ -37,7 +38,10 @@ data class Type(val context: String, /* Name unique within given context */ val 
 
 }
 
-val KClass<*>.type: Type get() = Type.from(this)
+val KClass<*>.type: Type
+    get() = Type.from(
+        this
+    )
 
 val Type.kClass: KClass<*> get() {
     return Class.forName("${context}.${name}").kotlin

@@ -2,8 +2,8 @@ package io.factdriven.impl.definition
 
 import io.factdriven.definition.Node
 import io.factdriven.definition.Throwing
-import io.factdriven.impl.execution.Type
-import io.factdriven.impl.execution.type
+import io.factdriven.execution.Type
+import io.factdriven.execution.type
 import io.factdriven.language.Emit
 import io.factdriven.language.Issue
 import io.factdriven.language.Sentence

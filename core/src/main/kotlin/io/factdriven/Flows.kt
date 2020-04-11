@@ -1,7 +1,10 @@
 package io.factdriven
 
 import io.factdriven.definition.Promising
-import io.factdriven.impl.execution.*
+import io.factdriven.execution.Message
+import io.factdriven.execution.Receptor
+import io.factdriven.execution.Type
+import io.factdriven.execution.type
 import io.factdriven.impl.definition.ExecutionImpl
 import io.factdriven.language.Flow
 import java.lang.IllegalArgumentException

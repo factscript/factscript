@@ -1,6 +1,8 @@
 package io.factdriven.impl.execution
 
 import io.factdriven.Messages
+import io.factdriven.execution.Fact
+import io.factdriven.execution.Message
 import io.factdriven.impl.execution.camunda.*
 
 import org.apache.ibatis.logging.LogFactory

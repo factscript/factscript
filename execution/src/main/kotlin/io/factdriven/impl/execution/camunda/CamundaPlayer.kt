@@ -3,11 +3,8 @@ package io.factdriven.impl.execution.camunda
 import io.factdriven.Flows
 import io.factdriven.Messages
 import io.factdriven.definition.*
-import io.factdriven.execution.MessageProcessor
-import io.factdriven.execution.MessagePublisher
-import io.factdriven.execution.MessageStore
+import io.factdriven.execution.*
 import io.factdriven.impl.definition.idSeparator
-import io.factdriven.impl.execution.*
 import io.factdriven.impl.utils.Json
 import io.factdriven.impl.utils.json
 import io.factdriven.visualization.bpmn.*
@@ -81,7 +78,14 @@ class CamundaMessageProcessor: MessageProcessor {
                     .topic(handling.hash, Long.MAX_VALUE)
                     .execute()
                 return externalTasksHandlingMessage.map { task ->
-                    Message(message, Receiver(EntityId(Type.from(task.processDefinitionKey), task.businessKey), handling))
+                    Message(
+                        message, Receiver(
+                            EntityId(
+                                Type.from(task.processDefinitionKey),
+                                task.businessKey
+                            ), handling
+                        )
+                    )
                 }
             }
 
@@ -102,7 +106,16 @@ class CamundaMessageProcessor: MessageProcessor {
 
                 return eventSubscriptionsHandlingMessage.mapIndexed { index, subscription ->
                     val processDefinitionKey = subscription.activityId.split(idSeparator)
-                    Message(message, Receiver(EntityId(Type(processDefinitionKey[0], processDefinitionKey[1]), businessKeysOfRunningProcessInstances[index]), handling))
+                    Message(
+                        message, Receiver(
+                            EntityId(
+                                Type(
+                                    processDefinitionKey[0],
+                                    processDefinitionKey[1]
+                                ), businessKeysOfRunningProcessInstances[index]
+                            ), handling
+                        )
+                    )
                 }
 
             }
@@ -251,7 +264,11 @@ class CamundaFlowNodeStartListener: ExecutionListener {
                 is Throwing -> {
                     val fact = node.instance.invoke(aggregate())
                     val correlating = definition.find(nodeOfType = Promising::class)?.succeeding?.isInstance(fact) ?: false
-                    Message(messages, Fact(fact), if (correlating) messages.first().id else null)
+                    Message(
+                        messages,
+                        Fact(fact),
+                        if (correlating) messages.first().id else null
+                    )
                 }
                 else -> null
             }

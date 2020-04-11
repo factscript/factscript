@@ -1,7 +1,7 @@
 package io.factdriven.impl.definition
 
 import io.factdriven.definition.*
-import io.factdriven.impl.execution.*
+import io.factdriven.execution.*
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf

@@ -4,8 +4,8 @@ import io.factdriven.Flows
 import io.factdriven.definition.Executing
 import io.factdriven.definition.Node
 import io.factdriven.definition.Promising
-import io.factdriven.impl.execution.Receptor
-import io.factdriven.impl.execution.Message
+import io.factdriven.execution.Receptor
+import io.factdriven.execution.Message
 import io.factdriven.language.Execute
 import io.factdriven.language.Sentence
 import kotlin.reflect.KClass

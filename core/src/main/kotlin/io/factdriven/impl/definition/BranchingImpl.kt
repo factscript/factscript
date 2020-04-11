@@ -3,8 +3,8 @@ package io.factdriven.impl.definition
 import io.factdriven.definition.Branching
 import io.factdriven.definition.Node
 import io.factdriven.definition.Gateway
-import io.factdriven.impl.execution.Type
-import io.factdriven.impl.execution.type
+import io.factdriven.execution.Type
+import io.factdriven.execution.type
 import io.factdriven.language.ConditionalExecution
 import io.factdriven.language.Select
 import io.factdriven.language.SelectOr
@@ -22,7 +22,11 @@ open class BranchingImpl<T: Any>(parent: Node):
     override lateinit var gateway: Gateway
     override lateinit var label: String protected set
 
-    override val type: Type get() = Type(entity.type.context, gateway.name)
+    override val type: Type
+        get() = Type(
+            entity.type.context,
+            gateway.name
+        )
 
     override fun either(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
         gateway = Gateway.Exclusive

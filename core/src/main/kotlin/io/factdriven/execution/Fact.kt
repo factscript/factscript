@@ -1,4 +1,4 @@
-package io.factdriven.impl.execution
+package io.factdriven.execution
 
 import io.factdriven.impl.utils.Json
 import java.util.*

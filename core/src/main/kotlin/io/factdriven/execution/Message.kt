@@ -1,4 +1,4 @@
-package io.factdriven.impl.execution
+package io.factdriven.execution
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.factdriven.impl.utils.Json
@@ -19,8 +19,15 @@ data class Message (
 
 ) {
 
-    constructor(type: KClass<*>, fact: Fact<*>): this(MessageId(EntityId(type, fact.id)), fact)
-    constructor(history: List<Message>, fact: Fact<*>, correlating: MessageId? = null): this(MessageId.nextAfter(history.last().id), fact, null, correlating)
+    constructor(type: KClass<*>, fact: Fact<*>): this(
+        MessageId(
+            EntityId(
+                type,
+                fact.id
+            )
+        ), fact)
+    constructor(history: List<Message>, fact: Fact<*>, correlating: MessageId? = null): this(
+        MessageId.nextAfter(history.last().id), fact, null, correlating)
     constructor(message: Message, receiver: Receiver): this(message.id, message.fact, receiver, message.correlating)
 
     companion object {
@@ -67,4 +74,16 @@ data class MessageId(val entity: EntityId, val version: Int = 0) {
 
     }
 
+}
+
+interface MessageProcessor {
+    fun process(message: Message)
+}
+
+interface MessagePublisher {
+    fun publish(vararg message: Message)
+}
+
+interface MessageStore {
+    fun load(id: String): List<Message>
 }

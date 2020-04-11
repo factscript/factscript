@@ -2,10 +2,10 @@ package io.factdriven.impl.definition
 
 import io.factdriven.definition.Consuming
 import io.factdriven.definition.Node
-import io.factdriven.impl.execution.Receptor
-import io.factdriven.impl.execution.Message
-import io.factdriven.impl.execution.Type
-import io.factdriven.impl.execution.type
+import io.factdriven.execution.Receptor
+import io.factdriven.execution.Message
+import io.factdriven.execution.Type
+import io.factdriven.execution.type
 import io.factdriven.impl.utils.getValue
 import io.factdriven.language.*
 import kotlin.reflect.KClass
@@ -48,7 +48,12 @@ open class ConsumingImpl<T: Any>(parent: Node):
 
     override fun findReceptorsFor(message: Message): List<Receptor> {
         return if (catching.isInstance(message.fact.details))
-            listOf(Receptor(catching, properties.map { it to message.fact.details.getValue(it) }.toMap()))
+            listOf(
+                Receptor(
+                    catching,
+                    properties.map { it to message.fact.details.getValue(it) }.toMap()
+                )
+            )
         else emptyList()
     }
 

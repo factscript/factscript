@@ -1,9 +1,7 @@
 package io.factdriven.impl.execution
 
 import io.factdriven.Messages
-import io.factdriven.execution.MessageProcessor
-import io.factdriven.execution.MessagePublisher
-import io.factdriven.execution.MessageStore
+import io.factdriven.execution.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 

@@ -1,6 +1,9 @@
 package io.factdriven.impl.execution
 
 import io.factdriven.Messages
+import io.factdriven.execution.Fact
+import io.factdriven.execution.Message
+import io.factdriven.execution.newInstance
 import io.factdriven.impl.utils.json
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -34,9 +37,13 @@ class MessageTest {
     @Test
     fun testJsonList() {
 
-        val messages = listOf(Message(Any::class, Fact(SomeFact("value1"))), Message(Any::class,
-            Fact(SomeFact("value2"))
-        ))
+        val messages = listOf(
+            Message(Any::class, Fact(SomeFact("value1"))),
+            Message(
+                Any::class,
+                Fact(SomeFact("value2"))
+            )
+        )
         assertEquals(messages, Messages.fromJson(messages.json))
 
     }
@@ -62,7 +69,13 @@ class ApplyMessagesToClassTest {
     @Test
     fun testApplyTo() {
 
-        val messages = listOf(Message(Any::class, Fact(SomeFact("value"))), Message(Any::class, Fact(SomeOtherFact("otherValue"))))
+        val messages = listOf(
+            Message(Any::class, Fact(SomeFact("value"))),
+            Message(
+                Any::class,
+                Fact(SomeOtherFact("otherValue"))
+            )
+        )
         val instance = messages.newInstance<SomeClass>()
 
         assertEquals("value", instance.someProperty)

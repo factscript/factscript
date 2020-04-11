@@ -1,8 +1,8 @@
 package io.factdriven.definition
 
-import io.factdriven.impl.execution.Receptor
-import io.factdriven.impl.execution.Message
-import io.factdriven.impl.execution.Type
+import io.factdriven.execution.Receptor
+import io.factdriven.execution.Message
+import io.factdriven.execution.Type
 import kotlin.reflect.KClass
 
 /**
