@@ -20,7 +20,7 @@ open class BranchingImpl<T: Any>(parent: Node):
 {
 
     override lateinit var gateway: Gateway
-    override lateinit var label: String protected set
+    override var label: String = ""; protected set
 
     override val type: Type
         get() = Type(
@@ -30,6 +30,11 @@ open class BranchingImpl<T: Any>(parent: Node):
 
     override fun either(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
         gateway = Gateway.Exclusive
+        return or(path)
+    }
+
+    override fun all(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
+        gateway = Gateway.Inclusive
         @Suppress("UNCHECKED_CAST")
         val flow = ConditionalExecutionImpl<T>(
             entity as KClass<T>,
@@ -40,7 +45,13 @@ open class BranchingImpl<T: Any>(parent: Node):
     }
 
     override fun or(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
-        return either(path)
+        @Suppress("UNCHECKED_CAST")
+        val flow = ConditionalExecutionImpl<T>(
+            entity as KClass<T>,
+            this
+        ).apply(path)
+        children.add(flow)
+        return this
     }
 
     override fun invoke(case: String): Select<T> {

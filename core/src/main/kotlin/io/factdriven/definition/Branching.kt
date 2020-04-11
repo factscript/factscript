@@ -9,4 +9,4 @@ interface Branching: Node {
 
 }
 
-enum class Gateway { Exclusive }
+enum class Gateway { Exclusive, Inclusive }

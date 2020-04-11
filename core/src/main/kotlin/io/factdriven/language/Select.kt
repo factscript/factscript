@@ -4,7 +4,7 @@ package io.factdriven.language
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLang
-interface Select<T: Any>: SelectEither<T>, Labeled<Select<T>>
+interface Select<T: Any>: SelectEither<T>, SelectAll<T>, Labeled<Select<T>>
 
 @FlowLang
 interface SelectEither<T: Any> {

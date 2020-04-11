@@ -66,7 +66,10 @@ fun translate(flow: Flow): Container {
                     "",
                     node.label ?: "",
                     branch,
-                    BpmnGatewayType.exclusive,
+                    when (node.gateway){
+                        Gateway.Exclusive -> BpmnGatewayType.exclusive
+                        Gateway.Inclusive -> BpmnGatewayType.inclusive
+                    },
                     true
                 )
                 node.children.forEach { translate(it, branch) }
@@ -75,7 +78,10 @@ fun translate(flow: Flow): Container {
                     "",
                     "",
                     branch,
-                    BpmnGatewayType.exclusive
+                    when (node.gateway){
+                        Gateway.Exclusive -> BpmnGatewayType.exclusive
+                        Gateway.Inclusive -> BpmnGatewayType.inclusive
+                    }
                 )
             }
             is Flow -> {

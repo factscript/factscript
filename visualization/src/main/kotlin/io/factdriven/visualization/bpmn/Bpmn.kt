@@ -97,7 +97,7 @@ class BpmnEventSymbol(id: String, context: String, name: String, parent: Contain
 }
 
 enum class BpmnGatewayType {
-    exclusive
+    exclusive, inclusive
 }
 
 class BpmnGatewaySymbol(id: String, context: String, name: String, parent: Container, val gatewayType: BpmnGatewayType, val splitting: Boolean = false): BpmnSymbol(id, context, name, parent)  {
@@ -107,6 +107,7 @@ class BpmnGatewaySymbol(id: String, context: String, name: String, parent: Conta
     override val elementClass: KClass<out FlowNode> get() {
         return when (gatewayType) {
             BpmnGatewayType.exclusive -> org.camunda.bpm.model.bpmn.instance.ExclusiveGateway::class
+            BpmnGatewayType.inclusive -> org.camunda.bpm.model.bpmn.instance.InclusiveGateway::class
         }
     }
 
@@ -343,7 +344,10 @@ fun transform(container: Container): BpmnModelInstance {
                     sequenceFlow.conditionExpression = modelInstance.newInstance(ConditionExpression::class.java);
                     sequenceFlow.conditionExpression.textContent = "#{condition.evaluate(execution, '${id}')}"
                 } else {
-                    (flowNodes[connector.source] as ExclusiveGateway).default = sequenceFlow
+                    when (flowNodes[connector.source]) {
+                        is ExclusiveGateway -> (flowNodes[connector.source] as ExclusiveGateway).default = sequenceFlow
+                        is InclusiveGateway -> (flowNodes[connector.source] as InclusiveGateway).default = sequenceFlow
+                    }
                 }
 
                 val bpmnLabel = modelInstance.newInstance(BpmnLabel::class.java)
