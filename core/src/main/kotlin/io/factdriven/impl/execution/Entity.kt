@@ -9,8 +9,8 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-data class EntityId(val type: String, val id: String?) {
-    constructor(kClass: KClass<*>, id: String? = null): this(kClass.type.toString(), id)
+data class EntityId(val type: Type, val id: String?) {
+    constructor(kClass: KClass<*>, id: String? = null): this(kClass.type, id)
 }
 
 fun <A: Any> List<Any>.newInstance(entityType: KClass<A>): A {

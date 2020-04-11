@@ -6,6 +6,7 @@ import io.factdriven.definition.*
 import io.factdriven.execution.MessageProcessor
 import io.factdriven.execution.MessagePublisher
 import io.factdriven.execution.MessageStore
+import io.factdriven.impl.definition.idSeparator
 import io.factdriven.impl.execution.*
 import io.factdriven.impl.utils.Json
 import io.factdriven.impl.utils.json
@@ -80,7 +81,7 @@ class CamundaMessageProcessor: MessageProcessor {
                     .topic(handling.hash, Long.MAX_VALUE)
                     .execute()
                 return externalTasksHandlingMessage.map { task ->
-                    Message(message, Receiver(EntityId(task.processDefinitionKey, task.businessKey), handling))
+                    Message(message, Receiver(EntityId(Type.from(task.processDefinitionKey), task.businessKey), handling))
                 }
             }
 
@@ -100,8 +101,8 @@ class CamundaMessageProcessor: MessageProcessor {
                 }
 
                 return eventSubscriptionsHandlingMessage.mapIndexed { index, subscription ->
-                    val processDefinitionKey = subscription.activityId.substring(0, subscription.activityId.indexOf("-"))
-                    Message(message, Receiver(EntityId(processDefinitionKey, businessKeysOfRunningProcessInstances[index]), handling))
+                    val processDefinitionKey = subscription.activityId.split(idSeparator)
+                    Message(message, Receiver(EntityId(Type(processDefinitionKey[0], processDefinitionKey[1]), businessKeysOfRunningProcessInstances[index]), handling))
                 }
 
             }

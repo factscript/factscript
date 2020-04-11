@@ -30,7 +30,7 @@ class FlowTranslator {
             if (currentTraverse is Branching) {
                 translateBlock(stateMachineBuilder, currentTraverse)
             } else if (!(currentTraverse is Flow)) {
-                if (currentTraverse.isFirst()) {
+                if (currentTraverse.isFirstChild()) {
                     stateMachineBuilder.startAt(currentTraverse.id)
                 }
                 translate(stateMachineBuilder, currentTraverse)

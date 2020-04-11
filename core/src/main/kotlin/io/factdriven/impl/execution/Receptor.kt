@@ -22,7 +22,7 @@ data class Receptor(val receiving: Type, val expecting: Map<String, Any?> = empt
 
         private fun hash(receptor: Receptor): String {
             val buffer = StringBuffer(receptor.receiving.context)
-            buffer.append("|").append(receptor.receiving.local)
+            buffer.append("|").append(receptor.receiving.name)
             if (receptor.correlating != null) {
                 buffer.append("|correlating=").append(receptor.correlating.hash)
             } else {

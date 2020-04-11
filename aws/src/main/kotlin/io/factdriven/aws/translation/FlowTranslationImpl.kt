@@ -18,7 +18,7 @@ class ExecuteTranslationStrategy : FlowTranslationStrategy<Node>{
     }
 
     private fun transitionTo(node: Node): Transition.Builder? {
-        if(node.isLast()){
+        if(node.isLastChild()){
             return end()
         }
         return next(node.next?.id)

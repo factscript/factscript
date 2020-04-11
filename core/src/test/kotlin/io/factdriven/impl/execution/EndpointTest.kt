@@ -16,7 +16,7 @@ class EndpointTest {
     fun testHandler() {
 
         val streamId = EntityId(SomeHandler::class)
-        assertEquals(Type.from(SomeHandler::class), Type.from(streamId.type))
+        assertEquals(Type.from(SomeHandler::class), streamId.type)
         assertEquals(null, streamId.id)
 
     }
@@ -45,8 +45,8 @@ class EndpointTest {
     fun testEndpoint() {
 
         val endpoint = Receiver(EntityId(SomeHandler::class), Receptor(SomeFact::class))
-        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.entity.type))
-        assertEquals(Type.from(SomeHandler::class), Type.from(endpoint.entity.type))
+        assertEquals(Type.from(SomeHandler::class), endpoint.entity.type)
+        assertEquals(Type.from(SomeHandler::class), endpoint.entity.type)
         assertEquals(null, endpoint.entity.id)
         assertEquals(Type.from(SomeFact::class), endpoint.receptor.receiving)
         assertEquals(emptyMap<String, Any>(), endpoint.receptor.expecting)

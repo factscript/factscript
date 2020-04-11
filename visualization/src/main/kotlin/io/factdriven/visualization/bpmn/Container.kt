@@ -14,7 +14,7 @@ fun translate(flow: Flow): Container {
                 BpmnTaskSymbol(
                     node.id,
                     node.throwing.type.context,
-                    node.throwing.type.local,
+                    node.throwing.type.name,
                     parent,
                     BpmnTaskType.service
                 )
@@ -23,7 +23,7 @@ fun translate(flow: Flow): Container {
                 BpmnEventSymbol(
                     node.id,
                     node.catching.type.context,
-                    node.catching.type.local,
+                    node.catching.type.name,
                     parent,
                     BpmnEventType.message,
                     BpmnEventCharacteristic.catching
@@ -33,17 +33,17 @@ fun translate(flow: Flow): Container {
                 BpmnTaskSymbol(
                     node.id,
                     node.catching.type.context,
-                    node.catching.type.local,
+                    node.catching.type.name,
                     parent,
                     BpmnTaskType.receive
                 )
             }
             is Throwing -> {
-                if (node.isLast()) {
+                if (node.isLastChild()) {
                     BpmnEventSymbol(
                         node.id,
                         node.throwing.type.context,
-                        node.throwing.type.local,
+                        node.throwing.type.name,
                         parent,
                         BpmnEventType.message,
                         BpmnEventCharacteristic.throwing
@@ -52,7 +52,7 @@ fun translate(flow: Flow): Container {
                     BpmnTaskSymbol(
                         node.id,
                         node.throwing.type.context,
-                        node.throwing.type.local,
+                        node.throwing.type.name,
                         parent,
                         BpmnTaskType.send
                     )
@@ -61,7 +61,7 @@ fun translate(flow: Flow): Container {
             is Branching -> {
                 val branch = Branch(node.id, "", "", parent)
                 BpmnGatewaySymbol(
-                    "${node.id}-split",
+                    "${node.id}_Fork",
                     "",
                     node.label ?: "",
                     branch,
@@ -69,7 +69,7 @@ fun translate(flow: Flow): Container {
                 )
                 node.children.forEach { translate(it, branch) }
                 BpmnGatewaySymbol(
-                    "${node.id}-join",
+                    "${node.id}_Join",
                     "",
                     "",
                     branch,
@@ -77,7 +77,7 @@ fun translate(flow: Flow): Container {
                 )
             }
             is Flow -> {
-                val sequence = Sequence(node.id, node.entity.type.context, node.entity.type.local, parent)
+                val sequence = Sequence(node.id, node.entity.type.context, node.entity.type.name, parent)
                 node.children.forEach { translate(it, sequence) }
             }
             is Checking -> { /* do nothing */ }
@@ -85,7 +85,7 @@ fun translate(flow: Flow): Container {
         }
     }
 
-    val sequence = Sequence(flow.id, flow.entity.type.context, flow.entity.type.local)
+    val sequence = Sequence(flow.id, flow.entity.type.context, flow.entity.type.name)
     flow.children.forEach { translate(it, sequence) }
     return sequence
 

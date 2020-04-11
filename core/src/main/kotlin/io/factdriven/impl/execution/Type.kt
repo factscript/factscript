@@ -1,14 +1,15 @@
 package io.factdriven.impl.execution
 
+import io.factdriven.impl.definition.idSeparator
 import kotlin.reflect.KClass
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 /*
- * Unique, but human manageable and readable name for object types
+ * Unique, but human manageable and readable name for object and node types
  */
-data class Type(val context: String, /* Name unique within given context */ val local: String) {
+data class Type(val context: String, /* Name unique within given context */ val name: String) {
 
     companion object {
 
@@ -23,13 +24,15 @@ data class Type(val context: String, /* Name unique within given context */ val 
         }
 
         fun from(string: String): Type {
-            return from(Class.forName(string).kotlin)
+            val split = string.split(idSeparator)
+            assert(split.size == 2) { "Type string must consist of two strings separated by '${idSeparator}'!" }
+            return Type(split[0], split[1])
         }
 
     }
 
     override fun toString(): String {
-        return "$context.$local"
+        return "$context$idSeparator$name"
     }
 
 }
@@ -37,9 +40,9 @@ data class Type(val context: String, /* Name unique within given context */ val 
 val KClass<*>.type: Type get() = Type.from(this)
 
 val Type.kClass: KClass<*> get() {
-    return Class.forName(toString()).kotlin
+    return Class.forName("${context}.${name}").kotlin
 }
 
 val Type.label: String get() {
-    return local.let { local -> local.replace("(.)([A-Z\\d])".toRegex()) { "${it.groupValues[1]} ${it.groupValues[2].toLowerCase()}" } }
+    return name.let { local -> local.replace("(.)([A-Z\\d])".toRegex()) { "${it.groupValues[1]} ${it.groupValues[2].toLowerCase()}" } }
 }
