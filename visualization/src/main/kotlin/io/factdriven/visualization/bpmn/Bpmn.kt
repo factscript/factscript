@@ -97,7 +97,7 @@ class BpmnEventSymbol(id: String, context: String, name: String, parent: Contain
 }
 
 enum class BpmnGatewayType {
-    exclusive, inclusive
+    exclusive, inclusive, parallel
 }
 
 class BpmnGatewaySymbol(id: String, context: String, name: String, parent: Container, val gatewayType: BpmnGatewayType, val splitting: Boolean = false): BpmnSymbol(id, context, name, parent)  {
@@ -108,6 +108,7 @@ class BpmnGatewaySymbol(id: String, context: String, name: String, parent: Conta
         return when (gatewayType) {
             BpmnGatewayType.exclusive -> org.camunda.bpm.model.bpmn.instance.ExclusiveGateway::class
             BpmnGatewayType.inclusive -> org.camunda.bpm.model.bpmn.instance.InclusiveGateway::class
+            BpmnGatewayType.parallel -> org.camunda.bpm.model.bpmn.instance.ParallelGateway::class
         }
     }
 

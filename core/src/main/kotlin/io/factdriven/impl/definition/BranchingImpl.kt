@@ -5,15 +5,14 @@ import io.factdriven.definition.Node
 import io.factdriven.definition.Gateway
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
-import io.factdriven.language.ConditionalExecution
-import io.factdriven.language.Select
-import io.factdriven.language.SelectOr
+import io.factdriven.language.*
 import kotlin.reflect.KClass
 
 open class BranchingImpl<T: Any>(parent: Node):
 
     Select<T>,
     SelectOr<T>,
+    ExecuteAnd<T>,
     Branching,
     NodeImpl(parent)
 
@@ -46,7 +45,17 @@ open class BranchingImpl<T: Any>(parent: Node):
 
     override fun or(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
         @Suppress("UNCHECKED_CAST")
-        val flow = ConditionalExecutionImpl<T>(
+        val flow = ConditionalExecutionImpl(
+            entity as KClass<T>,
+            this
+        ).apply(path)
+        children.add(flow)
+        return this
+    }
+
+    override fun and(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
+        @Suppress("UNCHECKED_CAST")
+        val flow = ExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)

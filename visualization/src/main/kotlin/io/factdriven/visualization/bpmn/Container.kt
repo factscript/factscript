@@ -69,6 +69,7 @@ fun translate(flow: Flow): Container {
                     when (node.gateway){
                         Gateway.Exclusive -> BpmnGatewayType.exclusive
                         Gateway.Inclusive -> BpmnGatewayType.inclusive
+                        Gateway.Parallel -> BpmnGatewayType.parallel
                     },
                     true
                 )
@@ -81,6 +82,7 @@ fun translate(flow: Flow): Container {
                     when (node.gateway){
                         Gateway.Exclusive -> BpmnGatewayType.exclusive
                         Gateway.Inclusive -> BpmnGatewayType.inclusive
+                        Gateway.Parallel -> BpmnGatewayType.parallel
                     }
                 )
             }

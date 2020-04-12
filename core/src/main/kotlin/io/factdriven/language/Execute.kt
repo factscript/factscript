@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLang
-interface Execute<T: Any>: ExecuteCommand<T>
+interface Execute<T: Any>: ExecuteCommand<T>, ExecuteAll<T>
 
 @FlowLang
 interface ExecuteCommand<T: Any> {
