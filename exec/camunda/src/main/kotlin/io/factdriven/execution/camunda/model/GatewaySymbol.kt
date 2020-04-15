@@ -1,10 +1,12 @@
 package io.factdriven.execution.camunda.model
 
-import io.factdriven.definition.*
+import io.factdriven.definition.Branching
 import io.factdriven.execution.camunda.model.BpmnModel.Companion.margin
 import io.factdriven.impl.definition.positionSeparator
-import org.camunda.bpm.model.bpmn.instance.*
+import org.camunda.bpm.model.bpmn.instance.ExclusiveGateway
 import org.camunda.bpm.model.bpmn.instance.Gateway
+import org.camunda.bpm.model.bpmn.instance.InclusiveGateway
+import org.camunda.bpm.model.bpmn.instance.ParallelGateway
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -55,6 +57,11 @@ abstract class GatewaySymbol<OUT: Gateway>(node: Branching, parent: Element<out 
 class ExclusiveGatewaySymbol(node: Branching, parent: Element<out Branching,*>): GatewaySymbol<ExclusiveGateway>(node, parent) {
 
     override val model = process.model.newInstance(ExclusiveGateway::class.java)
+
+    override fun init() {
+        super.init()
+        model.diagramElement.isMarkerVisible = true
+    }
 
 }
 
