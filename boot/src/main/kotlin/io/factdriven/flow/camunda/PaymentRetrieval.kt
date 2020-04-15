@@ -34,8 +34,7 @@ data class PaymentRetrieval(
 
         fun init() {
 
-            // TODO "define" wird kritisiert
-            flow<PaymentRetrieval> {
+            flow <PaymentRetrieval> {
 
                 on command RetrievePayment::class promise {
                     report success PaymentRetrieved::class
@@ -62,6 +61,5 @@ data class PaymentRetrieval(
 }
 
 data class RetrievePayment(val reference: String, val accountId: String, val payment: Float)
-data class PaymentRetrievalAccepted(val paymentId: String)
 data class PaymentRetrieved(val paymentId: String, val payment: Float)
 

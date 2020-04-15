@@ -2,7 +2,6 @@ enableFeaturePreview('IMPROVED_POM_SUPPORT')
 
 rootProject.name = 'flowlang'
 include 'core'
-include 'visualization'
 include 'execution'
 include 'boot'
 include 'aws'

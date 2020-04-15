@@ -30,7 +30,10 @@ interface Node {
     fun isFirstChild(): Boolean
     fun isLastChild(): Boolean
     fun isParent(): Boolean
+    fun isRoot(): Boolean
     fun isChild(): Boolean
+    fun isFirstChildOfRoot(): Boolean
+    fun isLastChildOfRoot(): Boolean
 
     fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>? = null): N?
     fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>? = null): List<N>

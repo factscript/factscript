@@ -13,12 +13,15 @@ repositories {
 }
 
 dependencies {
-    compile project(':visualization')
+
+    compile project(':core')
 
     // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-engine
-    compile group: 'org.camunda.bpm', name: 'camunda-engine', version: '7.10.0'
+    compile group: 'org.camunda.bpm', name: 'camunda-engine', version: '7.13.0-alpha3'
     // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-engine-plugin-spin
-    compile group: 'org.camunda.bpm', name: 'camunda-engine-plugin-spin', version: '7.10.0'
+    compile group: 'org.camunda.bpm', name: 'camunda-engine-plugin-spin', version: '7.13.0-alpha3'
+    // https://mvnrepository.com/artifact/org.camunda.bpm.model/camunda-bpmn-model
+    compile group: 'org.camunda.bpm.model', name: 'camunda-bpmn-model', version: '7.13.0-alpha3'
     // https://mvnrepository.com/artifact/org.camunda.spin/camunda-spin-dataformat-json-jackson
     compile group: 'org.camunda.spin', name: 'camunda-spin-dataformat-json-jackson', version: '1.6.4'
 
