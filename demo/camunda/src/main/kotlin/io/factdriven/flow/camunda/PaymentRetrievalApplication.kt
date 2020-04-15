@@ -33,6 +33,7 @@ fun main(args: Array<String>) {
         Messages.register(CamundaMessageStore())
         PaymentRetrieval.init()
         CreditCardCharge.init()
+        CustomerAccount.init()
     }
 }
 

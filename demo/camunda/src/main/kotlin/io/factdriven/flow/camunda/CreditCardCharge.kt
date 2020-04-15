@@ -45,4 +45,4 @@ data class CreditCardCharge (
 
 data class ChargeCreditCard(val reference: String, val charge: Float)
 data class ConfirmationReceived(val reference: String)
-data class CreditCardCharged(val reference: String, val charge: Float? = null)
+data class CreditCardCharged(val reference: String, val charge: Float)

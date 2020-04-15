@@ -16,18 +16,12 @@ data class PaymentRetrieval(
 
     constructor(fact: RetrievePayment): this(fact.reference, fact.accountId, fact.payment)
 
-    var pending = 0F
-
-    fun apply(fact: ChargeCreditCard) {
-
-        pending = fact.charge
-
+    fun apply(fact: AmountWithdrawn) {
+        covered += fact.amount
     }
 
     fun apply(fact: CreditCardCharged) {
-
-        covered += fact.charge ?: pending
-
+        covered += fact.charge
     }
 
     companion object {
@@ -40,8 +34,8 @@ data class PaymentRetrieval(
                     report success PaymentRetrieved::class
                 }
 
-                execute command ChargeCreditCard::class by {
-                    ChargeCreditCard(reference = paymentId, charge = 1F)
+                execute command WithdrawAmount::class by {
+                    WithdrawAmount(name = accountId, amount = total)
                 }
 
                 select("Payment (partly) uncovered?") either {
@@ -50,7 +44,7 @@ data class PaymentRetrieval(
                         ChargeCreditCard(reference = paymentId, charge = total - covered)
                     }
                 } or {
-                    given("No") // = default path w/o condition
+                    given("No")
                 }
 
                 emit event PaymentRetrieved::class by {
