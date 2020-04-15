@@ -35,7 +35,7 @@ group 'factdriven'
 version '1.0.0-SNAPSHOT'
 
 dependencies {
-    compile project(':core')
+    compile project(':lang')
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
 

@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
 
-    compile project(':core')
+    compile project(':lang')
 
     // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-engine
     compile group: 'org.camunda.bpm', name: 'camunda-engine', version: '7.13.0-alpha3'

@@ -45,7 +45,8 @@ repositories {
 }
 
 dependencies {
-    compile project(':execution')
+
+    compile project(':camunda')
 
     if (isEe){
         println "using ee dependencies"
