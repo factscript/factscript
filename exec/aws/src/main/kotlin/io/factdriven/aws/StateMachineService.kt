@@ -5,9 +5,7 @@ import com.amazonaws.services.stepfunctions.AWSStepFunctions
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder
 import com.amazonaws.services.stepfunctions.builder.StateMachine
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder
-import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.end
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
-import com.amazonaws.services.stepfunctions.builder.conditions.Condition
 import com.amazonaws.services.stepfunctions.builder.conditions.NumericEqualsCondition
 import com.amazonaws.services.stepfunctions.builder.states.Choice
 import com.amazonaws.services.stepfunctions.builder.states.ChoiceState

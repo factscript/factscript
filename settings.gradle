@@ -1,9 +1,10 @@
 enableFeaturePreview('IMPROVED_POM_SUPPORT')
 
-rootProject.name = 'flowlang'
+rootProject.name = 'factdriven'
 include 'lang'
 include 'camunda'
 project(':camunda').projectDir = new File('exec/camunda')
 include 'camunda-demo'
-include 'aws'
 project(':camunda-demo').projectDir = new File('demo/camunda')
+include 'aws'
+project(':aws').projectDir = new File('exec/aws')
