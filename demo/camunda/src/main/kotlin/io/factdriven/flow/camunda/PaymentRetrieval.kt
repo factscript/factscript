@@ -44,8 +44,13 @@ data class PaymentRetrieval(
                     ChargeCreditCard(reference = paymentId, charge = 1F)
                 }
 
-                execute command ChargeCreditCard::class by {
-                    ChargeCreditCard(reference = paymentId, charge = total - covered)
+                select("Payment (partly) uncovered?") either {
+                    given("Yes") condition { covered < total }
+                    execute command ChargeCreditCard::class by {
+                        ChargeCreditCard(reference = paymentId, charge = total - covered)
+                    }
+                } or {
+                    given("No") // = default path w/o condition
                 }
 
                 emit event PaymentRetrieved::class by {

@@ -52,7 +52,7 @@ dependencies {
         println "using ee dependencies"
 
         // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-bom
-        implementation group: 'org.camunda.bpm', name: 'camunda-bom', version: '7.10.0-ee', ext: 'pom'
+        implementation group: 'org.camunda.bpm', name: 'camunda-bom', version: '7.12.0-ee', ext: 'pom'
 
         // https://mvnrepository.com/artifact/org.camunda.bpm.springboot/camunda-bpm-spring-boot-starter-webapp-ee
         compile group: 'org.camunda.bpm.springboot', name: 'camunda-bpm-spring-boot-starter-webapp-ee', version: '3.2.1'
@@ -60,7 +60,7 @@ dependencies {
         println "using ce dependencies"
 
         // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-bom
-        implementation group: 'org.camunda.bpm', name: 'camunda-bom', version: '7.10.0', ext: 'pom'
+        implementation group: 'org.camunda.bpm', name: 'camunda-bom', version: '7.12.0', ext: 'pom'
 
         // https://mvnrepository.com/artifact/org.camunda.bpm.springboot/camunda-bpm-spring-boot-starter-webapp
         compile group: 'org.camunda.bpm.springboot', name: 'camunda-bpm-spring-boot-starter-webapp', version: '3.2.1'
