@@ -27,7 +27,7 @@ open class ExecutingImpl<T: Any>(parent: Node):
         branch.gateway = Gateway.Parallel
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        val flow = ExecutionImpl(
+        val flow = FlowImpl(
             entity as KClass<T>,
             branch
         ).apply(path)

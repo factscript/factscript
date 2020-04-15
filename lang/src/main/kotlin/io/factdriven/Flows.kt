@@ -5,7 +5,7 @@ import io.factdriven.execution.Message
 import io.factdriven.execution.Receptor
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
-import io.factdriven.impl.definition.ExecutionImpl
+import io.factdriven.impl.definition.FlowImpl
 import io.factdriven.impl.definition.idSeparator
 import io.factdriven.language.Flow
 import java.lang.IllegalArgumentException
@@ -28,7 +28,7 @@ object Flows {
     }
 
     inline fun <reified T: Any> register(type: KClass<T> = T::class, flow: Flow<T>.() -> Unit): Flow<T> {
-        val definition = ExecutionImpl(type).apply(flow)
+        val definition = FlowImpl(type).apply(flow)
         register(definition)
         return definition
     }

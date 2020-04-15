@@ -55,7 +55,7 @@ open class BranchingImpl<T: Any>(parent: Node):
 
     override fun and(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
         @Suppress("UNCHECKED_CAST")
-        val flow = ExecutionImpl(
+        val flow = FlowImpl(
             entity as KClass<T>,
             this
         ).apply(path)

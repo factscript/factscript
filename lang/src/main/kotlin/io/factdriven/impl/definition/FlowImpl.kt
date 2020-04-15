@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-open class ExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
+open class FlowImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
 
     Flow<T>,
 
