@@ -110,6 +110,10 @@ task invokeFunctionPaymentRetrieval(type: AWSLambdaInvokeTask) {
     }
 }
 
+task migrateAndInvokePaymentRetrieval(type: GradleBuild) {
+    tasks = ['migrateFunctionPaymentRetrieval', 'invokeFunctionPaymentRetrieval']
+}
+
 task migrateAndInvoke(type: GradleBuild) {
     tasks = ['migrateFunction', 'invokeFunction']
 }

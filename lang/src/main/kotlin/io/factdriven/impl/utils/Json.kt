@@ -49,3 +49,6 @@ data class Json(val node: JsonNode) {
 val Any.json: String get() {
     return Json(this).toString()
 }
+val Any.compactJson: String get(){
+    return jacksonObjectMapper().writeValueAsString(this)
+}

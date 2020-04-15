@@ -1,6 +1,7 @@
 package io.factdriven.aws
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+import com.amazonaws.services.stepfunctions.AWSStepFunctions
 import com.amazonaws.services.stepfunctions.AWSStepFunctionsClientBuilder
 import com.amazonaws.services.stepfunctions.builder.StateMachine
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder
@@ -11,6 +12,8 @@ import com.amazonaws.services.stepfunctions.builder.conditions.NumericEqualsCond
 import com.amazonaws.services.stepfunctions.builder.states.Choice
 import com.amazonaws.services.stepfunctions.builder.states.ChoiceState
 import com.amazonaws.services.stepfunctions.model.CreateStateMachineRequest
+import com.amazonaws.services.stepfunctions.model.StartExecutionRequest
+import com.amazonaws.services.stepfunctions.model.StateMachineAlreadyExistsException
 import com.amazonaws.services.stepfunctions.model.UpdateStateMachineRequest
 
 class StateMachineService {
@@ -37,11 +40,7 @@ class StateMachineService {
     }
 
     fun createOrUpdateStateMachine(name: String, stateMachine: StateMachine) : String? {
-        val client = AWSStepFunctionsClientBuilder.standard()
-                .withRegion("eu-central-1")
-                .withCredentials(DefaultAWSCredentialsProviderChain())
-                .build()
-
+        val client = createClient()
         val updateArn: String?
         val stepFunctionRoleArn = System.getenv("STEP_FUNCTION_ROLE_ARN")
         println(stepFunctionRoleArn)
@@ -52,23 +51,37 @@ class StateMachineService {
                     .withRoleArn(stepFunctionRoleArn)
                     .withDefinition(stateMachine))
 
-            println(resultCreate.toString())
+            println("creation result: $resultCreate")
             return resultCreate.stateMachineArn
-        } catch (e: Exception){
+        } catch (e: StateMachineAlreadyExistsException){
             e.printStackTrace()
-            //TODO: parse specific "already exists" message
             updateArn = Regex("arn.*(?=\')").find(e.message.orEmpty())?.value
         }
 
         if(updateArn != null) {
+            println("updateArn is $updateArn")
             val result = client.updateStateMachine(UpdateStateMachineRequest()
                     .withStateMachineArn(updateArn)
                     .withRoleArn(stepFunctionRoleArn)
                     .withDefinition(stateMachine.toPrettyJson()))
 
-            println(result.toString())
+            println("update result is $result")
         }
 
         return updateArn
+    }
+
+    fun createClient(): AWSStepFunctions {
+        val client = AWSStepFunctionsClientBuilder.standard()
+                .withRegion("eu-central-1")
+                .withCredentials(DefaultAWSCredentialsProviderChain())
+                .build()
+        return client
+    }
+
+    fun execute(arn: String?) {
+        val client = createClient()
+        val startExecutionRequest: StartExecutionRequest = StartExecutionRequest().withStateMachineArn(arn)
+        client.startExecution(startExecutionRequest)
     }
 }
