@@ -3,6 +3,7 @@ package io.factdriven.definition
 import io.factdriven.Flows
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
+import io.factdriven.flow
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -14,13 +15,13 @@ import java.lang.IllegalArgumentException
 class FlowTest {
 
     init {
-        Flows.initialize(PaymentRetrieval::class)
+        Flows.initialize(FlowTestFlow::class)
     }
 
     @Test
     fun testGetDefinitionByType() {
         assertThrows<IllegalArgumentException> { Flows.get(Any::class) }
-        assertDoesNotThrow { Flows.get(PaymentRetrieval::class) }
+        assertDoesNotThrow { Flows.get(FlowTestFlow::class) }
     }
 
     @Test
@@ -28,10 +29,32 @@ class FlowTest {
         assertThrows<IllegalArgumentException> { Flows.get(Any::class.type) }
         assertDoesNotThrow { Flows.get(
             Type(
-                PaymentRetrieval::class.java.`package`.name,
-                "PaymentRetrieval"
+                FlowTestFlow::class.java.`package`.name,
+                "FlowTestFlow"
             )
         ) }
     }
 
 }
+
+class FlowTestFlow(fact: RetrievePayment) {
+
+    val amount = fact.amount
+
+    companion object {
+
+        init {
+            flow<FlowTestFlow> {
+                on command RetrievePayment::class
+                emit event PaymentRetrieved::class by {
+                    PaymentRetrieved(amount)
+                }
+            }
+        }
+
+    }
+
+}
+
+data class RetrievePayment(val amount: Float)
+data class PaymentRetrieved(val amount: Float)

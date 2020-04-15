@@ -14,7 +14,7 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
             is Executing -> ServiceTaskSymbol(it, this)
             is Promising -> CatchingEventSymbol(it, this)
             is Consuming -> ReceiveTaskSymbol(it, this)
-            is Throwing -> if (it.isLastChildOfRoot()) ThrowingEventSymbol(it, this) else SendTaskSymbol(it, this)
+            is Throwing -> if (it.isFinish()) ThrowingEventSymbol(it, this) else SendTaskSymbol(it, this)
             is Branching -> Branch(it, this)
             is Flow -> Sequence(it, this)
             is Conditional -> null

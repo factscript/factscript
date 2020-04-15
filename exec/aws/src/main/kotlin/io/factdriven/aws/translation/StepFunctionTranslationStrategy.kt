@@ -29,11 +29,11 @@ abstract class StepFunctionTranslationStrategy(val flowTranslator: FlowTranslato
 
         if(branching != null){
 
-            if(branching.next == null){
+            if(branching.nextSibling == null){
                 return determineNextNode(branching)
             }
 
-            return branching.next
+            return branching.nextSibling
         }
 
         return null
@@ -42,14 +42,14 @@ abstract class StepFunctionTranslationStrategy(val flowTranslator: FlowTranslato
     protected fun getNextNode(node: Node) : Node? {
         val skipList = listOf<KClass<*>>(Given::class)
 
-        if(node.next == null){
+        if(node.nextSibling == null){
             return null
         }
 
-        if(skipList.contains(node.next!!::class)){
-            return getNextNode(node.next!!)
+        if(skipList.contains(node.nextSibling!!::class)){
+            return getNextNode(node.nextSibling!!)
         }
-        return node.next
+        return node.nextSibling
     }
 
     protected fun getBranchingParent(node: Node) : Branching?{

@@ -22,18 +22,25 @@ interface Node {
     fun get(id: String): Node?
     fun <N: Node> get(id: String, type: KClass<in N> = Node::class): N?
 
-    val first: Node
-    val last: Node
-    val previous: Node?
-    val next: Node?
-
-    fun isFirstChild(): Boolean
-    fun isLastChild(): Boolean
-    fun isParent(): Boolean
     fun isRoot(): Boolean
+    fun isParent(): Boolean
     fun isChild(): Boolean
-    fun isFirstChildOfRoot(): Boolean
-    fun isLastChildOfRoot(): Boolean
+
+    val firstSibling: Node
+    val lastSibling: Node
+    val previousSibling: Node?
+    val nextSibling: Node?
+
+    fun isFirstSibling(): Boolean
+    fun isLastSibling(): Boolean
+
+    val start: Node
+    val finish: Node
+    val forward: Node?
+    val backward: Node?
+
+    fun isStart(): Boolean
+    fun isFinish(): Boolean
 
     fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>? = null): N?
     fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>? = null): List<N>

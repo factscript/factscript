@@ -24,6 +24,9 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(id, total - covered)
                     }
+                    execute command ChargeCreditCard::class by {
+                        ChargeCreditCard(id, total - covered)
+                    }
                 } and {
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(id, total - covered)

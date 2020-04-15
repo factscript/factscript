@@ -35,7 +35,7 @@ abstract class EventSymbol<IN: Node, OUT: Event>(node: IN, parent: Element<out F
 
 class CatchingEventSymbol(node: Catching, parent: Element<out Flow, *>): EventSymbol<Catching, CatchEvent>(node, parent) {
 
-    override val model: CatchEvent = process.model.newInstance((if (node.isFirstChildOfRoot()) StartEvent::class else IntermediateCatchEvent::class).java)
+    override val model: CatchEvent = process.model.newInstance((if (node.isStart()) StartEvent::class else IntermediateCatchEvent::class).java)
 
     override fun init() {
 
@@ -45,7 +45,7 @@ class CatchingEventSymbol(node: Catching, parent: Element<out Flow, *>): EventSy
         if (message == null) {
             with(process.model.newInstance(Message::class.java)) {
                 setAttributeValue("id", node.id + "-Message")
-                val name = if (node.isFirstChildOfRoot()) { Receptor(node.type).hash } else "#{message}"
+                val name = if (node.isStart()) { Receptor(node.type).hash } else "#{message}"
                 setAttributeValue("name", name)
                 process.model.definitions.addChildElement(this)
                 model.getChildElementsByType(MessageEventDefinition::class.java).first().message = this
@@ -60,6 +60,6 @@ class CatchingEventSymbol(node: Catching, parent: Element<out Flow, *>): EventSy
 
 class ThrowingEventSymbol(node: Throwing, parent: Element<out Flow, *>): EventSymbol<Throwing, ThrowEvent>(node, parent) {
 
-    override val model = process.model.newInstance((if (node.isLastChildOfRoot()) EndEvent::class else IntermediateThrowEvent::class).java)
+    override val model = process.model.newInstance((if (node.isFinish()) EndEvent::class else IntermediateThrowEvent::class).java)
 
 }

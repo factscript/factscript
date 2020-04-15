@@ -21,7 +21,7 @@ open class FlowTranslator {
         while (currentNode != null) {
             val strategy = determineTranslationStrategy(currentNode)
             strategy.translate(stateMachineBuilder, currentNode)
-            currentNode = currentNode.next
+            currentNode = currentNode.nextSibling
         }
     }
 

@@ -2,7 +2,6 @@ package io.factdriven.impl.definition
 
 import io.factdriven.definition.*
 import io.factdriven.execution.*
-import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
@@ -22,10 +21,15 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
 
     override val position: Int get() = index()
 
-    override val first: Node get() = first()
-    override val last: Node get() = last()
-    override val previous: Node? get() = previous()
-    override val next: Node? get() = next()
+    override val firstSibling: Node get() = firstSibling()
+    override val lastSibling: Node get() = lastSibling()
+    override val previousSibling: Node? get() = previousSibling()
+    override val nextSibling: Node? get() = nextSibling()
+
+    override val start: Node get() = parent?.start ?: children.first()
+    override val finish: Node get() = parent?.finish ?: children.last()
+    override val forward: Node? get() = nextSibling ?: parent?.forward
+    override val backward: Node? get() = previousSibling ?: parent?.backward
 
     protected fun id(): String {
         val parentId =  if (isChild()) parent!!.id else "${entity.type.context}${idSeparator}${entity.type.name}"
@@ -80,9 +84,9 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
         return null
     }
 
-    override fun isFirstChild(): Boolean = this == first
+    override fun isFirstSibling(): Boolean = this == firstSibling
 
-    override fun isLastChild(): Boolean = this == last
+    override fun isLastSibling(): Boolean = this == lastSibling
 
     override fun isParent() = children.isNotEmpty()
 
@@ -90,9 +94,9 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
 
     override fun isChild() = parent != null
 
-    override fun isFirstChildOfRoot() = isChild() && parent!!.isRoot() && isFirstChild()
+    override fun isStart() = isChild() && parent!!.isRoot() && isFirstSibling()
 
-    override fun isLastChildOfRoot() = isChild() && parent!!.isRoot() && isLastChild()
+    override fun isFinish() = isChild() && parent!!.isRoot() && isLastSibling()
 
     override fun findReceptorsFor(message: Message): List<Receptor> {
         return children.map { it.findReceptorsFor(message) }.flatten()
@@ -108,20 +112,20 @@ private fun Node.index(): Int {
     return parent?.children?.indexOf(this) ?: 0
 }
 
-private fun Node.first(): Node {
-    return if (parent != null) parent!!.children.first() else this
+private fun Node.firstSibling(): Node {
+    return parent?.children?.first() ?: this
 }
 
-private fun Node.last(): Node {
-    return if (parent != null) parent!!.children.last() else this
+private fun Node.lastSibling(): Node {
+    return parent?.children?.last() ?: this
 }
 
-private fun Node.previous(): Node? {
-    return  if (!isFirstChild()) parent!!.children[position - 1] else null
+private fun Node.nextSibling(): Node? {
+    return if (!isLastSibling()) parent!!.children[index() + 1] else null
 }
 
-private fun Node.next(): Node? {
-    return if (!isLastChild()) parent!!.children[position + 1] else null
+private fun Node.previousSibling(): Node? {
+    return  if (!isFirstSibling()) parent!!.children[index() - 1] else null
 }
 
 const val idSeparator = "-"
