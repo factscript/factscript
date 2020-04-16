@@ -31,45 +31,31 @@ data class PaymentRetrieval(
                 on command RetrievePayment::class
 
                 select ("Payment (partly) uncovered?") either {
-                    given ("Yes") condition { covered < total }
+                    given ("Yes") condition { covered > total }
 
                     execute command PaymentRetrievalAccepted::class by {
-                        PaymentRetrievalAccepted3("1", 25f)
+                        PaymentRetrievalAccepted("1", 25f)
                     }
                 } or {
                     given ("Yes") condition { covered < total }
 
-                    execute command PaymentRetrievalAccepted::class by {
-                        PaymentRetrievalAccepted3("1", 25f)
-                    }
-
                     select ("Payment (partly) uncovered?") either {
-                        given ("Yes") condition { covered < total }
+                        given ("Yes") condition { covered > total }
 
-                        execute command PaymentRetrievalAccepted6::class by {
-                            PaymentRetrievalAccepted3("1", 25f)
+                        execute command PaymentRetrievalAccepted4::class by {
+                            PaymentRetrievalAccepted4("1", 25f)
                         }
                     } or {
                         given ("Yes") condition { covered < total }
 
-                        execute command PaymentRetrievalAccepted7::class by {
-                            PaymentRetrievalAccepted3("1", 25f)
+                        execute command PaymentRetrievalAccepted5::class by {
+                            PaymentRetrievalAccepted5("1", 25f)
                         }
                     }
-                }  or {
-                    given ("Yes") condition { covered < total }
-
-                    execute command PaymentRetrievalAccepted5::class by {
-                        PaymentRetrievalAccepted3("1", 25f)
-                    }
                 }
 
-                execute command PaymentRetrievalAccepted::class by {
-                    PaymentRetrievalAccepted("1", 25f)
-                }
-
-                execute command PaymentRetrievalAccepted2::class by {
-                    PaymentRetrievalAccepted2("1", 25f)
+                execute command PaymentRetrievalAccepted3::class by {
+                    PaymentRetrievalAccepted3("1", 25f)
                 }
 
                 emit event PaymentRetrieved::class by {

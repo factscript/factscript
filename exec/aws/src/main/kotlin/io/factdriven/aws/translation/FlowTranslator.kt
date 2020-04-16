@@ -21,6 +21,7 @@ open class FlowTranslator {
         while (currentNode != null) {
             val strategy = determineTranslationStrategy(currentNode)
             strategy.translate(stateMachineBuilder, currentNode)
+
             currentNode = currentNode.nextSibling
         }
     }
@@ -39,6 +40,7 @@ open class FlowTranslator {
 
     open fun getTranslators() : Array<StepFunctionTranslationStrategy> {
         return arrayOf(
+                GivenTranslator(this),
                 FlowTranslationStrategy(this),
                 XOrTranslationStrategy(this),
                 ExecuteTranslationStrategy(this)

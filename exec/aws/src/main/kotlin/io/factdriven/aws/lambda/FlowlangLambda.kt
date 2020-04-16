@@ -7,12 +7,14 @@ import io.factdriven.aws.StateMachineService
 import io.factdriven.aws.example.function.PaymentRetrieval
 import io.factdriven.aws.example.function.RetrievePayment
 import io.factdriven.aws.translation.FlowTranslator
+import io.factdriven.definition.Branching
+import io.factdriven.definition.Conditional
 import io.factdriven.definition.Flow
 import io.factdriven.definition.Throwing
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
+import io.factdriven.execution.newInstance
 import io.factdriven.execution.type
-import io.factdriven.impl.utils.apply
 import io.factdriven.impl.utils.compactJson
 import io.factdriven.impl.utils.prettyJson
 import java.util.stream.Collectors
@@ -56,9 +58,21 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
             messageList = mutableListOf(createMessage(RetrievePayment("a", "b", 1f)))
         } else {
             messageList = toMessageList(input["History"] as ArrayList<String>)
-            val processInstance = messageList.apply(PaymentRetrieval::class)
+            messageList.add(createMessage(RetrievePayment("a", "b", 1f)))
+            val processInstance = messageList.newInstance(PaymentRetrieval::class)
 
             val node = definition.get(input["id"] as String)
+
+            if(node is Branching){
+                val result = evaluateConditions(processInstance, node)
+                val sendTaskSuccessRequest = SendTaskSuccessRequest()
+                        .withTaskToken(token)
+                        .withOutput("\"$result\"")
+
+                client.sendTaskSuccess(sendTaskSuccessRequest)
+                return "Condition evaluated"
+            }
+
             val fact = (node as Throwing).instance.invoke(processInstance)
 
             val message = createMessage(fact)
@@ -73,6 +87,16 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
 
         client.sendTaskSuccess(sendTaskSuccessRequest)
         return "Message Done"
+    }
+
+    private fun evaluateConditions(processInstance: Any, branching: Branching) : String{
+        for(conditionalExecution in branching.children){
+            val conditional = conditionalExecution.children[0] as Conditional
+            if(conditional.condition?.invoke(processInstance)!!){
+                return io.factdriven.aws.translation.name(conditionalExecution)
+            }
+        }
+        throw NoConditionMatchedException()
     }
 
     private fun toMessageList(arrayList: java.util.ArrayList<String>): MutableList<Message> {
