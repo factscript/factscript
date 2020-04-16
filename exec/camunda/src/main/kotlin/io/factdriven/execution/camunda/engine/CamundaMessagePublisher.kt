@@ -2,7 +2,7 @@ package io.factdriven.execution.camunda.engine
 
 import io.factdriven.execution.Message
 import io.factdriven.execution.MessagePublisher
-import io.factdriven.impl.utils.json
+import io.factdriven.impl.utils.prettyJson
 import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.impl.ProcessEngineImpl
 import org.camunda.bpm.engine.impl.context.Context
@@ -29,7 +29,7 @@ class CamundaMessagePublisher: MessagePublisher {
             job.jobHandlerType =
                 CamundaBpmFlowJobHandler.TYPE
             job.jobHandlerConfiguration =
-                CamundaBpmFlowJobHandlerConfiguration(message.json)
+                CamundaBpmFlowJobHandlerConfiguration(message.prettyJson)
             Context.getCommandContext().jobManager.send(job)
             return job.id
 

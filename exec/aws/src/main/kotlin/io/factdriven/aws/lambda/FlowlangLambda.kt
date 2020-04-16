@@ -9,13 +9,13 @@ import io.factdriven.aws.example.function.RetrievePayment
 import io.factdriven.aws.translation.FlowTranslator
 import io.factdriven.definition.Flow
 import io.factdriven.definition.Throwing
-import io.factdriven.execution.*
-import java.util.stream.Collectors
-import kotlin.collections.ArrayList
+import io.factdriven.execution.Fact
+import io.factdriven.execution.Message
 import io.factdriven.execution.type
 import io.factdriven.impl.utils.apply
 import io.factdriven.impl.utils.compactJson
-import io.factdriven.impl.utils.json
+import io.factdriven.impl.utils.prettyJson
+import java.util.stream.Collectors
 
 abstract class FlowlangLambda : RequestHandler<Any, Any>{
 
@@ -30,7 +30,7 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
 
     override fun handleRequest(i: Any?, context: Context?): Any {
         val input = i as Map<String, *>
-        println(input.json)
+        println(input.prettyJson)
 
         FlowlangLambda.context = context
         FlowlangLambda.input = input
@@ -64,12 +64,12 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
             val message = createMessage(fact)
             messageList.add(message)
 
-            println("${node.id} ${processInstance.json}")
+            println("${node.id} ${processInstance.prettyJson}")
         }
 
         val sendTaskSuccessRequest = SendTaskSuccessRequest()
                 .withTaskToken(token)
-                .withOutput(toStringList(messageList).json)
+                .withOutput(toStringList(messageList).prettyJson)
 
         client.sendTaskSuccess(sendTaskSuccessRequest)
         return "Message Done"

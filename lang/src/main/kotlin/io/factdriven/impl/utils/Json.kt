@@ -8,10 +8,12 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-data class Json(val node: JsonNode) {
+data class Json(val node: JsonNode, var pretty: Boolean = true) {
 
-    constructor(json: String): this(mapper.readTree(json))
-    constructor(any: Any): this(mapper.valueToTree<JsonNode>(any))
+    private val writer: ObjectWriter get() = if (pretty) mapper.writerWithDefaultPrettyPrinter() else mapper.writer()
+
+    constructor(json: String, pretty: Boolean = true): this(mapper.readTree(json), pretty)
+    constructor(any: Any, pretty: Boolean = true): this(mapper.valueToTree<JsonNode>(any), pretty)
 
     inline fun <reified P: Any> getObject(property: String, kClass: KClass<P> = P::class): P? {
         return mapper.readValue(mapper.treeAsTokens(node.get(property)), kClass.java)
@@ -40,15 +42,15 @@ data class Json(val node: JsonNode) {
     companion object {
 
         val mapper get() = jacksonObjectMapper()
-        private val writer: ObjectWriter get() = mapper.writerWithDefaultPrettyPrinter()
 
     }
 
 }
 
-val Any.json: String get() {
+val Any.prettyJson: String get() {
     return Json(this).toString()
 }
+
 val Any.compactJson: String get(){
-    return jacksonObjectMapper().writeValueAsString(this)
+    return Json(this, false).toString()
 }

@@ -1,8 +1,9 @@
 package io.factdriven.execution
 
 import io.factdriven.Messages
-import io.factdriven.impl.utils.json
-import org.junit.jupiter.api.Assertions.*
+import io.factdriven.impl.utils.prettyJson
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 /**
@@ -26,8 +27,8 @@ class MessageTest {
     fun testJson() {
 
         val message = Message(Any::class, Fact(SomeFact("value")))
-        assertNotNull(message.json)
-        assertEquals(message, Message.fromJson(message.json))
+        assertNotNull(message.prettyJson)
+        assertEquals(message, Message.fromJson(message.prettyJson))
 
     }
 
@@ -41,7 +42,7 @@ class MessageTest {
                 Fact(SomeFact("value2"))
             )
         )
-        assertEquals(messages, Messages.fromJson(messages.json))
+        assertEquals(messages, Messages.fromJson(messages.prettyJson))
 
     }
 

@@ -1,6 +1,6 @@
 package io.factdriven.execution
 
-import io.factdriven.impl.utils.json
+import io.factdriven.impl.utils.prettyJson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -29,7 +29,7 @@ class FactTest {
 
         val fact = Fact(SomeFact("value"))
         assertEquals(SomeFact("value"), fact.details)
-        assertEquals(fact, Fact.fromJson(fact.json))
+        assertEquals(fact, Fact.fromJson(fact.prettyJson))
 
     }
 

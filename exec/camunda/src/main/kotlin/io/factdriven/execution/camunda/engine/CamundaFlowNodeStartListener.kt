@@ -8,7 +8,7 @@ import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
 import io.factdriven.execution.newInstance
 import io.factdriven.impl.utils.Json
-import io.factdriven.impl.utils.json
+import io.factdriven.impl.utils.prettyJson
 import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.camunda.bpm.engine.delegate.ExecutionListener
 import org.camunda.spin.plugin.variable.SpinValues
@@ -48,7 +48,7 @@ class CamundaFlowNodeStartListener: ExecutionListener {
             messages.add(it)
             execution.setVariable(
                 MESSAGES_VAR,
-                SpinValues.jsonValue(messages.json)
+                SpinValues.jsonValue(messages.prettyJson)
             )
             Messages.publish(it)
         }

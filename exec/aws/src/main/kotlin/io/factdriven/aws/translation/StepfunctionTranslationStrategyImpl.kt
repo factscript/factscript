@@ -10,7 +10,7 @@ import com.amazonaws.services.stepfunctions.builder.states.NextStateTransition
 import io.factdriven.definition.Branching
 import io.factdriven.definition.Gateway.Exclusive
 import io.factdriven.definition.Node
-import io.factdriven.impl.utils.json
+import io.factdriven.impl.utils.prettyJson
 import io.factdriven.language.ConditionalExecution
 import java.util.stream.Collectors
 
@@ -69,7 +69,7 @@ class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionT
         stateMachineBuilder.state(name(node),
                 StepFunctionBuilder.taskState()
                         .resource("arn:aws:states:::lambda:invoke.waitForTaskToken")
-                        .parameters(nodeParameter.json)
+                        .parameters(nodeParameter.prettyJson)
                         .resultPath("$.Messages")
                         .transition(transitionToNextOf(node))
         )

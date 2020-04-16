@@ -4,7 +4,7 @@ import io.factdriven.Flows
 import io.factdriven.Messages
 import io.factdriven.execution.*
 import io.factdriven.impl.definition.idSeparator
-import io.factdriven.impl.utils.json
+import io.factdriven.impl.utils.prettyJson
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.impl.event.EventType
@@ -104,7 +104,7 @@ class CamundaMessageProcessor: MessageProcessor {
                 add(message)
                 return mapOf(
                     MESSAGES_VAR to SpinValues.jsonValue(
-                        json
+                        prettyJson
                     ).create()
                 )
             }
