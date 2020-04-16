@@ -55,9 +55,9 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
         }
 
     override fun position(child: Element<*,*>): Position {
-        val children = listOf(fork, join) + sequences
-        return position + if (child == fork) Position(0, (children.maxBy { it.dimension.height }!!.dimension.height - fork.dimension.height) / 2)
-            else if (child == join) Position(fork.dimension.width + sequences.maxBy { it.dimension.width }!!.dimension.width, (children.maxBy { it.dimension.height }!!.dimension.height - fork.dimension.height) / 2)
+        val y = (listOf(fork, join) + sequences.first()).maxBy { it.entry(Direction.West).y }!!.entry(Direction.West) - fork.entry(Direction.West)
+        return position + if (child == fork) y
+            else if (child == join) Position(fork.dimension.width + sequences.maxBy { it.dimension.width }!!.dimension.width, 0) + y
             else Position(fork.dimension.width, sequences.subList(0, sequences.indexOf(child)).sumBy { it.dimension.height })
     }
 

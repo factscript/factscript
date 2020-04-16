@@ -103,6 +103,37 @@ class NodeTest {
 
     }
 
+    @Test
+    fun testLevel3Forward() {
+
+        var node = Flows.get(CreditCardCharge::class).start.forward!!
+            .children.first().children.first().forward!!
+            .children.first().children.first()
+
+        assertTrue (node is Consuming)
+        assertFalse(node.isLastSibling())
+        assertFalse(node.isFinish())
+
+        node = node.forward!!
+
+        assertTrue (node is Consuming)
+        assertTrue (node.isLastSibling())
+        assertFalse(node.isFinish())
+
+        node = node.forward!!
+
+        assertTrue (node is Consuming)
+        assertFalse(node.isLastSibling())
+        assertFalse(node.isFinish())
+
+        node = node.forward!!
+
+        assertTrue (node is Throwing)
+        assertTrue (node.isLastSibling())
+        assertTrue (node.isFinish())
+
+    }
+
 }
 
 class NodeTestFlow(fact: RetrievePayment) {
@@ -162,6 +193,18 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
                 on command ChargeCreditCard::class promise {
                     report success CreditCardCharged::class
+                }
+
+                execute all {
+                    consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                    execute all {
+                        consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                        consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                    } and {
+                        consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                    }
+                } and {
+                    consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
                 }
 
                 consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
