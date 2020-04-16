@@ -123,6 +123,12 @@ class NodeTest {
         node = node.forward!!
 
         assertTrue (node is Consuming)
+        assertTrue(node.isLastSibling())
+        assertFalse(node.isFinish())
+
+        node = node.forward!!
+
+        assertTrue (node is Consuming)
         assertFalse(node.isLastSibling())
         assertFalse(node.isFinish())
 
@@ -203,6 +209,7 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
                     } and {
                         consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
                     }
+                    consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
                 } and {
                     consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
                 }
