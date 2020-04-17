@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLang
-interface On<T: Any>: OnCommand<T>
+interface On<T: Any>: OnCommand<T>, Await<T>
 
 @FlowLang
 interface OnCommand<T: Any> {

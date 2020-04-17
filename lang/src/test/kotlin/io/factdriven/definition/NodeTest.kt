@@ -110,25 +110,25 @@ class NodeTest {
             .children.first().children.first().forward!!
             .children.first().children.first()
 
-        assertTrue (node is Consuming)
+        assertTrue (node is Awaiting)
         assertFalse(node.isLastSibling())
         assertFalse(node.isFinish())
 
         node = node.forward!!
 
-        assertTrue (node is Consuming)
+        assertTrue (node is Awaiting)
         assertTrue (node.isLastSibling())
         assertFalse(node.isFinish())
 
         node = node.forward!!
 
-        assertTrue (node is Consuming)
+        assertTrue (node is Awaiting)
         assertTrue(node.isLastSibling())
         assertFalse(node.isFinish())
 
         node = node.forward!!
 
-        assertTrue (node is Consuming)
+        assertTrue (node is Awaiting)
         assertFalse(node.isLastSibling())
         assertFalse(node.isFinish())
 
@@ -202,19 +202,19 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
                 }
 
                 execute all {
-                    consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                    await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
                     execute all {
-                        consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
-                        consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                        await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                        await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
                     } and {
-                        consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                        await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
                     }
-                    consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                    await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
                 } and {
-                    consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                    await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
                 }
 
-                consume event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
 
                 emit event CreditCardCharged::class by {
                     CreditCardCharged(reference, amount)

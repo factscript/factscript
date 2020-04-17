@@ -15,7 +15,7 @@ open class PromisingImpl<T: Any>(parent: Node):
     PromiseReport<T>,
 
     Promising,
-    ConsumingImpl<T>(parent)
+    AwaitingImpl<T>(parent)
 
 {
 

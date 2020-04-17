@@ -12,10 +12,3 @@ interface GivenCondition<T: Any> {
     infix fun condition(condition: T.() -> Boolean): GivenCondition<T>
 
 }
-
-@FlowLang
-interface ConditionalExecution<T: Any>: Execution<T> {
-
-    val given: Given<T>
-
-}

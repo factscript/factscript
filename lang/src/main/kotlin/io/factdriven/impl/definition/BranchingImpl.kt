@@ -12,6 +12,7 @@ open class BranchingImpl<T: Any>(parent: Node):
 
     Select<T>,
     SelectOr<T>,
+    AwaitOr<T>,
     ExecuteAnd<T>,
     Branching,
     NodeImpl(parent)
@@ -34,8 +35,12 @@ open class BranchingImpl<T: Any>(parent: Node):
 
     override fun all(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
         gateway = Gateway.Inclusive
+        return or(path)
+    }
+
+    override fun or(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
         @Suppress("UNCHECKED_CAST")
-        val flow = ConditionalExecutionImpl<T>(
+        val flow = ConditionalExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)
@@ -43,9 +48,9 @@ open class BranchingImpl<T: Any>(parent: Node):
         return this
     }
 
-    override fun or(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
+    override fun or(path: Flow<T>.() -> Unit): AwaitOr<T> {
         @Suppress("UNCHECKED_CAST")
-        val flow = ConditionalExecutionImpl(
+        val flow = FlowImpl(
             entity as KClass<T>,
             this
         ).apply(path)

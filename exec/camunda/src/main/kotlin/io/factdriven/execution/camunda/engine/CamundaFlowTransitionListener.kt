@@ -2,7 +2,7 @@ package io.factdriven.execution.camunda.engine
 
 import io.factdriven.Flows
 import io.factdriven.Messages
-import io.factdriven.definition.Consuming
+import io.factdriven.definition.Awaiting
 import io.factdriven.definition.Executing
 import io.factdriven.execution.MessageId
 import io.factdriven.execution.Receptor
@@ -19,7 +19,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
         val nodeId = target.getValue(execution).toString()
         val handling = when (val node = Flows.get(nodeId).get(nodeId)) {
-            is Consuming -> node.endpoint(execution)
+            is Awaiting -> node.endpoint(execution)
             is Executing -> node.endpoint(execution)
             else -> null
         }
@@ -27,7 +27,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
     }
 
-    private fun Consuming.endpoint(execution: DelegateExecution): Receptor {
+    private fun Awaiting.endpoint(execution: DelegateExecution): Receptor {
         val messageString = execution.getVariableTyped<JsonValue>(
             MESSAGES_VAR, false).valueSerialized
         val messages = Messages.fromJson(messageString)

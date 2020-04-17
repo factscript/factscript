@@ -1,9 +1,8 @@
 package io.factdriven.definition
 
-import io.factdriven.definition.Consuming
 import kotlin.reflect.KClass
 
-interface Promising: Consuming {
+interface Promising: Awaiting {
 
     val succeeding: KClass<*>?
 

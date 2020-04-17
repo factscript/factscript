@@ -3,10 +3,7 @@ package io.factdriven.execution.camunda.model
 import io.factdriven.definition.Branching
 import io.factdriven.execution.camunda.model.BpmnModel.Companion.margin
 import io.factdriven.impl.definition.positionSeparator
-import org.camunda.bpm.model.bpmn.instance.ExclusiveGateway
-import org.camunda.bpm.model.bpmn.instance.Gateway
-import org.camunda.bpm.model.bpmn.instance.InclusiveGateway
-import org.camunda.bpm.model.bpmn.instance.ParallelGateway
+import org.camunda.bpm.model.bpmn.instance.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -74,5 +71,11 @@ class InclusiveGatewaySymbol(node: Branching, parent: Element<out Branching,*>):
 class ParallelGatewaySymbol(node: Branching, parent: Element<out Branching,*>): GatewaySymbol<ParallelGateway>(node, parent) {
 
     override val model = process.model.newInstance(ParallelGateway::class.java)
+
+}
+
+class EventBasedGatewaySymbol(node: Branching, parent: Element<out Branching,*>): GatewaySymbol<EventBasedGateway>(node, parent) {
+
+    override val model = process.model.newInstance(EventBasedGateway::class.java)
 
 }

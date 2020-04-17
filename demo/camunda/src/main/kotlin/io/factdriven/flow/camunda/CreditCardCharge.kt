@@ -29,7 +29,7 @@ data class CreditCardCharge (
                     report success CreditCardCharged::class
                 }
 
-                consume event ConfirmationReceived::class having "reference" match { reference }
+                await event ConfirmationReceived::class having "reference" match { reference }
 
                 emit event CreditCardCharged::class by {
                     CreditCardCharged(reference = reference, charge = charge)

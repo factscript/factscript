@@ -24,11 +24,18 @@ interface Execution<T: Any>: Flow {
 
     val issue: Issue<T>
 
-    val consume: Consume<T>
+    val await: Await<T>
 
     val execute: Execute<T>
 
     val select: Select<T>
+
+}
+
+@FlowLang
+interface ConditionalExecution<T: Any>: Execution<T> {
+
+    val given: Given<T>
 
 }
 

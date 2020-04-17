@@ -13,7 +13,7 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
         when (it) {
             is Executing -> ServiceTaskSymbol(it, this)
             is Promising -> CatchingEventSymbol(it, this)
-            is Consuming -> ReceiveTaskSymbol(it, this)
+            is Awaiting -> ReceiveTaskSymbol(it, this)
             is Throwing -> if (it.isFinish()) ThrowingEventSymbol(it, this) else SendTaskSymbol(it, this)
             is Branching -> Branch(it, this)
             is Flow -> Sequence(it, this)

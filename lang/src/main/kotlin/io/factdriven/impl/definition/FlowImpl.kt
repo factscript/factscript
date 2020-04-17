@@ -37,9 +37,9 @@ open class FlowImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null)
             return child
         }
 
-    override val consume: Consume<T>
+    override val await: Await<T>
         get() {
-            val child = ConsumingImpl<T>(this)
+            val child = AwaitingImpl<T>(this)
             children.add(child)
             return child
         }
