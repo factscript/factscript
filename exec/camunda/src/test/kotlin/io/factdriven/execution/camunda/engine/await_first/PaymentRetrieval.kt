@@ -1,16 +1,19 @@
-package io.factdriven.execution.camunda.model.await_first
+package io.factdriven.execution.camunda.engine.await_first
 
 import io.factdriven.flow
-import java.util.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 class PaymentRetrieval(fact: RetrievePayment) {
 
-    var id = UUID.randomUUID().toString()
-    var total = fact.amount
-    var covered = 0F
+    val reference = "SomeReference"
+    val amount = fact.amount
+    var retrieved = false; private set
+
+    fun apply(fact: PaymentRetrieved) {
+        retrieved = true
+    }
 
     companion object {
 
@@ -23,18 +26,18 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 await first {
                     on event CreditCardUnvalidated::class
                     execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(id, 1F)
+                        ChargeCreditCard(reference, 1F)
                     }
                 } or {
                     on event CreditCardValidated::class
                 }
 
                 execute command ChargeCreditCard::class by {
-                    ChargeCreditCard(id, total - 1F)
+                    ChargeCreditCard(reference, amount - 1F)
                 }
 
                 emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(total)
+                    PaymentRetrieved(amount)
                 }
 
             }
@@ -47,5 +50,6 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
 data class RetrievePayment(val amount: Float)
 data class PaymentRetrieved(val amount: Float)
+
 class CreditCardUnvalidated
 class CreditCardValidated
