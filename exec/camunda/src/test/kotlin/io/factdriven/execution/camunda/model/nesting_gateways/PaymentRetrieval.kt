@@ -59,6 +59,21 @@ class PaymentRetrieval(fact: RetrievePayment) {
                                 )
                             }
                         }
+                        await first {
+                            on event CreditCardUnvalidated::class
+                            execute command io.factdriven.execution.camunda.model.await_first.ChargeCreditCard::class by {
+                                io.factdriven.execution.camunda.model.await_first.ChargeCreditCard(id, 1F)
+                            }
+                        } or {
+                            on event CreditCardValidated::class
+                        }
+                    } and {
+                        execute command ChargeCreditCard::class by {
+                            ChargeCreditCard(
+                                id,
+                                total - covered
+                            )
+                        }
                     }
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(
@@ -119,3 +134,5 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
 data class RetrievePayment(val amount: Float)
 data class PaymentRetrieved(val amount: Float)
+class CreditCardUnvalidated
+class CreditCardValidated
