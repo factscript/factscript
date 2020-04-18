@@ -7,10 +7,7 @@ import io.factdriven.aws.StateMachineService
 import io.factdriven.aws.example.function.PaymentRetrieval
 import io.factdriven.aws.example.function.RetrievePayment
 import io.factdriven.aws.translation.FlowTranslator
-import io.factdriven.definition.Branching
-import io.factdriven.definition.Conditional
-import io.factdriven.definition.Flow
-import io.factdriven.definition.Throwing
+import io.factdriven.definition.*
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
 import io.factdriven.execution.newInstance
@@ -52,11 +49,17 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
 
         val token = input["TaskToken"] as String
 
+        if(isMerge(input)){
+            mergeList(token, input["MergeList"] as java.util.ArrayList<Map<String, Any>>)
+            return "Merge Done"
+        }
+
         // 32,768 characters max
         val messageList: MutableList<Message>
         if (input["History"] == null) {
             messageList = mutableListOf(createMessage(RetrievePayment("a", "b", 1f)))
         } else {
+            println("daaa history $input[\"History\"]")
             messageList = toMessageList(input["History"] as ArrayList<String>)
             messageList.add(createMessage(RetrievePayment("a", "b", 1f)))
             val processInstance = messageList.newInstance(PaymentRetrieval::class)
@@ -64,10 +67,22 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
             val node = definition.get(input["id"] as String)
 
             if(node is Branching){
-                val result = evaluateConditions(processInstance, node)
                 val sendTaskSuccessRequest = SendTaskSuccessRequest()
                         .withTaskToken(token)
-                        .withOutput("\"$result\"")
+
+                when (node.gateway) {
+                    Gateway.Exclusive -> {
+                        val result = evaluateConditions(processInstance, node)
+                        sendTaskSuccessRequest.withOutput("\"$result\"")
+                    }
+                    Gateway.Inclusive -> {
+                        val result = evaluateInclusiveConditions(processInstance, node)
+                        sendTaskSuccessRequest.withOutput(result.compactJson)
+                    }
+                    else -> {
+                        throw RuntimeException()
+                    }
+                }
 
                 client.sendTaskSuccess(sendTaskSuccessRequest)
                 return "Condition evaluated"
@@ -89,14 +104,40 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
         return "Message Done"
     }
 
+    private fun mergeList(token: String, arrayList: java.util.ArrayList<Map<String, Any>>) {
+
+        val messageSet = arrayList.stream().sequential()
+                .flatMap { variables -> toMessageList(variables["Messages"] as java.util.ArrayList<String>).stream() }
+                .collect(Collectors.toList()) //TODO unique items
+
+        val sendTaskSuccessRequest = SendTaskSuccessRequest()
+                .withTaskToken(token)
+                .withOutput(FlowLangVariablesOut(messageSet.stream()
+                        .map { message -> message.compactJson }
+                        .collect(Collectors.toList())).compactJson)
+
+        val client = stateMachineService.createClient()
+        client.sendTaskSuccess(sendTaskSuccessRequest)
+    }
+
+
     private fun evaluateConditions(processInstance: Any, branching: Branching) : String{
         for(conditionalExecution in branching.children){
             val conditional = conditionalExecution.children[0] as Conditional
             if(conditional.condition?.invoke(processInstance)!!){
-                return io.factdriven.aws.translation.name(conditionalExecution)
+                return io.factdriven.aws.translation.toStateName(conditionalExecution)
             }
         }
         throw NoConditionMatchedException()
+    }
+
+    private fun evaluateInclusiveConditions(processInstance: Any, branching: Branching) : Map<String, Boolean>{
+        val results = mutableMapOf<String, Boolean>()
+        for((index, conditionalExecution) in branching.children.withIndex()){
+            val conditional = conditionalExecution.children[0] as Conditional
+            results["$index"] = conditional.condition?.invoke(processInstance)!!
+        }
+        return results
     }
 
     private fun toMessageList(arrayList: java.util.ArrayList<String>): MutableList<Message> {
@@ -107,13 +148,13 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
         return message.stream().map { m -> m.compactJson }.collect(Collectors.toList())
     }
 
-
-
     private fun createMessage(fact: Any): Message {
         return Message(fact.javaClass::class, Fact(fact))
     }
 
     private fun isInitialization(input: Any?) = input is Map<*, *> && input.isEmpty()
+
+    private fun isMerge(input: Map<String, *>) = input["MergeList"] != null
 
     abstract fun definition() : Flow
 

@@ -11,18 +11,17 @@ open class FlowTranslator {
     companion object {
         fun translate(flow: Flow) : StateMachine {
             val stateMachineBuilder =  StepFunctionBuilder.stateMachine()
-            FlowTranslator().traverseAndTranslateNodes(flow, stateMachineBuilder)
+            val translationContext = TranslationContext(SequentialTransitionStrategy(), StateMachineBuilder(stateMachineBuilder))
+            FlowTranslator().translateGraph(translationContext, flow)
             return stateMachineBuilder.build()
         }
     }
 
-    open fun traverseAndTranslateNodes(node: Node?, stateMachineBuilder: StateMachine.Builder) {
-        var currentNode = node
-        while (currentNode != null) {
-            val strategy = determineTranslationStrategy(currentNode)
-            strategy.translate(stateMachineBuilder, currentNode)
-
-            currentNode = currentNode.nextSibling
+    open fun translateGraph(translationContext: TranslationContext, node: Node?) {
+        if(node != null) {
+            val strategy = determineTranslationStrategy(node)
+            strategy.translate(translationContext, node)
+            translateGraph(translationContext, node.nextSibling)
         }
     }
 
@@ -40,9 +39,11 @@ open class FlowTranslator {
 
     open fun getTranslators() : Array<StepFunctionTranslationStrategy> {
         return arrayOf(
+                ParallelTranslationStrategy(this),
                 GivenTranslator(this),
                 FlowTranslationStrategy(this),
                 XOrTranslationStrategy(this),
+                OrTranslationStrategy(this),
                 ExecuteTranslationStrategy(this)
         )
     }
