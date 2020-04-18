@@ -9,6 +9,6 @@ interface Given<T: Any>: GivenCondition<T>, Labeled<Given<T>>
 @FlowLang
 interface GivenCondition<T: Any> {
 
-    infix fun condition(condition: T.() -> Boolean): GivenCondition<T>
+    infix fun condition(condition: T.() -> Boolean)
 
 }

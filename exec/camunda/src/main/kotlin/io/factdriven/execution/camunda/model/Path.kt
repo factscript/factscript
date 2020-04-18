@@ -1,6 +1,8 @@
 package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.Conditional
+import io.factdriven.definition.Flow
+import io.factdriven.definition.Looping
 import io.factdriven.definition.Node
 import io.factdriven.execution.camunda.engine.CamundaFlowTransitionListener
 import org.camunda.bpm.model.bpmn.instance.*
@@ -60,7 +62,7 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
 
             if (this != null) {
 
-                model.name = label.replace(" ", "\n")
+                model.name = if (parent is Looping) (if (condition != null) "Yes" else "No") else label.replace(" ", "\n")
 
                 if (condition != null) {
                     model.conditionExpression = process.model.newInstance(org.camunda.bpm.model.bpmn.instance.ConditionExpression::class.java);
@@ -82,7 +84,13 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
     override val dimension: Dimension get() = Dimension(wayPoints.maxBy { it.x }!!.x - wayPoints.minBy { it.x }!!.x, wayPoints.maxBy { it.y }!!.y - wayPoints.minBy { it.y }!!.y)
 
     override fun position(child: Element<*,*>): Position {
-        return Position(parent!!.position.x, wayPoints[1].y - (conditional!!.label.toCharArray().filter { it == ' '  }.size) * 13 - 6) - BpmnModel.margin * 2 / 3
+        if (parent is Loop) {
+            return parent.fork.position + parent.fork.entry(Direction.North) + Position(6, 0)
+        } else if (from is Loop) {
+            return from.position + from.entry(Direction.East) - Position(13, 17)
+        } else {
+            return Position(parent!!.position.x, wayPoints[1].y - (conditional!!.label.toCharArray().filter { it == ' '  }.size) * 13 - 6) - BpmnModel.margin * 2 / 3
+        }
     }
 
     override fun entry(from: Direction): Position = wayPoints.first()

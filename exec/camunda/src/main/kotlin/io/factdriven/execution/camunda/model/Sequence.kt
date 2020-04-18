@@ -16,6 +16,7 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
             is Awaiting -> ReceiveTaskSymbol(it, this)
             is Throwing -> if (it.isFinish()) ThrowingEventSymbol(it, this) else SendTaskSymbol(it, this)
             is Branching -> Branch(it, this)
+            is Looping -> Loop(it, this)
             is Flow -> Sequence(it, this)
             is Conditional -> null
             else -> throw IllegalStateException()
@@ -24,7 +25,8 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
 
     override val paths: List<Path> =
         if (children.size > 1) children.subList(1, children.size).map {
-            Path(children.get(children.indexOf(it) - 1), it, this)
+            val previous = children.get(children.indexOf(it) - 1)
+            Path(previous, it, this, if (previous is Loop) previous.node.children.last() as Conditional else null)
         } else emptyList()
     
     override fun entry(from: Direction): Position {

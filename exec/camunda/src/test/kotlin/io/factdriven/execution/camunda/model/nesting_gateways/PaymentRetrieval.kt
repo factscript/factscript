@@ -30,42 +30,45 @@ class PaymentRetrieval(fact: RetrievePayment) {
                             )
                         }
                     } and {
-                        execute command ChargeCreditCard::class by {
-                            ChargeCreditCard(
-                                id,
-                                total - covered
-                            )
-                        }
-                        select all {
-                            given("A") condition { true }
+                        execute loop {
                             execute command ChargeCreditCard::class by {
                                 ChargeCreditCard(
                                     id,
                                     total - covered
                                 )
                             }
-                        } or {
-                            given("B") condition { true }
-                            execute command ChargeCreditCard::class by {
-                                ChargeCreditCard(
-                                    id,
-                                    total - covered
-                                )
+                            select all {
+                                given("A") condition { true }
+                                execute command ChargeCreditCard::class by {
+                                    ChargeCreditCard(
+                                        id,
+                                        total - covered
+                                    )
+                                }
+                            } or {
+                                given("B") condition { true }
+                                execute command ChargeCreditCard::class by {
+                                    ChargeCreditCard(
+                                        id,
+                                        total - covered
+                                    )
+                                }
+                                execute command ChargeCreditCard::class by {
+                                    ChargeCreditCard(
+                                        id,
+                                        total - covered
+                                    )
+                                }
                             }
-                            execute command ChargeCreditCard::class by {
-                                ChargeCreditCard(
-                                    id,
-                                    total - covered
-                                )
+                            await first {
+                                on event CreditCardUnvalidated::class
+                                execute command io.factdriven.execution.camunda.model.await_first.ChargeCreditCard::class by {
+                                    io.factdriven.execution.camunda.model.await_first.ChargeCreditCard(id, 1F)
+                                }
+                            } or {
+                                on event CreditCardValidated::class
                             }
-                        }
-                        await first {
-                            on event CreditCardUnvalidated::class
-                            execute command io.factdriven.execution.camunda.model.await_first.ChargeCreditCard::class by {
-                                io.factdriven.execution.camunda.model.await_first.ChargeCreditCard(id, 1F)
-                            }
-                        } or {
-                            on event CreditCardValidated::class
+                            until ("The world is flat?") condition { true }
                         }
                     } and {
                         execute command ChargeCreditCard::class by {

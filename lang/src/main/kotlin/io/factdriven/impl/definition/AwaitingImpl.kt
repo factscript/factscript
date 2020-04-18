@@ -46,7 +46,7 @@ open class AwaitingImpl<T: Any>(parent: Node):
     @Suppress("UNCHECKED_CAST")
     override fun first(path: Flow<T>.() -> Unit): AwaitOr<T> {
         val branch = BranchingImpl<T>(parent!!)
-        branch.gateway = Gateway.Waiting
+        branch.gateway = Gateway.Await
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
         val flow = FlowImpl(

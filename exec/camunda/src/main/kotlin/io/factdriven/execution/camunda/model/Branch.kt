@@ -15,8 +15,8 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
         height = sequences.sumBy { it.dimension.height }
     )
 
-    lateinit var fork: GatewaySymbol<*>
-    lateinit var join: GatewaySymbol<*>
+    var fork: GatewaySymbol<*>
+    var join: GatewaySymbol<*>
 
     @Suppress("UNCHECKED_CAST")
     val sequences: List<Sequence> get() = children.filter { it is Sequence } as List<Sequence>
@@ -36,13 +36,13 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
             Gateway.Exclusive -> ExclusiveGatewaySymbol(node, this)
             Gateway.Inclusive -> InclusiveGatewaySymbol(node, this)
             Gateway.Parallel -> ParallelGatewaySymbol(node, this)
-            Gateway.Waiting -> EventBasedGatewaySymbol(node, this)
+            Gateway.Await -> EventBasedGatewaySymbol(node, this)
         }
         join = when(node.gateway) {
             Gateway.Exclusive -> ExclusiveGatewaySymbol(node, this)
             Gateway.Inclusive -> InclusiveGatewaySymbol(node, this)
             Gateway.Parallel -> ParallelGatewaySymbol(node, this)
-            Gateway.Waiting -> ExclusiveGatewaySymbol(node, this)
+            Gateway.Await -> ExclusiveGatewaySymbol(node, this)
         }
         val sequences = node.children.map { Sequence(it as Flow, this) }
         listOf(fork) + sequences + listOf(join)
@@ -53,7 +53,7 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
             val conditional = it.node.children.first().let { if (it is Conditional) it else null }
             if (it.children.isNotEmpty()) Path(fork, it.children.first(), it, conditional) else Path(fork, join, it, conditional)
         } + sequences.mapNotNull {
-            if (it.children.isNotEmpty()) Path(it.children.last(), join, it) else null
+            if (it.children.isNotEmpty()) Path(it.children.last(), join, it, if (it.children.last() is Loop) it.children.last().node.children.last() as Conditional else null) else null
         }
 
     override fun position(child: Element<*,*>): Position {

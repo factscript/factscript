@@ -22,17 +22,21 @@ open class ExecutingImpl<T: Any>(parent: Node):
     override val catching: KClass<*> get() = Flows.get(handling = throwing).find(nodeOfType = Promising::class)!!.succeeding!!
 
     override fun all(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
-        @Suppress("UNCHECKED_CAST")
         val branch = BranchingImpl<T>(parent!!)
         branch.gateway = Gateway.Parallel
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        val flow = FlowImpl(
-            entity as KClass<T>,
-            branch
-        ).apply(path)
+        @Suppress("UNCHECKED_CAST")
+        val flow = FlowImpl(entity as KClass<T>, branch).apply(path)
         (branch as NodeImpl).children.add(flow)
         return branch
+    }
+
+    override fun loop(path: LoopingExecution<T>.() -> Unit) {
+        @Suppress("UNCHECKED_CAST")
+        val loop = LoopingExecutionImpl<T>(entity as KClass<T>, parent!!).apply(path)
+        (parent as NodeImpl).children.remove(this)
+        (parent as NodeImpl).children.add(loop)
     }
 
     override fun findReceptorsFor(message: Message): List<Receptor> {

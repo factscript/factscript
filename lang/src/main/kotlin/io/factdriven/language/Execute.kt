@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLang
-interface Execute<T: Any>: ExecuteCommand<T>, ExecuteAll<T>
+interface Execute<T: Any>: ExecuteCommand<T>, ExecuteAll<T>, ExecuteLoop<T>
 
 @FlowLang
 interface ExecuteCommand<T: Any> {
@@ -26,5 +26,12 @@ interface ExecuteAll<T: Any> {
 interface ExecuteAnd<T: Any> {
 
     infix fun and(path: Execution<T>.() -> Unit): ExecuteAnd<T>
+
+}
+
+@FlowLang
+interface ExecuteLoop<T: Any> {
+
+    infix fun loop(path: LoopingExecution<T>.() -> Unit)
 
 }

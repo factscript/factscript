@@ -1,7 +1,8 @@
-package io.factdriven.language.await_first
+package io.factdriven.language.execute_loop
 
 import io.factdriven.Flows
 import io.factdriven.definition.*
+import io.factdriven.language.Execution
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -30,13 +31,12 @@ class PaymentRetrievalTest {
         assertEquals(RetrievePayment::class, on.catching)
         assertEquals(definition, on.parent)
 
-        val branching = definition.children[1] as Branching
-        assertEquals(PaymentRetrieval::class, branching.entity)
-        assertEquals(Gateway.Await, branching.gateway)
-        assertEquals("", branching.label)
-        assertEquals(2, branching.children.size)
-        assertTrue(Flow::class.isInstance(branching.children[0]))
-        assertTrue(Flow::class.isInstance(branching.children[1]))
+        val loop = definition.children[1] as Looping
+        assertEquals(PaymentRetrieval::class, loop.entity)
+        assertEquals("Payment retrieval", loop.label)
+        assertEquals(2, loop.children.size)
+        assertTrue(Executing::class.isInstance(loop.children[0]))
+        assertTrue(Conditional::class.isInstance(loop.children[1]))
 
         val emit = definition.children[2] as Throwing
         assertEquals(PaymentRetrieval::class, emit.entity)
