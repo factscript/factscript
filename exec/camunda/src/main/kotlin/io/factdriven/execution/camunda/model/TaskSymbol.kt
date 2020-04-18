@@ -39,7 +39,7 @@ class ServiceTaskSymbol(node: Executing, parent: Element<out Flow, *>): TaskSymb
         super.init()
 
         model.camundaType = "external"
-        model.camundaTopic = "#{message}"
+        model.camundaTopic = "#{${node.id.toMessageName()}}"
 
     }
 
@@ -71,7 +71,7 @@ class ReceiveTaskSymbol(node: Catching, parent: Element<out Flow, *>): TaskSymbo
             if (message == null) {
                 with(process.model.newInstance(Message::class.java)) {
                     setAttributeValue("id", node.id + "-Message")
-                    setAttributeValue("name", "#{message}")
+                    setAttributeValue("name", "#{${node.id.toMessageName()}}")
                     process.model.definitions.addChildElement(this)
                     model.message = this
                 }

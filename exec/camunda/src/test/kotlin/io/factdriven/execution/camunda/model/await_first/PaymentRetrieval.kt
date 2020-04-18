@@ -34,7 +34,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                             total - covered
                         )
                     }
-                } /* or {
+                } or {
                     on event ThatMessage::class
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(
@@ -42,7 +42,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                             total - covered
                         )
                     }
-                } */
+                }
 
                 emit event PaymentRetrieved::class by {
                     PaymentRetrieved(total)

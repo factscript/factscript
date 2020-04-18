@@ -24,12 +24,6 @@ data class Type(val context: String, /* Name unique within given context */ val 
             return type
         }
 
-        fun from(string: String): Type {
-            val split = string.split(idSeparator)
-            assert(split.size == 2) { "Type string must consist of two strings separated by '${idSeparator}'!" }
-            return Type(split[0], split[1])
-        }
-
     }
 
     override fun toString(): String {

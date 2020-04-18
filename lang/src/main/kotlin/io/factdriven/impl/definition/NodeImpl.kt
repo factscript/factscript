@@ -2,6 +2,7 @@ package io.factdriven.impl.definition
 
 import io.factdriven.definition.*
 import io.factdriven.execution.*
+import io.factdriven.impl.utils.Id
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
@@ -12,6 +13,9 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
     Node {
 
     override val children: MutableList<Node> = mutableListOf()
+
+    @Suppress("LeakingThis")
+    override val root: Flow = (parent?.root ?: this) as Flow
 
     override val id: String get() = id()
 
@@ -35,7 +39,8 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
         val parentId =  if (isChild()) parent!!.id else "${entity.type.context}${idSeparator}${entity.type.name}"
         val nodeTypeCount = if (isChild()) parent!!.children.count { it.type == type } else 0
         val nodeTypePos = if (nodeTypeCount > 1) "${positionSeparator}${parent!!.children.count { it.type == type && it.position <= position }}" else ""
-        return if (isChild()) "${parentId}${idSeparator}${type.name}${nodeTypePos}" else parentId
+        val id = if (isChild()) "${parentId}${idSeparator}${type.name}${nodeTypePos}" else parentId
+        return Id(id)
     }
 
     @Suppress("UNCHECKED_CAST")

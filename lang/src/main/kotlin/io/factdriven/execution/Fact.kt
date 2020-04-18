@@ -1,7 +1,7 @@
 package io.factdriven.execution
 
 import io.factdriven.impl.utils.Json
-import java.util.*
+import io.factdriven.impl.utils.Id
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -14,7 +14,7 @@ data class Fact<F: Any> (
 
 ) {
 
-    constructor(fact: F): this(UUID.randomUUID().toString(), fact::class.type, fact)
+    constructor(fact: F): this(Id(), fact::class.type, fact)
 
     companion object {
 

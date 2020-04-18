@@ -15,6 +15,7 @@ interface Node {
     val entity: KClass<*>
     val label: String
 
+    val root: Flow
     val parent: Node?
     val children: List<Node>
     val position: Int

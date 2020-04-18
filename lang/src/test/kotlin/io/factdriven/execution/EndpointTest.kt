@@ -27,7 +27,7 @@ class EndpointTest {
         val handling = Receptor(SomeFact::class)
         assertEquals(Type.from(SomeFact::class), handling.receiving)
         assertEquals(emptyMap<String, Any>(), handling.expecting)
-        assertEquals("0fa0565b21d4b135e15ed3cb61bfebfe", handling.hash)
+        assertEquals("gid-ca55d68d-beb5-3077-988e-fc3a373e066b", handling.hash)
 
     }
 
@@ -38,7 +38,7 @@ class EndpointTest {
             Receptor(SomeFact::class, mapOf("property" to "value"))
         assertEquals(Type.from(SomeFact::class), handling.receiving)
         assertEquals(mapOf("property" to "value"), handling.expecting)
-        assertEquals("992044e9fb7d4e7eafdff46cd8757b07", handling.hash)
+        assertEquals("gid-6cdfcf47-59d3-3e3f-af97-fb8668c76e4a", handling.hash)
 
     }
 
@@ -54,7 +54,7 @@ class EndpointTest {
         assertEquals(null, endpoint.entity.id)
         assertEquals(Type.from(SomeFact::class), endpoint.receptor.receiving)
         assertEquals(emptyMap<String, Any>(), endpoint.receptor.expecting)
-        assertEquals("0fa0565b21d4b135e15ed3cb61bfebfe", endpoint.receptor.hash)
+        assertEquals("gid-ca55d68d-beb5-3077-988e-fc3a373e066b", endpoint.receptor.hash)
 
     }
 

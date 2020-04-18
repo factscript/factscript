@@ -45,7 +45,7 @@ class CatchingEventSymbol(node: Catching, parent: Element<out Flow, *>): EventSy
         if (message == null) {
             with(process.model.newInstance(Message::class.java)) {
                 setAttributeValue("id", node.id + "-Message")
-                val name = if (node.isStart()) { Receptor(node.type).hash } else "#{message}"
+                val name = if (node.isStart()) { Receptor(node.type).hash } else "#{${node.id.toMessageName()}}"
                 setAttributeValue("name", name)
                 process.model.definitions.addChildElement(this)
                 model.getChildElementsByType(MessageEventDefinition::class.java).first().message = this
@@ -63,3 +63,6 @@ class ThrowingEventSymbol(node: Throwing, parent: Element<out Flow, *>): EventSy
     override val model = process.model.newInstance((if (node.isFinish()) EndEvent::class else IntermediateThrowEvent::class).java)
 
 }
+
+fun String.toMessageName() = replace("-", "_")
+fun String.fromMessageName() = replace("_", "-")

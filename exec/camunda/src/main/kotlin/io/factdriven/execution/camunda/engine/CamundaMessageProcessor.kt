@@ -35,7 +35,7 @@ class CamundaMessageProcessor: MessageProcessor {
                     Message(
                         message, Receiver(
                             EntityId(
-                                Type.from(task.processDefinitionKey),
+                                Flows.get(task.processDefinitionKey).type,
                                 task.businessKey
                             ), handling
                         )

@@ -1,6 +1,7 @@
 package io.factdriven.execution
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import io.factdriven.impl.utils.Id
 import io.factdriven.impl.utils.Json
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -51,25 +52,12 @@ data class Message (
 
 data class MessageId(val entity: EntityId, val version: Int = 0) {
 
-    val hash = hash(this) @JsonIgnore get
+    val hash = Id(this) @JsonIgnore get
 
     companion object {
 
         fun nextAfter(last: MessageId): MessageId {
             return MessageId(last.entity, last.version + 1)
-        }
-
-        private val digest = MessageDigest.getInstance("MD5")
-
-        private fun hash(messageId: MessageId): String {
-            val buffer = StringBuffer()
-            buffer.append("type=").append(messageId.entity.type)
-            if (messageId.entity.id != null) {
-                buffer.append("|id=").append(messageId.entity.id)
-            }
-            buffer.append("|version=").append(messageId.version)
-            val bytes = digest.digest(buffer.toString().toByteArray())
-            return String.format("%0" + (bytes.size shl 1) + "x", BigInteger(1, bytes))
         }
 
     }

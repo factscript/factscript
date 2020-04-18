@@ -40,4 +40,3 @@ val DelegateExecution.state: Any get() {
 }
 
 const val MESSAGES_VAR = "messages"
-const val MESSAGE_NAME_VAR = "message"

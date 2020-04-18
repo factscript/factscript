@@ -6,6 +6,7 @@ import io.factdriven.definition.Awaiting
 import io.factdriven.definition.Executing
 import io.factdriven.execution.MessageId
 import io.factdriven.execution.Receptor
+import io.factdriven.execution.camunda.model.toMessageName
 import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.camunda.bpm.engine.delegate.ExecutionListener
 import org.camunda.bpm.engine.delegate.Expression
@@ -19,11 +20,13 @@ class CamundaFlowTransitionListener: ExecutionListener {
 
         val nodeId = target.getValue(execution).toString()
         val handling = when (val node = Flows.get(nodeId).get(nodeId)) {
-            is Awaiting -> node.endpoint(execution)
-            is Executing -> node.endpoint(execution)
-            else -> null
+            is Awaiting -> mapOf(nodeId to node.endpoint(execution))
+            is Executing -> mapOf(nodeId to node.endpoint(execution))
+            else -> emptyMap()
         }
-        execution.setVariable(MESSAGE_NAME_VAR, handling?.hash)
+        handling.forEach {
+            execution.setVariable(it.key.toMessageName(), it.value.hash)
+        }
 
     }
 

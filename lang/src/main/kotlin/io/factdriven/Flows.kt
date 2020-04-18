@@ -34,8 +34,7 @@ object Flows {
     }
 
     fun get(id: String): io.factdriven.definition.Flow {
-        val split = id.split(idSeparator)
-        return get(Type(split[0], split[1]))
+        return flows.values.find { it.get(id) != null }?.root ?: throw IllegalArgumentException()
     }
 
     fun get(type: Type): io.factdriven.definition.Flow {
