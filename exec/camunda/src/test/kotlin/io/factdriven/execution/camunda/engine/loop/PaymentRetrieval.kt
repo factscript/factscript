@@ -1,16 +1,26 @@
-package io.factdriven.language.execute_loop
+package io.factdriven.execution.camunda.engine.loop
 
 import io.factdriven.flow
-import java.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 class PaymentRetrieval(fact: RetrievePayment) {
 
-    var id = UUID.randomUUID().toString()
-    var total = fact.amount
-    var covered = 0F
+    val reference = "SomeReference"
+    val amount = fact.amount
+    var charged = 0F
+    var retrieved = false; private set
+
+    fun apply(fact: PaymentRetrieved) {
+        retrieved = true
+    }
+
+    fun apply(fact: CreditCardCharged) {
+        charged += fact.amount
+    }
 
     companion object {
 
@@ -20,15 +30,15 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 on command RetrievePayment::class
 
-                execute loop {
+                loop {
                     execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(id, 1F)
+                        ChargeCreditCard(reference, 1F)
                     }
-                    until ("Payment covered?") condition { covered == total }
+                    until ("Payment charged?") condition { charged == amount }
                 }
 
                 emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(total)
+                    PaymentRetrieved(amount)
                 }
 
             }

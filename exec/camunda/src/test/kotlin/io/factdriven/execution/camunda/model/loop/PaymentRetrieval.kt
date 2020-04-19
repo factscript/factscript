@@ -1,4 +1,4 @@
-package io.factdriven.execution.camunda.model.execute_loop
+package io.factdriven.execution.camunda.model.loop
 
 import io.factdriven.flow
 import java.util.*
@@ -20,7 +20,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 on command RetrievePayment::class
 
-                execute loop {
+                loop {
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(
                             id,

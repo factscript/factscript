@@ -73,7 +73,7 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     companion object {
 
-        const val groups = true
+        const val groups = false
         val margin = Dimension(18, 18)
 
     }

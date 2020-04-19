@@ -1,4 +1,4 @@
-package io.factdriven.execution.camunda.model.execute_loop
+package io.factdriven.execution.camunda.model.loop
 
 import io.factdriven.Flows
 import io.factdriven.execution.camunda.model.BpmnModel

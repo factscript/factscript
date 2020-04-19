@@ -39,9 +39,9 @@ abstract class GatewaySymbol<OUT: Gateway>(node: Node, parent: Element<out Node,
             if (parent is Loop && path.from is GatewaySymbol && path.to is GatewaySymbol) {
                 val from = position + entry(Direction.North) + Dimension(0, margin.height)
                 if (path.from == this) {
-                    return listOf(from, Position(from.x, parent.position.y + margin.height))
+                    return listOf(from, Position(from.x, parent.position.y + margin.height / 2))
                 } else {
-                    return listOf(Position(from.x, parent.position.y + margin.height), from)
+                    return listOf(Position(from.x, parent.position.y + margin.height / 2), from)
                 }
             } else {
                 if (path.from == this) {

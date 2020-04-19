@@ -1,4 +1,4 @@
-package io.factdriven.language.execute_loop
+package io.factdriven.execution.camunda.model.loop
 
 import io.factdriven.flow
 
@@ -28,7 +28,10 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
                 await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
 
                 emit event CreditCardCharged::class by {
-                    CreditCardCharged(reference, amount)
+                    CreditCardCharged(
+                        reference,
+                        amount
+                    )
                 }
 
             }
@@ -42,3 +45,4 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 data class ChargeCreditCard(val reference: String, val amount: Float)
 data class CreditCardCharged(val reference: String, val amount: Float)
 data class CreditCardGatewayConfirmationReceived(val reference: String, val amount: Float)
+

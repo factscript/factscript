@@ -1,8 +1,7 @@
-package io.factdriven.language.execute_loop
+package io.factdriven.language.loop
 
 import io.factdriven.Flows
 import io.factdriven.definition.*
-import io.factdriven.language.Execution
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

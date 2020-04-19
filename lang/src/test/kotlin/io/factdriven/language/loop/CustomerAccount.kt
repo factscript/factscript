@@ -1,4 +1,4 @@
-package io.factdriven.language.execute_loop
+package io.factdriven.language.loop
 
 import io.factdriven.flow
 

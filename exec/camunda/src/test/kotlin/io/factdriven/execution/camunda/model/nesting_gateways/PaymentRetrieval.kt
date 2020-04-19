@@ -30,7 +30,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                             )
                         }
                     } and {
-                        execute loop {
+                        loop {
                             execute command ChargeCreditCard::class by {
                                 ChargeCreditCard(
                                     id,

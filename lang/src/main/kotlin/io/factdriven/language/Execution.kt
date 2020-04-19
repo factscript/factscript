@@ -18,6 +18,8 @@ interface Execution<T: Any>: Flow {
 
     val select: Select<T>
 
+    val loop: Loop<T>
+
 }
 
 @FlowLang
@@ -27,9 +29,3 @@ interface ConditionalExecution<T: Any>: Execution<T> {
 
 }
 
-@FlowLang
-interface LoopingExecution<T: Any>: Execution<T> {
-
-    val until: Until<T>
-
-}

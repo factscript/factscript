@@ -32,13 +32,6 @@ open class ExecutingImpl<T: Any>(parent: Node):
         return branch
     }
 
-    override fun loop(path: LoopingExecution<T>.() -> Unit) {
-        @Suppress("UNCHECKED_CAST")
-        val loop = LoopingExecutionImpl<T>(entity as KClass<T>, parent!!).apply(path)
-        (parent as NodeImpl).children.remove(this)
-        (parent as NodeImpl).children.add(loop)
-    }
-
     override fun findReceptorsFor(message: Message): List<Receptor> {
         return if (catching.isInstance(message.fact.details) && message.correlating != null)
             listOf(Receptor(catching, message.correlating))
