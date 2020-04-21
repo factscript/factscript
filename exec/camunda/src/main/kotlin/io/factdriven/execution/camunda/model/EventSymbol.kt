@@ -2,6 +2,7 @@ package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.*
 import io.factdriven.execution.Receptor
+import io.factdriven.impl.utils.asLines
 import org.camunda.bpm.model.bpmn.instance.*
 
 /**
@@ -25,7 +26,7 @@ abstract class EventSymbol<IN: Node, OUT: Event>(node: IN, parent: Element<out F
 
         super.init()
 
-        model.setAttributeValue("name", node.label.sentenceCase().replace(" ", "\n"), false)
+        model.setAttributeValue("name", node.label.asLines(), false)
         val messageEventDefinition = process.model.newInstance(MessageEventDefinition::class.java)
         model.addChildElement(messageEventDefinition)
 

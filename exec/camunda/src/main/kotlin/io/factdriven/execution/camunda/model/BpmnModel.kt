@@ -55,7 +55,7 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
         with(bpmnProcess) {
             setAttributeValue("id", node.id, true)
-            setAttributeValue("name", node.label.sentenceCase(), false)
+            setAttributeValue("name", node.label, false)
             isExecutable = true
             bpmnDefinitions.addChildElement(this)
         }
@@ -79,5 +79,3 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
     }
 
 }
-
-fun String.sentenceCase(): String = (replace("(.)([A-Z\\d])".toRegex()) { "${it.groupValues[1]} ${it.groupValues[2].toLowerCase()}" })

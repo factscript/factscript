@@ -5,6 +5,8 @@ import io.factdriven.definition.Flow
 import io.factdriven.definition.Looping
 import io.factdriven.definition.Node
 import io.factdriven.execution.camunda.engine.CamundaFlowTransitionListener
+import io.factdriven.impl.utils.asLines
+import io.factdriven.impl.utils.toLines
 import org.camunda.bpm.model.bpmn.instance.*
 import org.camunda.bpm.model.bpmn.instance.bpmndi.BpmnEdge
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaExecutionListener
@@ -62,7 +64,7 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
 
             if (this != null) {
 
-                model.name = if (parent is Looping) (if (condition != null) "Yes" else "No") else label.replace(" ", "\n")
+                model.name = if (parent is Looping) (if (condition != null) "Yes" else "No") else label.asLines()
 
                 if (condition != null) {
                     model.conditionExpression = process.model.newInstance(org.camunda.bpm.model.bpmn.instance.ConditionExpression::class.java);
@@ -89,7 +91,7 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
         } else if (from is Loop) {
             return from.position + from.entry(Direction.East) - Position(13, 17)
         } else {
-            return Position(parent!!.position.x, wayPoints[1].y - (conditional!!.label.toCharArray().filter { it == ' '  }.size) * 13 - 6) - BpmnModel.margin * 2 / 3
+            return Position(parent!!.position.x, wayPoints[1].y - (conditional!!.label.toLines().size - 1) * 13 - 6) - BpmnModel.margin * 2 / 3
         }
     }
 

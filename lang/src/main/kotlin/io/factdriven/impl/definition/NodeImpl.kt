@@ -3,6 +3,7 @@ package io.factdriven.impl.definition
 import io.factdriven.definition.*
 import io.factdriven.execution.*
 import io.factdriven.impl.utils.Id
+import io.factdriven.impl.utils.toSentenceCase
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
 
@@ -110,7 +111,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
 }
 
 private fun Node.label(): String {
-    return type.label
+    return type.label.toSentenceCase()
 }
 
 private fun Node.index(): Int {

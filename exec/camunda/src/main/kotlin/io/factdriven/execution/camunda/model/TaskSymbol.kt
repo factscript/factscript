@@ -24,7 +24,7 @@ abstract class TaskSymbol<IN: Node, OUT: Task>(node: IN, parent: Element<out Flo
 
         super.init()
 
-        model.setAttributeValue("name", node.label.sentenceCase(), false)
+        model.setAttributeValue("name", node.label, false)
 
     }
 
