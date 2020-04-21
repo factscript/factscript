@@ -11,7 +11,7 @@ interface Execute<T: Any>: ExecuteCommand<T>, ExecuteAll<T>
 @FlowLanguage
 interface ExecuteCommand<T: Any> {
 
-    infix fun <M: Any> command(type: KClass<M>): Sentence<T>
+    infix fun <M: Any> command(type: KClass<M>): Sentence<T, M>
 
 }
 

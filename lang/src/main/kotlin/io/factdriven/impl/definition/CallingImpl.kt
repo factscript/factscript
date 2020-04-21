@@ -5,15 +5,18 @@ import io.factdriven.definition.Calling
 import io.factdriven.definition.Gateway
 import io.factdriven.definition.Node
 import io.factdriven.definition.Promising
-import io.factdriven.execution.Receptor
 import io.factdriven.execution.Message
-import io.factdriven.language.*
+import io.factdriven.execution.Receptor
+import io.factdriven.language.Execute
+import io.factdriven.language.ExecuteAnd
+import io.factdriven.language.Execution
+import io.factdriven.language.Sentence
 import kotlin.reflect.KClass
 
 open class CallingImpl<T: Any>(parent: Node):
 
     Execute<T>,
-    Sentence<T>,
+    Sentence<T, Any>,
     Calling,
     ThrowingImpl<T>(parent)
 

@@ -13,7 +13,7 @@ open class ThrowingImpl<T: Any>(parent: Node):
 
     Emit<T>,
     Issue<T>,
-    Sentence<T>,
+    Sentence<T, Any>,
 
     Throwing,
     NodeImpl(parent)
@@ -25,17 +25,19 @@ open class ThrowingImpl<T: Any>(parent: Node):
 
     override val type: Type get() = throwing.type
 
-    override fun <M: Any> event(type: KClass<M>): Sentence<T> {
+    override fun <M : Any> event(type: KClass<M>): Sentence<T, M> {
         this.throwing = type
-        return this
+        @Suppress("UNCHECKED_CAST")
+        return this as Sentence<T, M>
     }
 
-    override fun <M: Any> command(type: KClass<M>): Sentence<T> {
+    override fun <M : Any> command(type: KClass<M>): Sentence<T, M> {
         this.throwing = type
-        return this
+        @Suppress("UNCHECKED_CAST")
+        return this as Sentence<T, M>
     }
 
-    override fun <M : Any> by(instance: T.() -> M) {
+    override fun by(instance: T.() -> Any) {
         @Suppress("UNCHECKED_CAST")
         this.instance = instance as Any.() -> Any
     }

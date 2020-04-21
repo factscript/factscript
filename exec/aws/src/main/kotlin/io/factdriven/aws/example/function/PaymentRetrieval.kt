@@ -111,7 +111,7 @@ data class PaymentRetrieval(
                 }
 
                 execute command PaymentRetrievalAccepted6::class by {
-                    PaymentRetrievalAccepted3("1", 25f)
+                    PaymentRetrievalAccepted6("1", 25f)
                 }
 
                 emit event PaymentRetrieved::class by {
