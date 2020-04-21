@@ -1,9 +1,11 @@
 package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.Conditional
-import io.factdriven.definition.Flow
 import io.factdriven.definition.Looping
 import io.factdriven.definition.Node
+import io.factdriven.execution.camunda.diagram.Dimension
+import io.factdriven.execution.camunda.diagram.Direction
+import io.factdriven.execution.camunda.diagram.Position
 import io.factdriven.execution.camunda.engine.CamundaFlowTransitionListener
 import io.factdriven.impl.utils.asLines
 import io.factdriven.impl.utils.toLines
@@ -83,15 +85,22 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
 
     override val children: List<Element<*,*>> = if (conditional != null) listOf(Label(conditional, this)) else emptyList()
 
-    override val dimension: Dimension get() = Dimension(wayPoints.maxBy { it.x }!!.x - wayPoints.minBy { it.x }!!.x, wayPoints.maxBy { it.y }!!.y - wayPoints.minBy { it.y }!!.y)
+    override val dimension: Dimension
+        get() = Dimension(
+            wayPoints.maxBy { it.x }!!.x - wayPoints.minBy { it.x }!!.x,
+            wayPoints.maxBy { it.y }!!.y - wayPoints.minBy { it.y }!!.y
+        )
 
     override fun position(child: Element<*,*>): Position {
         if (parent is Loop) {
-            return parent.fork.position + parent.fork.entry(Direction.North) + Position(6, 0)
+            return parent.fork.position + parent.fork.entry(Direction.North) east 5 north 17
         } else if (from is Loop) {
-            return from.position + from.entry(Direction.East) - Position(13, 17)
+            return from.position + from.entry(Direction.East) east 5 north 17
         } else {
-            return Position(parent!!.position.x, wayPoints[1].y - (conditional!!.label.toLines().size - 1) * 13 - 6) - BpmnModel.margin * 2 / 3
+            return Position(
+                parent!!.position.x,
+                wayPoints[1].y - (conditional!!.label.toLines().size - 1) * 13 - 6
+            ) - BpmnModel.margin * 2 / 3
         }
     }
 

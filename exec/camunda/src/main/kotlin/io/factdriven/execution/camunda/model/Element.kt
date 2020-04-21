@@ -1,6 +1,9 @@
 package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.Node
+import io.factdriven.execution.camunda.diagram.Dimension
+import io.factdriven.execution.camunda.diagram.Direction
+import io.factdriven.execution.camunda.diagram.Position
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -24,8 +27,8 @@ abstract class Element<IN: Node, OUT: Any>(val node: IN, val parent: Element<*,*
 
     internal open fun wayPoints(path: Path): List<Position> {
         return listOf(
-            if(path.from == this) position + entry(Direction.East) - Dimension(BpmnModel.margin.width, 0)
-            else position + entry() + Dimension(BpmnModel.margin.width, 0)
+            if(path.from == this) position + entry(Direction.East)
+            else position + entry()
         )
     }
 
@@ -39,3 +42,5 @@ abstract class Element<IN: Node, OUT: Any>(val node: IN, val parent: Element<*,*
     internal abstract fun init()
 
 }
+
+val List<Element<*,*>>.dimensions: List<Dimension> get() = map { it.dimension }

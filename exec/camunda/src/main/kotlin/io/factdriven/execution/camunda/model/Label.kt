@@ -1,6 +1,9 @@
 package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.Node
+import io.factdriven.execution.camunda.diagram.Dimension
+import io.factdriven.execution.camunda.diagram.Direction
+import io.factdriven.execution.camunda.diagram.Position
 import org.camunda.bpm.model.bpmn.instance.BaseElement
 import org.camunda.bpm.model.bpmn.instance.bpmndi.BpmnLabel
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds

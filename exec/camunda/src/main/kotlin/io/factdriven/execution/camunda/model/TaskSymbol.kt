@@ -1,6 +1,8 @@
 package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.*
+import io.factdriven.execution.camunda.diagram.Dimension
+import io.factdriven.execution.camunda.diagram.Position
 import org.camunda.bpm.model.bpmn.instance.*
 
 /**
@@ -9,15 +11,12 @@ import org.camunda.bpm.model.bpmn.instance.*
 abstract class TaskSymbol<IN: Node, OUT: Task>(node: IN, parent: Element<out Flow, *>): Symbol<IN, OUT>(node, parent) {
 
     override val dimension: Dimension = Dimension(
-        width = 100 + BpmnModel.margin.width * 2,
-        height = 80 + BpmnModel.margin.height * 2
-    )
+        100,
+        80
+    ).outer
 
     override fun position(child: Element<*, *>): Position {
-        return Position(
-            x = position.x + BpmnModel.margin.height + 6,
-            y = position.y + BpmnModel.margin.height + 6
-        )
+        return position.inner + Dimension(6, 6)
     }
 
     override fun init() {

@@ -1,6 +1,9 @@
 package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.Flow
+import io.factdriven.execution.camunda.diagram.Dimension
+import io.factdriven.execution.camunda.diagram.Direction
+import io.factdriven.execution.camunda.diagram.Position
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
@@ -17,8 +20,12 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     override val children: List<Element<*,*>> = listOf(Sequence(node, this))
 
-    override val position: Position = Position(160, 92) - margin
+    override val position: Position = Position(
+        160,
+        92
+    ).outer
     override val dimension: Dimension get() = children.first().dimension
+
     override fun entry(from: Direction): Position = children.first().entry(from)
 
     override fun position(child: Element<*,*>): Position = position

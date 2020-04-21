@@ -2,6 +2,9 @@ package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.*
 import io.factdriven.execution.Receptor
+import io.factdriven.execution.camunda.diagram.Dimension
+import io.factdriven.execution.camunda.diagram.Position
+import io.factdriven.execution.camunda.model.BpmnModel.Companion.margin
 import io.factdriven.impl.utils.asLines
 import org.camunda.bpm.model.bpmn.instance.*
 
@@ -11,15 +14,12 @@ import org.camunda.bpm.model.bpmn.instance.*
 abstract class EventSymbol<IN: Node, OUT: Event>(node: IN, parent: Element<out Flow,*>): Symbol<IN, OUT>(node, parent) {
 
     override val dimension: Dimension = Dimension(
-        width = 36 + BpmnModel.margin.width * 2,
-        height = 36 + BpmnModel.margin.height * 2
-    )
+        36,
+        36
+    ).outer
 
     override fun position(child: Element<*, *>): Position {
-        return Position(
-            x = position.x,
-            y = position.y + dimension.height - BpmnModel.margin.height + 6
-        )
+        return position south dimension north margin south 6
     }
 
     override fun init() {
