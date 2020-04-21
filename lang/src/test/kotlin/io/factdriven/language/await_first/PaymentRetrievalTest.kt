@@ -2,7 +2,8 @@ package io.factdriven.language.await_first
 
 import io.factdriven.Flows
 import io.factdriven.definition.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /**
@@ -32,7 +33,7 @@ class PaymentRetrievalTest {
 
         val branching = definition.children[1] as Branching
         assertEquals(PaymentRetrieval::class, branching.entity)
-        assertEquals(Gateway.Await, branching.gateway)
+        assertEquals(Gateway.Catching, branching.gateway)
         assertEquals("", branching.label)
         assertEquals(2, branching.children.size)
         assertTrue(Flow::class.isInstance(branching.children[0]))

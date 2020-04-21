@@ -3,8 +3,8 @@ package io.factdriven.impl.definition
 import io.factdriven.definition.Awaiting
 import io.factdriven.definition.Gateway
 import io.factdriven.definition.Node
-import io.factdriven.execution.Receptor
 import io.factdriven.execution.Message
+import io.factdriven.execution.Receptor
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.impl.utils.getValue
@@ -46,7 +46,7 @@ open class AwaitingImpl<T: Any>(parent: Node):
     @Suppress("UNCHECKED_CAST")
     override fun first(path: TriggeredExecution<T>.() -> Unit): AwaitOr<T> {
         val branch = BranchingImpl<T>(parent!!)
-        branch.gateway = Gateway.Await
+        branch.gateway = Gateway.Catching
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
         val flow = TriggeredExecutionImpl(

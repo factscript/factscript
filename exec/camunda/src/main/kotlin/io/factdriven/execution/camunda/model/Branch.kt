@@ -36,13 +36,13 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
             Gateway.Exclusive -> ExclusiveGatewaySymbol(node, this)
             Gateway.Inclusive -> InclusiveGatewaySymbol(node, this)
             Gateway.Parallel -> ParallelGatewaySymbol(node, this)
-            Gateway.Await -> EventBasedGatewaySymbol(node, this)
+            Gateway.Catching -> EventBasedGatewaySymbol(node, this)
         }
         join = when(node.gateway) {
             Gateway.Exclusive -> ExclusiveGatewaySymbol(node, this)
             Gateway.Inclusive -> InclusiveGatewaySymbol(node, this)
             Gateway.Parallel -> ParallelGatewaySymbol(node, this)
-            Gateway.Await -> ExclusiveGatewaySymbol(node, this)
+            Gateway.Catching -> ExclusiveGatewaySymbol(node, this)
         }
         val sequences = node.children.map { Sequence(it as Flow, this) }
         listOf(fork) + sequences + listOf(join)
