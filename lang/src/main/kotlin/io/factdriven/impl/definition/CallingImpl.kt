@@ -1,7 +1,7 @@
 package io.factdriven.impl.definition
 
 import io.factdriven.Flows
-import io.factdriven.definition.Executing
+import io.factdriven.definition.Calling
 import io.factdriven.definition.Gateway
 import io.factdriven.definition.Node
 import io.factdriven.definition.Promising
@@ -10,11 +10,11 @@ import io.factdriven.execution.Message
 import io.factdriven.language.*
 import kotlin.reflect.KClass
 
-open class ExecutingImpl<T: Any>(parent: Node):
+open class CallingImpl<T: Any>(parent: Node):
 
     Execute<T>,
     Sentence<T>,
-    Executing,
+    Calling,
     ThrowingImpl<T>(parent)
 
 {
@@ -27,7 +27,7 @@ open class ExecutingImpl<T: Any>(parent: Node):
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
         @Suppress("UNCHECKED_CAST")
-        val flow = FlowImpl(entity as KClass<T>, branch).apply(path)
+        val flow = TriggeredExecutionImpl(entity as KClass<T>, branch).apply(path)
         (branch as NodeImpl).children.add(flow)
         return branch
     }

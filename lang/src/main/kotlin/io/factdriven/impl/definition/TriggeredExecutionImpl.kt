@@ -8,9 +8,9 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-open class FlowImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
+open class TriggeredExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
 
-    Flow<T>,
+    TriggeredExecution<T>,
 
     NodeImpl(parent, entity)
 
@@ -46,7 +46,7 @@ open class FlowImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null)
 
     override val execute: Execute<T>
         get() {
-            val child = ExecutingImpl<T>(this)
+            val child = CallingImpl<T>(this)
             children.add(child)
             return child
         }
@@ -58,10 +58,10 @@ open class FlowImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null)
             return child
         }
 
-    override val loop: Loop<T>
+    override val loop: LoopingExecution<T>
         get() {
             @Suppress("UNCHECKED_CAST")
-            val child = LoopingImpl<T>(entity as KClass<T>, this)
+            val child = LoopingExecutionImpl<T>(entity as KClass<T>, this)
             children.add(child)
             return child
         }

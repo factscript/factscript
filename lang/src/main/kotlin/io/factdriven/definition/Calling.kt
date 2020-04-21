@@ -3,4 +3,4 @@ package io.factdriven.definition
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Executing: Throwing, Catching
+interface Calling: Throwing, Catching

@@ -44,12 +44,12 @@ open class AwaitingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun first(path: Flow<T>.() -> Unit): AwaitOr<T> {
+    override fun first(path: TriggeredExecution<T>.() -> Unit): AwaitOr<T> {
         val branch = BranchingImpl<T>(parent!!)
         branch.gateway = Gateway.Await
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        val flow = FlowImpl(
+        val flow = TriggeredExecutionImpl(
             entity as KClass<T>,
             branch
         ).apply(path)

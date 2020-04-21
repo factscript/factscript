@@ -3,10 +3,10 @@ package io.factdriven.language
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-@FlowLang
+@FlowLanguage
 interface Given<T: Any>: GivenCondition<T>, Labeled<Given<T>>
 
-@FlowLang
+@FlowLanguage
 interface GivenCondition<T: Any> {
 
     infix fun condition(condition: T.() -> Boolean)

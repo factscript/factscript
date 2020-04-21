@@ -5,7 +5,7 @@ import io.factdriven.definition.Flow
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-@FlowLang
+@FlowLanguage
 interface Execution<T: Any>: Flow {
 
     val emit: Emit<T>
@@ -18,14 +18,29 @@ interface Execution<T: Any>: Flow {
 
     val select: Select<T>
 
-    val loop: Loop<T>
+    val loop: LoopingExecution<T>
 
 }
 
-@FlowLang
+@FlowLanguage
+interface TriggeredExecution<T:Any>: Execution<T> {
+
+    val on: On<T>
+
+}
+
+@FlowLanguage
 interface ConditionalExecution<T: Any>: Execution<T> {
 
     val given: Given<T>
 
 }
 
+@FlowLanguage
+interface LoopingExecution<T: Any>: Execution<T> {
+
+    val until: Until<T>
+
+    operator fun invoke(path: LoopingExecution<T>.() -> Unit)
+
+}

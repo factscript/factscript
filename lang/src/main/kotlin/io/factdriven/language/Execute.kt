@@ -5,24 +5,24 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-@FlowLang
+@FlowLanguage
 interface Execute<T: Any>: ExecuteCommand<T>, ExecuteAll<T>
 
-@FlowLang
+@FlowLanguage
 interface ExecuteCommand<T: Any> {
 
     infix fun <M: Any> command(type: KClass<M>): Sentence<T>
 
 }
 
-@FlowLang
+@FlowLanguage
 interface ExecuteAll<T: Any> {
 
     infix fun all(path: Execution<T>.() -> Unit): ExecuteAnd<T>
 
 }
 
-@FlowLang
+@FlowLanguage
 interface ExecuteAnd<T: Any> {
 
     infix fun and(path: Execution<T>.() -> Unit): ExecuteAnd<T>

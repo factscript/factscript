@@ -30,7 +30,7 @@ abstract class TaskSymbol<IN: Node, OUT: Task>(node: IN, parent: Element<out Flo
 
 }
 
-class ServiceTaskSymbol(node: Executing, parent: Element<out Flow, *>): TaskSymbol<Executing, ServiceTask>(node, parent) {
+class ServiceTaskSymbol(node: Calling, parent: Element<out Flow, *>): TaskSymbol<Calling, ServiceTask>(node, parent) {
 
     override val model = process.model.newInstance(ServiceTask::class.java)
 

@@ -5,36 +5,26 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-@FlowLang
+@FlowLanguage
 interface On<T: Any>: OnCommand<T>, Await<T>
 
-@FlowLang
+@FlowLanguage
 interface OnCommand<T: Any> {
 
     infix fun <M: Any> command(type: KClass<M>): OnCommandPromise<T>
 
 }
 
-@FlowLang
+@FlowLanguage
 interface OnCommandPromise<T: Any> {
 
-    infix fun promise(promise: Promise<T>.() -> Unit): Promise<T>
+    infix fun promise(promise: OnCommandPromiseReportSuccess<T>.() -> Unit): OnCommandPromiseReportSuccess<T>
 
 }
 
-@FlowLang
-interface Promise<T: Any> {
+@FlowLanguage
+interface OnCommandPromiseReportSuccess<T: Any> {
 
-    val report: PromiseReport<T>
-
-}
-
-@FlowLang
-interface PromiseReport<T: Any>: PromiseReportSuccess<T>
-
-@FlowLang
-interface PromiseReportSuccess<T: Any> {
-
-    infix fun <M: Any> success(type: KClass<M>)
+    val report: Report<T>
 
 }

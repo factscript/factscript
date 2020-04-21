@@ -13,7 +13,7 @@ class ConditionalExecutionImpl<T:Any> (entity: KClass<T>, override val parent: N
 
     ConditionalExecution<T>,
 
-    FlowImpl<T>(entity, parent)
+    TriggeredExecutionImpl<T>(entity, parent)
 
 {
 

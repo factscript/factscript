@@ -11,7 +11,7 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
 
     override val children: List<Element<*,*>> = node.children.mapNotNull {
         when (it) {
-            is Executing -> ServiceTaskSymbol(it, this)
+            is Calling -> ServiceTaskSymbol(it, this)
             is Promising -> CatchingEventSymbol(it, this)
             is Awaiting -> ReceiveTaskSymbol(it, this)
             is Throwing -> if (it.isFinish()) ThrowingEventSymbol(it, this) else SendTaskSymbol(it, this)

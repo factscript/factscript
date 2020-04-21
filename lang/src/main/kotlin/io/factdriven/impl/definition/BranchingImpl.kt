@@ -48,9 +48,9 @@ open class BranchingImpl<T: Any>(parent: Node):
         return this
     }
 
-    override fun or(path: Flow<T>.() -> Unit): AwaitOr<T> {
+    override fun or(path: TriggeredExecution<T>.() -> Unit): AwaitOr<T> {
         @Suppress("UNCHECKED_CAST")
-        val flow = FlowImpl(
+        val flow = TriggeredExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)
@@ -60,7 +60,7 @@ open class BranchingImpl<T: Any>(parent: Node):
 
     override fun and(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
         @Suppress("UNCHECKED_CAST")
-        val flow = FlowImpl(
+        val flow = TriggeredExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)

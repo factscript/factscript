@@ -4,8 +4,7 @@ import io.factdriven.Flows
 import io.factdriven.Messages
 import io.factdriven.definition.Awaiting
 import io.factdriven.definition.Branching
-import io.factdriven.definition.Executing
-import io.factdriven.definition.Gateway
+import io.factdriven.definition.Calling
 import io.factdriven.execution.MessageId
 import io.factdriven.execution.Receptor
 import io.factdriven.execution.camunda.model.toMessageName
@@ -23,7 +22,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
         val nodeId = target.getValue(execution).toString()
         val handling = when (val node = Flows.get(nodeId).get(nodeId)) {
             is Awaiting -> mapOf(nodeId to node.endpoint(execution))
-            is Executing -> mapOf(nodeId to node.endpoint(execution))
+            is Calling -> mapOf(nodeId to node.endpoint(execution))
             is Branching -> node.endpoint(execution)
             else -> emptyMap()
         }
@@ -44,7 +43,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
         return Receptor(catching, details)
     }
 
-    private fun Executing.endpoint(execution: DelegateExecution): Receptor {
+    private fun Calling.endpoint(execution: DelegateExecution): Receptor {
         val messageString = execution.getVariableTyped<JsonValue>(
             MESSAGES_VAR, false).valueSerialized
         val messages = Messages.fromJson(messageString)

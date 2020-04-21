@@ -34,7 +34,7 @@ class PaymentRetrievalTest {
         assertEquals(PaymentRetrieval::class, loop.entity)
         assertEquals("Payment retrieval", loop.label)
         assertEquals(2, loop.children.size)
-        assertTrue(Executing::class.isInstance(loop.children[0]))
+        assertTrue(Calling::class.isInstance(loop.children[0]))
         assertTrue(Conditional::class.isInstance(loop.children[1]))
 
         val emit = definition.children[2] as Throwing

@@ -5,39 +5,39 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-@FlowLang
+@FlowLanguage
 interface Await<T: Any>: AwaitEvent<T>, AwaitFirst<T>
 
-@FlowLang
+@FlowLanguage
 interface AwaitEvent<T: Any> {
 
     infix fun <M : Any> event(type: KClass<M>): AwaitEventHaving<T>
 
 }
 
-@FlowLang
+@FlowLanguage
 interface AwaitFirst<T: Any> {
 
-    infix fun first(path: Flow<T>.() -> Unit): AwaitOr<T>
+    infix fun first(path: TriggeredExecution<T>.() -> Unit): AwaitOr<T>
 
 }
 
-@FlowLang
+@FlowLanguage
 interface AwaitOr<T: Any> {
 
-    infix fun or(path: Flow<T>.() -> Unit): AwaitOr<T>
+    infix fun or(path: TriggeredExecution<T>.() -> Unit): AwaitOr<T>
 
 }
 
 
-@FlowLang
+@FlowLanguage
 interface AwaitEventHaving<T: Any> {
 
     infix fun having(property: String): AwaitEventHavingMatch<T>
 
 }
 
-@FlowLang
+@FlowLanguage
 interface AwaitEventHavingMatch<T: Any> {
 
     infix fun match(value: T.() -> Any?)

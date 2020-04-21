@@ -3,24 +3,24 @@ package io.factdriven.language
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-@FlowLang
+@FlowLanguage
 interface Select<T: Any>: SelectEither<T>, SelectAll<T>, Labeled<Select<T>>
 
-@FlowLang
+@FlowLanguage
 interface SelectEither<T: Any> {
 
     infix fun either(path: ConditionalExecution<T>.() -> Unit): SelectOr<T>
 
 }
 
-@FlowLang
+@FlowLanguage
 interface SelectAll<T: Any> {
 
     infix fun all(path: ConditionalExecution<T>.() -> Unit): SelectOr<T>
 
 }
 
-@FlowLang
+@FlowLanguage
 interface SelectOr<T:Any> {
 
     infix fun or(path: ConditionalExecution<T>.() -> Unit): SelectOr<T>
