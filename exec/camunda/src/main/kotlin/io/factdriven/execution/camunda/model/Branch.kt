@@ -25,9 +25,9 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
         val children = listOf(fork, sequences.first(), join)
         return when(from) {
             Direction.North -> Position(dimension.width / 2, 0)
-            Direction.East -> Position(dimension.width, children.maxBy { it.entry(Direction.East).y }?.entry(Direction.East)?.y ?: dimension.height / 2)
+            Direction.East -> Position(dimension.width, children.maxBy { it.entry(from).y }?.entry(from)?.y ?: dimension.height / 2)
             Direction.South -> Position(dimension.width / 2, dimension.height)
-            Direction.West -> Position(0, children.maxBy { it.entry(Direction.West).y }?.entry(Direction.West)?.y ?: dimension.height / 2)
+            Direction.West -> Position(0, children.maxBy { it.entry(from).y }?.entry(from)?.y ?: dimension.height / 2)
         }
     }
 
@@ -57,7 +57,7 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
         }
 
     override fun position(child: Element<*,*>): Position {
-        val y = (listOf(fork, join) + sequences.first()).maxBy { it.entry(Direction.West).y }!!.entry(Direction.West) - fork.entry(Direction.West)
+        val y = (listOf(fork, join) + sequences.first()).maxBy { it.entry().y }!!.entry() - fork.entry()
         return position + if (child == fork) y
             else if (child == join) Position(fork.dimension.width + sequences.maxBy { it.dimension.width }!!.dimension.width, 0) + y
             else Position(fork.dimension.width, sequences.subList(0, sequences.indexOf(child)).sumBy { it.dimension.height })

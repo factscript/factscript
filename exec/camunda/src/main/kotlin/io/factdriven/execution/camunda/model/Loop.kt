@@ -42,12 +42,12 @@ class Loop(node: Looping, parent: Element<*,*>): Group<Flow>(node,parent) {
             Direction.North -> Position(dimension.width / 2, 0)
             Direction.East -> Position(dimension.width, (children.maxBy { it.entry(Direction.East).y }?.entry(Direction.East)?.y ?: dimension.height / 2) + BpmnModel.margin.height)
             Direction.South -> Position(dimension.width / 2, dimension.height)
-            Direction.West -> Position(0, (children.maxBy { it.entry(Direction.West).y }?.entry(Direction.West)?.y ?: dimension.height / 2) + BpmnModel.margin.height)
+            Direction.West -> Position(0, (children.maxBy { it.entry().y }?.entry()?.y ?: dimension.height / 2) + BpmnModel.margin.height)
         }
     }
 
     override fun position(child: Element<*,*>): Position {
-        return position + entry(Direction.West) - child.entry(Direction.West) +
+        return position + entry() - child.entry() +
                 Position(children.subList(0, children.indexOf(child)).sumBy { it.dimension.width }, 0)
     }
 

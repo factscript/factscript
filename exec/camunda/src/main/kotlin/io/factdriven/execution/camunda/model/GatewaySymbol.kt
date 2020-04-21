@@ -36,7 +36,7 @@ abstract class GatewaySymbol<OUT: Gateway>(node: Node, parent: Element<out Node,
     }
 
     override fun wayPoints(path: Path): List<Position> {
-        if (path.parent!!.position.y + path.parent.entry(Direction.West).y == position.y + entry(Direction.West).y) {
+        if (path.parent!!.position.y + path.parent.entry().y == position.y + entry().y) {
             if (parent is Loop && path.from is GatewaySymbol && path.to is GatewaySymbol) {
                 val from = position + entry(Direction.North) + Dimension(0, margin.height)
                 if (path.from == this) {
@@ -48,13 +48,13 @@ abstract class GatewaySymbol<OUT: Gateway>(node: Node, parent: Element<out Node,
                 if (path.from == this) {
                     return listOf(position + entry(Direction.East) - Dimension(margin.width, 0))
                 } else {
-                    return listOf(position + entry(Direction.West) + Dimension(margin.width, 0))
+                    return listOf(position + entry() + Dimension(margin.width, 0))
                 }
             }
         } else {
             if (path.from == this) {
                 val from = position + entry(Direction.South) - Dimension(0, margin.height)
-                val to = path.parent.position + path.parent.entry(Direction.West) + Dimension(margin.width, 0)
+                val to = path.parent.position + path.parent.entry() + Dimension(margin.width, 0)
                 return listOf(from, Position(from.x, to.y))
             } else {
                 val from = path.parent.position + path.parent.entry(Direction.East) - Dimension(margin.width, 0)

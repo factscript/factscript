@@ -20,12 +20,12 @@ abstract class Element<IN: Node, OUT: Any>(val node: IN, val parent: Element<*,*
 
     internal abstract fun position(child: Element<*,*>): Position
 
-    internal abstract fun entry(from: Direction): Position
+    internal abstract fun entry(from: Direction = Direction.West): Position
 
     internal open fun wayPoints(path: Path): List<Position> {
         return listOf(
             if(path.from == this) position + entry(Direction.East) - Dimension(BpmnModel.margin.width, 0)
-            else position + entry(Direction.West) + Dimension(BpmnModel.margin.width, 0)
+            else position + entry() + Dimension(BpmnModel.margin.width, 0)
         )
     }
 
