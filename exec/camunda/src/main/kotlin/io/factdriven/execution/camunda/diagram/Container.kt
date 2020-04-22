@@ -7,6 +7,9 @@ class Container: Box() {
 
     val contains: Set<Box> get() = entry.allSiblings
 
+    override val entryArtefact: Artefact get() = entry.entryArtefact
+    override val exitArtefact: Artefact get() = exit.exitArtefact
+
     override val dimension: Dimension
         get() = Dimension(
             width = contains.map { it.allHorizontal.map { it.dimension }.sumWidth }.max()!!,

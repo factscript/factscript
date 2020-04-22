@@ -1,10 +1,18 @@
 package io.factdriven.execution.camunda.diagram
 
-class Artefact(val inner: Dimension, val margin: Int): Box() {
+class Artefact(inner: Dimension, val margin: Int): Box() {
 
     constructor(width: Int, height: Int, margin: Int): this(Dimension(width, height), margin)
 
     override val dimension: Dimension = Dimension(inner.width + margin * 2, inner.height + margin * 2)
+
+    val inner: Space = object: Space {
+        override val dimension: Dimension get() = inner
+        override val position: Position get() = this@Artefact.position + Dimension(margin, margin)
+    }
+
+    override val entryArtefact: Artefact get() = this
+    override val exitArtefact: Artefact get() = this
 
     override val leftEntry: Position
         get() = Position(

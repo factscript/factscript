@@ -12,7 +12,11 @@ abstract class Box: Space {
     abstract val topEntry: Position
     abstract val bottomExit: Position
 
-    open var container: Container? = null
+    var container: Container? = null
+    val arrows: MutableList<Arrow> = mutableListOf()
+
+    abstract val entryArtefact: Artefact
+    abstract val exitArtefact: Artefact
 
     override val position: Position get() {
         return if (container?.entry == this) {
@@ -29,27 +33,24 @@ abstract class Box: Space {
     }
 
     fun putRightOf(that: Box) {
-        left = that
-        that.right = this
-        exit(that)
+        that.putLeftOf(this)
     }
 
     fun putLeftOf(that: Box) {
         right = that
         that.left = this
-        exit(that)
+        defineAsExit(that)
+        associate(that)
     }
 
     fun putBelowOf(that: Box) {
-        onTop = that
-        that.below = this
-        exit(that)
+        that.putOnTopOf(this)
     }
 
     fun putOnTopOf(that: Box) {
         below = that
         that.onTop = this
-        exit(that)
+        defineAsExit(that)
     }
 
     fun putInside(that: Container) {
@@ -58,7 +59,13 @@ abstract class Box: Space {
         that.exit = this
     }
 
-    private fun exit(box: Box) {
+    fun associate(that: Box, via: Position? = null) {
+        val arrow = Arrow(this, that, via)
+        arrows.add(arrow)
+        that.arrows.add(arrow)
+    }
+
+    private fun defineAsExit(box: Box) {
         container = container ?: box.container
         container?.exit = if (box.container != null) this else box
         box.container = container

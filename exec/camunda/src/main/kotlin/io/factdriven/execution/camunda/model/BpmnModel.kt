@@ -56,7 +56,7 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
     override fun init() {
 
         with(bpmnDefinitions) {
-            targetNamespace = "https://factdriven.io/flowlang"
+            targetNamespace = "https://factdriven.io/flow-language"
             model.definitions = this
         }
 
