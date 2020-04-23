@@ -14,18 +14,18 @@ import io.factdriven.language.ConditionalExecution
 import io.factdriven.language.Given
 import java.util.stream.Collectors
 
-class XOrTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
+class ExclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
     override fun test(node: Node): Boolean {
         return node is Branching && node.gateway == Exclusive
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
         val payload = Payload(id = node.id)
-        val nodeParameter = NodeParameter(functionName = "PaymentRetrieval", payload = payload)
+        val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
 
         translationContext.stepFunctionBuilder.state(toStateName(node),
                 StepFunctionBuilder.taskState()
-                        .resource("arn:aws:states:::lambda:invoke.waitForTaskToken")
+                        .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
                         .resultPath("$.output.condition")
                         .transition(next(nameGateway(node))))
@@ -56,27 +56,33 @@ class XOrTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTrans
     }
 }
 
-class OrTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
+class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
     override fun test(node: Node): Boolean {
         return node is Branching && node.gateway == Inclusive
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
         val payload = Payload(id = node.id)
-        val nodeParameter = NodeParameter(functionName = "PaymentRetrieval", payload = payload)
+        val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
 
         translationContext.stepFunctionBuilder.state(toStateName(node),
                 StepFunctionBuilder.taskState()
-                        .resource("arn:aws:states:::lambda:invoke.waitForTaskToken")
+                        .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
                         .resultPath("$.output.condition")
                         .transition(next(nameGateway(node))))
 
-        val choices = toChoices(translationContext, node as Branching)
+        val choicesTranslationContext = translationContext.copyWith(transitionStrategy = InclusiveTransitionStrategy(node, node.forward))
+        val choices = toChoices(choicesTranslationContext, node as Branching)
         translationContext.stepFunctionBuilder.state(nameGateway(node),
                 ChoiceState.builder()
                         .choices(*choices)
         )
+
+        translationContext.stepFunctionBuilder.state("while-${toStateName(node)}", ChoiceState.builder().choices(
+                Choice.builder().condition(BooleanEqualsCondition.builder().variable("$.continue").expectedValue(true)).transition(next(toStateName(node))),
+                Choice.builder().condition(BooleanEqualsCondition.builder().variable("$.continue").expectedValue(false)).transition(translationContext.transitionStrategy.nextTransition(node) as NextStateTransition.Builder)
+        ))
     }
 
     private fun nameGateway(node: Node) : String {
@@ -104,30 +110,30 @@ class ParallelTranslationStrategy(flowTranslator: FlowTranslator) : StepFunction
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
-        val branches = translateBranches(node as Branching)
+        val branches = translateBranches(translationContext, node as Branching)
         translationContext.stepFunctionBuilder.state(toStateName(node),
                 ParallelState.builder()
                         .branches(*branches)
                         .transition(next("merge-" + toStateName(node)))
         )
 
-        val nodeParameter = NodeParameter(functionName = "PaymentRetrieval", payload = ParallelMergePayload())
+        val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = ParallelMergePayload())
 
         translationContext.stepFunctionBuilder.state("merge-" + toStateName(node),
                 StepFunctionBuilder.taskState()
-                        .resource("arn:aws:states:::lambda:invoke.waitForTaskToken")
+                        .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
                         .transition(translationContext.transitionStrategy.nextTransition(node))
         )
     }
 
-    private fun translateBranches(branching: Branching): Array<Branch.Builder> {
+    private fun translateBranches(translationContext: TranslationContext, branching: Branching): Array<Branch.Builder> {
         val branches = mutableListOf<Branch.Builder>()
 
         for (subFlow in branching.children) {
             val branch = Branch.builder().startAt(toStateName(subFlow.children.first()))
-            val translationContext = TranslationContext(ParallelTransitionStrategy(branching.forward), BranchBuilder(branch))
-            flowTranslator.translateGraph(translationContext, subFlow.children.first())
+            val branchTranslationContext = translationContext.copyWith(transitionStrategy = ParallelTransitionStrategy(branching.forward), stepFunctionBuilder = BranchBuilder(branch))
+            flowTranslator.translateGraph(branchTranslationContext, subFlow.children.first())
             branches.add(branch)
         }
 
@@ -154,7 +160,7 @@ class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionT
 
     override fun translate(translationContext: TranslationContext, node: Node) {
         val payload = Payload(id = node.id)
-        val nodeParameter = NodeParameter(functionName = "PaymentRetrieval", payload = payload)
+        val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
 
         if(node.isStart()) {
             (nodeParameter.payload as Payload).messages = null
@@ -166,7 +172,7 @@ class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionT
     private fun executionTranslation(translationContext: TranslationContext, node: Node, nodeParameter: NodeParameter) {
         translationContext.stepFunctionBuilder.state(toStateName(node),
                 StepFunctionBuilder.taskState()
-                        .resource("arn:aws:states:::lambda:invoke.waitForTaskToken")
+                        .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
                         .resultPath("$.Messages")
                         .transition(translationContext.transitionStrategy.nextTransition(node))
@@ -184,10 +190,13 @@ class GivenTranslator(flowTranslator: FlowTranslator) : StepFunctionTranslationS
     }
 }
 
-fun toStateName(node: Node) : String{
-    val name = node.id
-    if(name.length > 70){ // temporary to prevent errors
-        return name.substring(name.length - 60)
+fun toStateName(prefix: String?, node: Node) : String{
+    if(prefix != null){
+        return "$prefix-${node.label}-${node.id}"
     }
-    return name
+    return "${node.label}-${node.id}"
+}
+
+fun toStateName(node: Node) : String{
+    return toStateName(null, node)
 }
