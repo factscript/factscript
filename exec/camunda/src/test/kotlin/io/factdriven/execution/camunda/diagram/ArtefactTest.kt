@@ -13,10 +13,21 @@ class ArtefactTest {
 
         val box = Artefact(100, 80, 18)
 
+        assertEquals(Position.Zero, box.position)
+        assertEquals(Dimension(136,116), box.dimension)
+
         assertEquals(Position(0, 58), box.leftEntry)
         assertEquals(Position(136, 58), box.rightExit)
         assertEquals(Position(68, 0), box.topEntry)
         assertEquals(Position(68, 116), box.bottomExit)
+
+        assertEquals(Position(18,18), box.inner.position)
+        assertEquals(Dimension(100,80), box.inner.dimension)
+
+        assertEquals(Position(0, 40), box.inner.leftEntry)
+        assertEquals(Position(100, 40), box.inner.rightExit)
+        assertEquals(Position(50, 0), box.inner.topEntry)
+        assertEquals(Position(50, 80), box.inner.bottomExit)
 
     }
 

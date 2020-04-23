@@ -19,16 +19,12 @@ abstract class Box: Space {
     abstract val exitArtefact: Artefact
 
     override val position: Position get() {
-        return if (container?.entry == this) {
-            container!!.position + container!!.leftEntry - leftEntry
-        } else if (left != null) {
-            left!!.position + left!!.rightExit - leftEntry
-        } else if (onTop != null) {
-            onTop!!.position + Dimension(0, onTop!!.dimension.height)
-        } else if (below != null) {
-            below!!.position - Dimension(0, dimension.height)
-        } else {
-            Position.Zero
+        return when {
+            container != null && container!!.entry == this -> container!!.position + container!!.leftEntry - leftEntry
+            left != null -> left!!.position + left!!.rightExit - leftEntry
+            onTop != null -> onTop!!.position + Dimension(0, onTop!!.dimension.height)
+            below != null -> below!!.position - Dimension(0, dimension.height)
+            else -> (container?.position ?: Position.Zero) + (container?.leftEntry ?: Position(0, y)) - leftEntry
         }
     }
 
@@ -65,6 +61,12 @@ abstract class Box: Space {
         that.arrows.add(arrow)
     }
 
+    fun associate(that: Box, xIsStickierThanY: Boolean) {
+        val arrow = Arrow(this, that, xIsStickierThanY)
+        arrows.add(arrow)
+        that.arrows.add(arrow)
+    }
+
     private fun defineAsExit(box: Box) {
         container = container ?: box.container
         container?.exit = if (box.container != null) this else box
@@ -78,6 +80,12 @@ abstract class Box: Space {
 
     val allVertical: List<Box> get() = allOnTop + this + allBelow
     val allHorizontal: List<Box> get() = allLeft + this + allRight
-    val allSiblings: Set<Box> get() = allHorizontal.map { it.allVertical }.flatten().toSet()
+    val allSiblings: Set<Box> get() = (allHorizontal.map { it.allVertical + it.allHorizontal } + allVertical.map { it.allVertical + it.allHorizontal }).flatten().toSet()
+    open val allArrows: Set<Arrow> get() = arrows.toSet()
+
+    protected val Box.y: Int get() {
+        fun Box.y(): Int = leftEntry.y + allOnTop.map { it.dimension }.sumHeight
+        return allHorizontal.maxBy { it.y() }!!.y()
+    }
 
 }

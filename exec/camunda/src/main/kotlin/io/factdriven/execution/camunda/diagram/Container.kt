@@ -9,6 +9,7 @@ class Container: Box() {
 
     override val entryArtefact: Artefact get() = entry.entryArtefact
     override val exitArtefact: Artefact get() = exit.exitArtefact
+    override val allArrows: Set<Arrow> get() = (arrows + contains.map { it.arrows }.flatten()).toSet()
 
     override val dimension: Dimension
         get() = Dimension(
@@ -37,19 +38,5 @@ class Container: Box() {
             exit.topEntry.x,
             dimension.height
         )
-
-    companion object {
-
-        private val Box.x: Int get() {
-            fun Box.x(): Int = topEntry.x + allLeft.map { it.dimension }.sumWidth
-            return allVertical.maxBy { it.x() }!!.x()
-        }
-
-        private val Box.y: Int get() {
-            fun Box.y(): Int = leftEntry.y + allOnTop.map { it.dimension }.sumHeight
-            return allHorizontal.maxBy { it.y() }!!.y()
-        }
-
-    }
 
 }
