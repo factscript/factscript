@@ -2,41 +2,24 @@ package io.factdriven.execution.camunda.diagram
 
 class Container: Box() {
 
-    lateinit var entry: Box
-    lateinit var exit: Box
+    lateinit var westend: Box
+    lateinit var eastend: Box
 
-    val contains: Set<Box> get() = entry.allSiblings
+    val contained: Set<Box> get() = westend.connected
 
-    override val entryArtefact: Artefact get() = entry.entryArtefact
-    override val exitArtefact: Artefact get() = exit.exitArtefact
-    override val allArrows: Set<Arrow> get() = (arrows + contains.map { it.arrows }.flatten()).toSet()
+    override val westEntry: Artefact get() = westend.westEntry
+    override val eastEntry: Artefact get() = eastend.eastEntry
 
-    override val dimension: Dimension
-        get() = Dimension(
-            width = contains.map { it.allHorizontal.map { it.dimension }.sumWidth }.max()!!,
-            height = contains.map { it.allVertical.map { it.dimension }.sumHeight }.max()!!
-        )
+    override val allArrows: Set<Arrow> get() = (arrows + contained.map { it.arrows }.flatten()).toSet()
 
-    override val leftEntry: Position
-        get() = Position(
-            0,
-            entry.y
-        )
-    override val rightExit: Position
-        get() = Position(
-            dimension.width,
-            exit.y
-        )
-    override val topEntry: Position
-        get() = Position(
-            entry.topEntry.x,
-            0
-        )
+    override val dimension: Dimension get() = Dimension(
+        width = contained.map { box -> box.latitudes.map { it.dimension }.sumWidth }.max()!!,
+        height = contained.map { box -> box.longitudes.map { it.dimension }.sumHeight }.max()!!
+    )
 
-    override val bottomExit: Position
-        get() = Position(
-            exit.topEntry.x,
-            dimension.height
-        )
+    override val west: Position get() = Position(0, westend.equator)
+    override val east: Position get() = Position(dimension.width, eastend.equator)
+    override val north: Position get() = Position(westend.north.x, 0)
+    override val south: Position get() = Position(eastend.north.x, dimension.height)
 
 }

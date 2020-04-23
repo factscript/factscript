@@ -3,29 +3,38 @@ package io.factdriven.execution.camunda.diagram
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-data class Arrow private constructor (val from: Box, val to: Box, val passingBy: Position? = null, val xIsStickierThanY: Boolean = true) {
+data class Arrow(val from: Box, val to: Box, val via: Box? = null) {
 
-    constructor(from: Box, to: Box, passingBy: Position? = null): this(from, to, passingBy, true)
-    constructor(from: Box, to: Box, xIsStickierThanY: Boolean): this(from, to, null, xIsStickierThanY)
+    val waypoints: List<Position> get() {
 
-    fun wayPoints(): List<Position> {
-        val from = from.exitArtefact.inner
-        val to = to.entryArtefact.inner
-        var fromPos = from.position + from.rightExit
-        var toPos = to.position + to.leftEntry
-        if (fromPos.y == toPos.y) {
-            if (passingBy != null && passingBy.y != fromPos.y) {
-                return listOf(fromPos, Position(fromPos.x, passingBy.y), Position(toPos.x, passingBy.y), toPos)
+        val source = from.eastEntry.raw
+        val target = to.westEntry.raw
+        var west = source.position + source.east
+        var east = target.position + target.west
+        val via = via?.let { it.position + it.west }
+
+        if (west.y == east.y) {
+
+            if (via != null && via.y != west.y) {
+                return listOf(west, Position(west.x, via.y), Position(east.x, via.y), east)
             } else {
-                return listOf(fromPos, toPos)
+                return listOf(west, east)
             }
-        } else if (xIsStickierThanY) {
-            fromPos = from.position + from.let { if (fromPos.y < toPos.y) it.bottomExit else it.topEntry }
-            return listOf(fromPos, Position(fromPos.x, toPos.y), toPos)
+
         } else {
-            toPos = to.position + to.let { if (fromPos.y < toPos.y) it.topEntry else it.bottomExit }
-            return listOf(fromPos, Position(toPos.x, fromPos.y), toPos)
+
+            fun Box.start(): Box = western?.start() ?: northern?.start() ?: southern?.start() ?: this
+
+            return if ((from.position + from.west).y == (from.start().position + from.start().west).y) {
+                west = source.position + source.let { if (west.y < east.y) it.south else it.north }
+                listOf(west, Position(west.x, east.y), east)
+            } else {
+                east = target.position + target.let { if (west.y < east.y) it.north else it.south }
+                listOf(west, Position(east.x, west.y), east)
+            }
+
         }
+
     }
 
 }

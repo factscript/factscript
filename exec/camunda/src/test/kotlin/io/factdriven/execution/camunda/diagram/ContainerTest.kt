@@ -14,24 +14,24 @@ class ContainerTest {
         val container = Container()
 
         val box1 = Artefact(2, 2, 1)
-        box1.putInside(container)
+        box1.insideOf(container)
 
         val box2 = Artefact(4, 4, 1)
-        box2.putRightOf(box1)
+        box2.eastOf(box1)
 
         val box3 = Artefact(2, 2, 1)
-        box3.putRightOf(box2)
+        box3.eastOf(box2)
 
-        assertEquals(setOf(box1, box2, box3), container.contains)
-        assertEquals(box1, container.entry)
-        assertEquals(box3, container.exit)
+        assertEquals(setOf(box1, box2, box3), container.contained)
+        assertEquals(box1, container.westend)
+        assertEquals(box3, container.eastend)
 
         assertEquals(Dimension(14,6), container.dimension)
 
-        assertEquals(Position(0,3), container.leftEntry)
-        assertEquals(Position(14,3), container.rightExit)
-        assertEquals(Position(2,0), container.topEntry)
-        assertEquals(Position(2,6), container.bottomExit)
+        assertEquals(Position(0,3), container.west)
+        assertEquals(Position(14,3), container.east)
+        assertEquals(Position(2,0), container.north)
+        assertEquals(Position(2,6), container.south)
 
         assertEquals(Position.Zero, container.position)
         assertEquals(Position(0,1), box1.position)
@@ -46,24 +46,24 @@ class ContainerTest {
         val container = Container()
 
         val box1 = Artefact(2, 2, 1)
-        box1.putInside(container)
+        box1.insideOf(container)
 
         val box2 = Artefact(4, 4, 1)
-        box1.putOnTopOf(box2)
+        box1.northOf(box2)
 
         val box3 = Artefact(2, 2, 1)
-        box3.putBelowOf(box2)
+        box3.southOf(box2)
 
-        assertEquals(setOf(box1, box2, box3), container.contains)
-        assertEquals(box1, container.entry)
-        assertEquals(box3, container.exit)
+        assertEquals(setOf(box1, box2, box3), container.contained)
+        assertEquals(box1, container.westend)
+        assertEquals(box3, container.eastend)
 
         assertEquals(Dimension(6,14), container.dimension)
 
-        assertEquals(Position(0,2), container.leftEntry)
-        assertEquals(Position(6,12), container.rightExit)
-        assertEquals(Position(2,0), container.topEntry)
-        assertEquals(Position(2,14), container.bottomExit)
+        assertEquals(Position(0,2), container.west)
+        assertEquals(Position(6,12), container.east)
+        assertEquals(Position(2,0), container.north)
+        assertEquals(Position(2,14), container.south)
 
         assertEquals(Position.Zero, container.position)
         assertEquals(Position(0,0), box1.position)
@@ -83,20 +83,20 @@ class ContainerTest {
         val upper = Artefact(4, 4, 1)
         val lower = Artefact(3, 3, 1)
 
-        box1.putInside(container)
-        box2.putRightOf(box1)
-        box2.putBelowOf(upper)
-        box2.putOnTopOf(lower)
-        box2.putLeftOf(box3)
+        box1.insideOf(container)
+        box2.eastOf(box1)
+        box2.southOf(upper)
+        box2.northOf(lower)
+        box2.westOf(box3)
 
-        assertEquals(setOf(box1, box2, box3, upper, lower), container.contains)
-        assertEquals(box1, container.entry)
-        assertEquals(box3, container.exit)
+        assertEquals(setOf(box1, box2, box3, upper, lower), container.contained)
+        assertEquals(box1, container.westend)
+        assertEquals(box3, container.eastend)
 
         assertEquals(Dimension(14,17), container.dimension)
 
-        assertEquals(Position(0,9), container.leftEntry)
-        assertEquals(Position(14,9), container.rightExit)
+        assertEquals(Position(0,9), container.west)
+        assertEquals(Position(14,9), container.east)
 
         assertEquals(Position.Zero, container.position)
         assertEquals(Position(0,7), box1.position)
