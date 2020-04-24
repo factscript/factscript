@@ -70,7 +70,7 @@ task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
     functionName = "MyFunctionKt"
     role = System.getenv("LAMBDA_ROLE_ARN")
     zipFile = zip.archivePath
-    handler = "io.factdriven.aws.example.function.MyFunctionKt::handleRequest"
+    handler = "io.factdriven.language.execution.aws.example.function.MyFunctionKt::handleRequest"
     alias = 'DEV'
     runtime = Runtime.Java8
     timeout = 30
@@ -92,7 +92,7 @@ task migrateFunctionPaymentRetrieval(type: AWSLambdaMigrateFunctionTask, depends
     functionName = "PaymentRetrieval"
     role = System.getenv("LAMBDA_ROLE_ARN")
     zipFile = zip.archivePath
-    handler = "io.factdriven.aws.lambda.PaymentRetrievalLambda::handleRequest"
+    handler = "io.factdriven.language.execution.aws.lambda.PaymentRetrievalLambda::handleRequest"
     alias = 'DEV'
     runtime = Runtime.Java8
     timeout = 30

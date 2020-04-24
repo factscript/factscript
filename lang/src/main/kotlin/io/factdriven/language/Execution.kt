@@ -1,6 +1,6 @@
 package io.factdriven.language
 
-import io.factdriven.definition.Flow
+import io.factdriven.language.definition.Flow
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

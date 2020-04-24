@@ -1,10 +1,10 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.Messages
-import io.factdriven.execution.camunda.engine.CamundaFlowExecutionPlugin
-import io.factdriven.execution.camunda.engine.CamundaMessageProcessor
-import io.factdriven.execution.camunda.engine.CamundaMessagePublisher
-import io.factdriven.execution.camunda.engine.CamundaMessageStore
+import io.factdriven.execution.Messages
+import io.factdriven.language.execution.camunda.CamundaFlowExecutionPlugin
+import io.factdriven.language.execution.camunda.CamundaMessageProcessor
+import io.factdriven.language.execution.camunda.CamundaMessagePublisher
+import io.factdriven.language.execution.camunda.CamundaMessageStore
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication

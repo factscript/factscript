@@ -1,6 +1,6 @@
 package io.factdriven.execution
 
-import io.factdriven.impl.definition.idSeparator
+import io.factdriven.language.impl.definition.idSeparator
 import kotlin.reflect.KClass
 
 /**

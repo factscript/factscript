@@ -1,9 +1,9 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.Messages
+import io.factdriven.execution.Messages
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
-import io.factdriven.impl.utils.prettyJson
+import io.factdriven.language.impl.utils.prettyJson
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
