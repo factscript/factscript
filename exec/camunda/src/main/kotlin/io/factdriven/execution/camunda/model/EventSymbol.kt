@@ -2,29 +2,20 @@ package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.*
 import io.factdriven.execution.Receptor
-import io.factdriven.execution.camunda.diagram.Dimension
-import io.factdriven.execution.camunda.diagram.Position
-import io.factdriven.execution.camunda.model.BpmnModel.Companion.margin
+import io.factdriven.execution.camunda.diagram.Artefact
 import io.factdriven.impl.utils.asLines
 import org.camunda.bpm.model.bpmn.instance.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-abstract class EventSymbol<IN: Node, OUT: Event>(node: IN, parent: Element<out Flow,*>): Symbol<IN, OUT>(node, parent) {
+abstract class EventSymbol<IN: Node, OUT: Event>(node: IN, parent: Group<out Flow>): Symbol<IN, OUT>(node, parent) {
 
-    override val dimension: Dimension = Dimension(
-        36,
-        36
-    ).outer
+    override val diagram: Artefact = Artefact(36, 36, 18)
 
-    override fun position(child: Element<*, *>): Position {
-        return position south dimension north margin south 6
-    }
+    override fun initModel() {
 
-    override fun init() {
-
-        super.init()
+        super.initModel()
 
         model.setAttributeValue("name", node.label.asLines(), false)
         val messageEventDefinition = process.model.newInstance(MessageEventDefinition::class.java)
@@ -34,13 +25,13 @@ abstract class EventSymbol<IN: Node, OUT: Event>(node: IN, parent: Element<out F
 
 }
 
-class CatchingEventSymbol(node: Catching, parent: Element<out Flow, *>): EventSymbol<Catching, CatchEvent>(node, parent) {
+class CatchingEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<Catching, CatchEvent>(node, parent) {
 
     override val model: CatchEvent = process.model.newInstance((if (node.isStart()) StartEvent::class else IntermediateCatchEvent::class).java)
 
-    override fun init() {
+    override fun initModel() {
 
-        super.init()
+        super.initModel()
 
         val message = process.model.definitions.getChildElementsByType(Message::class.java).find { it.id == node.id + "-Message" }
         if (message == null) {
@@ -59,7 +50,7 @@ class CatchingEventSymbol(node: Catching, parent: Element<out Flow, *>): EventSy
 
 }
 
-class ThrowingEventSymbol(node: Throwing, parent: Element<out Flow, *>): EventSymbol<Throwing, ThrowEvent>(node, parent) {
+class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>): EventSymbol<Throwing, ThrowEvent>(node, parent) {
 
     override val model = process.model.newInstance((if (node.isFinish()) EndEvent::class else IntermediateThrowEvent::class).java)
 

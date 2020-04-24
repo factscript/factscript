@@ -1,25 +1,41 @@
 package io.factdriven.execution.camunda.diagram
 
-class Container: Box() {
+class Container(val emptyHeight: Int = 0): Box() {
 
-    lateinit var westend: Box
-    lateinit var eastend: Box
+    constructor(vararg artefact: Artefact): this() {
+        artefact.forEach {
+            it.insideOf(this)
+        }
+    }
 
-    val contained: Set<Box> get() = westend.connected
+    var westend: Box? = null
+    var eastend: Box? = null
 
-    override val westEntry: Artefact get() = westend.westEntry
-    override val eastEntry: Artefact get() = eastend.eastEntry
+    val contained: Set<Box> get() = westend?.connected ?: emptySet()
+
+    override val westEntry: Artefact? get() = westend?.westEntry
+    override val eastEntry: Artefact? get() = eastend?.eastEntry
 
     override val allArrows: Set<Arrow> get() = (arrows + contained.map { it.arrows }.flatten()).toSet()
 
-    override val dimension: Dimension get() = Dimension(
-        width = contained.map { box -> box.latitudes.map { it.dimension }.sumWidth }.max()!!,
-        height = contained.map { box -> box.longitudes.map { it.dimension }.sumHeight }.max()!!
-    )
+    private lateinit var internalDimension: Dimension
 
-    override val west: Position get() = Position(0, westend.equator)
-    override val east: Position get() = Position(dimension.width, eastend.equator)
-    override val north: Position get() = Position(westend.north.x, 0)
-    override val south: Position get() = Position(eastend.north.x, dimension.height)
+    override val dimension: Dimension get()  {
+        if (!::internalDimension.isInitialized) {
+            internalDimension = Dimension(
+                width = longitudes.map {
+                    if (it is Container) (it.contained.map { box -> box.latitudes.map { it.dimension }.sumWidth }.max()
+                        ?: 0) else it.dimension.width
+                }.max()!!,
+                height = contained.map { box -> box.longitudes.map { it.dimension }.sumHeight }.max() ?: emptyHeight
+            )
+        }
+        return internalDimension
+    }
+
+    override val west: Position get() = Position(0, westend?.equator ?: dimension.height / 2)
+    override val east: Position get() = Position(dimension.width, eastend?.equator ?: dimension.height / 2)
+    override val north: Position get() = Position(westend?.north?.x ?: 0, 0)
+    override val south: Position get() = Position(eastend?.north?.x ?: 0, dimension.height)
 
 }

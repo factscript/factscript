@@ -3,9 +3,7 @@ package io.factdriven.execution.camunda.model
 import io.factdriven.definition.Conditional
 import io.factdriven.definition.Looping
 import io.factdriven.definition.Node
-import io.factdriven.execution.camunda.diagram.Dimension
-import io.factdriven.execution.camunda.diagram.Direction
-import io.factdriven.execution.camunda.diagram.Position
+import io.factdriven.execution.camunda.diagram.*
 import io.factdriven.execution.camunda.engine.CamundaFlowTransitionListener
 import io.factdriven.impl.utils.asLines
 import io.factdriven.impl.utils.toLines
@@ -17,15 +15,25 @@ import org.camunda.bpm.model.bpmn.instance.di.Waypoint
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: Element<*,*>, val conditional: Conditional? = null): Element<Node, SequenceFlow>(to.node, parent) {
-
-    private val wayPoints: List<Position> get() = from.wayPoints(this) + to.wayPoints(this)
+class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: Element<*,*>, val conditional: Conditional? = null, val via: Container? = null): Element<Node, SequenceFlow>(to.node, parent) {
 
     override val model: SequenceFlow = process.model.newInstance(SequenceFlow::class.java)
+    override val diagram: Arrow = (from.diagram as Box).connect(to.diagram as Box, via ?: parent.diagram as Box).arrows.last()
 
-    override fun init() {
+    override fun initDiagram() {
+        //
+    }
+
+    override fun initModel() {
 
         val extensionElements = process.model.newInstance(ExtensionElements::class.java)
+
+        fun symbol(element: Element<*,*>, first: Boolean): Symbol<*,*> {
+            return (if (element is Symbol) element else symbol(if (first) element.children.first() else element.children.last(), first))
+        }
+
+        val source = symbol(from, false).model
+        val target = symbol(to, true).model
 
         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
             camundaClass = CamundaFlowTransitionListener::class.java.canonicalName
@@ -33,13 +41,10 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
             val camundaField = modelInstance.newInstance(org.camunda.bpm.model.bpmn.instance.camunda.CamundaField::class.java)
             with(camundaField) {
                 camundaName = "target"
-                camundaStringValue = to.node.id
+                camundaStringValue = symbol(to, true).node.id
             }
             addChildElement(camundaField)
         }
-
-        val source = (if (from is Symbol) from else from.children.last() as Symbol).model as FlowNode
-        val target = (if (to is Symbol) to else to.children.first() as Symbol).model as FlowNode
 
         with(model) {
             process.bpmnProcess.addChildElement(this)
@@ -54,7 +59,7 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
         bpmnEdge.bpmnElement = model
         process.bpmnPlane.addChildElement(bpmnEdge)
 
-        wayPoints.forEach {
+        diagram.waypoints.forEach {
             with(process.model.newInstance(Waypoint::class.java)) {
                 x = it.x.toDouble()
                 y = it.y.toDouble()
@@ -84,27 +89,6 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
     }
 
     override val children: List<Element<*,*>> = if (conditional != null) listOf(Label(conditional, this)) else emptyList()
-
-    override val dimension: Dimension
-        get() = Dimension(
-            wayPoints.maxBy { it.x }!!.x - wayPoints.minBy { it.x }!!.x,
-            wayPoints.maxBy { it.y }!!.y - wayPoints.minBy { it.y }!!.y
-        )
-
-    override fun position(child: Element<*,*>): Position {
-        if (parent is Loop) {
-            return parent.fork.position + parent.fork.entry(Direction.North) east 5 north 17
-        } else if (from is Loop) {
-            return from.position + from.entry(Direction.East) east 5 north 17
-        } else {
-            return Position(
-                parent!!.position.x,
-                wayPoints[1].y - (conditional!!.label.toLines().size - 1) * 13 - 6
-            ) - BpmnModel.margin * 2 / 3
-        }
-    }
-
-    override fun entry(from: Direction): Position = wayPoints.first()
 
 }
 

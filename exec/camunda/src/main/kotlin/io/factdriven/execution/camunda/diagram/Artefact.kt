@@ -4,7 +4,9 @@ open class Artefact(private val inner: Dimension, private val margin: Int): Box(
 
     constructor(width: Int, height: Int, margin: Int): this(Dimension(width, height), margin)
 
-    override val dimension: Dimension = Dimension(inner.width + margin * 2, inner.height + margin * 2)
+    override val dimension: Dimension = Dimension(
+        inner.width + margin * 2, inner.height + margin * 2
+    )
 
     val raw: Artefact get() = object: Artefact(inner, margin) {
 

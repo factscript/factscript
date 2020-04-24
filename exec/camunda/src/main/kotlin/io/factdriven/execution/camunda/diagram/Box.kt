@@ -16,50 +16,60 @@ abstract class Box: Space {
 
     val arrows: MutableList<Arrow> = mutableListOf()
 
-    abstract val westEntry: Artefact
-    abstract val eastEntry: Artefact
+    abstract val westEntry: Artefact?
+    abstract val eastEntry: Artefact?
+
+    private lateinit var internalPosition: Position
 
     override val position: Position get() {
-        return when {
-            container != null && container!!.westend == this -> container!!.position + container!!.west - west
-            western != null -> western!!.position + western!!.east - west
-            northern != null -> northern!!.position + Dimension(0, northern!!.dimension.height)
-            southern != null -> southern!!.position - Dimension(0, dimension.height)
-            else -> (container?.position ?: Position.Zero) + (container?.west ?: Position(0, equator)) - west
+        if (!::internalPosition.isInitialized) {
+            internalPosition = when {
+                container != null && container!!.westend == this -> container!!.position + container!!.west - west
+                western != null -> western!!.position + western!!.east - west
+                northern != null -> northern!!.position + Dimension(0, northern!!.dimension.height)
+                southern != null -> southern!!.position - Dimension(0, dimension.height)
+                else -> (container?.position ?: Position.Zero) + (container?.west ?: Position(0, equator)) - west
+            }
         }
+        return internalPosition
     }
 
-    fun eastOf(that: Box) {
+    fun eastOf(that: Box): Box {
         that.westOf(this)
+        return that
     }
 
-    fun westOf(that: Box) {
+    fun westOf(that: Box): Box {
         eastern = that
         that.western = this
         eastEntry(that)
-        connect(that)
+        return that
     }
 
-    fun southOf(that: Box) {
+    fun southOf(that: Box): Box {
         that.northOf(this)
+        return that
     }
 
-    fun northOf(that: Box) {
+    fun northOf(that: Box): Box {
         southern = that
         that.northern = this
         eastEntry(that)
+        return that
     }
 
-    fun insideOf(that: Container) {
+    fun insideOf(that: Container): Box {
         container = that
         that.westend = this
         that.eastend = this
+        return that
     }
 
-    fun connect(target: Box, via: Box? = null) {
+    fun connect(target: Box, via: Box? = null): Box {
         val arrow = Arrow(this, target, via)
         arrows.add(arrow)
         target.arrows.add(arrow)
+        return target
     }
 
     private fun eastEntry(box: Box) {

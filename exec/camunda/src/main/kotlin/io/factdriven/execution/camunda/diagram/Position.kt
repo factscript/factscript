@@ -6,12 +6,9 @@ data class Position (val x: Int, val y: Int) {
 
     companion object {
 
-        val Zero = Position(0,0)
+        var Zero = Position(0,0)
 
     }
-
-    val inner: Position get() = this + BpmnModel.margin
-    val outer: Position get() = this - BpmnModel.margin
 
     operator fun plus(position: Position): Position {
         return Position(x + position.x, y + position.y)

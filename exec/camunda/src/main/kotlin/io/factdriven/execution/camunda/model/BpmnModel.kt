@@ -1,9 +1,7 @@
 package io.factdriven.execution.camunda.model
 
 import io.factdriven.definition.Flow
-import io.factdriven.execution.camunda.diagram.Dimension
-import io.factdriven.execution.camunda.diagram.Direction
-import io.factdriven.execution.camunda.diagram.Position
+import io.factdriven.execution.camunda.diagram.*
 import org.camunda.bpm.model.bpmn.Bpmn
 import org.camunda.bpm.model.bpmn.BpmnModelInstance
 import org.camunda.bpm.model.bpmn.instance.*
@@ -18,17 +16,9 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     override val model: BpmnModelInstance = Bpmn.createEmptyModel()
 
+    override val diagram: Box = Container()
+
     override val children: List<Element<*,*>> = listOf(Sequence(node, this))
-
-    override val position: Position = Position(
-        160,
-        92
-    ).outer
-    override val dimension: Dimension get() = children.first().dimension
-
-    override fun entry(from: Direction): Position = children.first().entry(from)
-
-    override fun position(child: Element<*,*>): Position = position
 
     internal val bpmnDefinitions: Definitions = model.newInstance(Definitions::class.java)
     internal val bpmnProcess: Process = model.newInstance(Process::class.java)
@@ -39,6 +29,8 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     override fun toExecutable(): BpmnModelInstance {
         if (!isInitialized) {
+            fun initDiagram(element: Element<*,*>) { element.initDiagram(); element.children.forEach { initDiagram(it) } }
+            initDiagram(this)
             super.toExecutable();
             isInitialized = true
         }
@@ -53,7 +45,11 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
         return file
     }
 
-    override fun init() {
+    override fun initDiagram() {
+        Position.Zero = Position(142,74)
+    }
+
+    override fun initModel() {
 
         with(bpmnDefinitions) {
             targetNamespace = "https://factdriven.io/flow-language"
@@ -81,7 +77,6 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
     companion object {
 
         const val groups = false
-        val margin = Dimension(18, 18)
 
     }
 

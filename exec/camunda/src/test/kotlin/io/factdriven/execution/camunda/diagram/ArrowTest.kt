@@ -18,6 +18,9 @@ class ArrowTest {
         box2.eastOf(box1)
         box2.westOf(box3)
 
+        box1.connect(box2)
+        box2.connect(box3)
+
         val arrow1 = box1.arrows[0]
         val arrow2 = box2.arrows[1]
 
@@ -77,6 +80,8 @@ class ArrowTest {
         box2.southOf(upper)
         box2.northOf(lower)
 
+        box1.connect(box2)
+        box2.connect(box3)
         box1.connect(upper)
         box1.connect(lower)
         upper.connect(box3)
@@ -120,5 +125,62 @@ class ArrowTest {
 
     }
 
+    @Test
+    fun testContainer() {
+
+        val process = Container()
+        val box1 = Artefact(2, 2, 1)
+        val branch = Container()
+        val fork = Artefact(6,6,1)
+        val task = Container(Artefact(4, 4, 1))
+        val upper = Container(Artefact(8, 4, 1))
+        val lower = Container(Artefact(4, 4, 1))
+        val lower2 = Container(Artefact(4, 4, 1))
+        val join = Artefact(6,6,1)
+        val box3 = Artefact(2, 2, 1)
+
+        box1.insideOf(process)
+        branch.eastOf(box1)
+        box3.eastOf(branch)
+
+        fork.insideOf(branch)
+        task.eastOf(fork)
+        upper.northOf(task)
+        lower.southOf(task)
+        lower2.southOf(lower)
+        join.eastOf(task)
+
+        assertEquals(Position(0,7), box1.position)
+        assertEquals(Dimension(4,4), box1.dimension)
+
+        assertEquals(6, branch.contained.size)
+
+        assertEquals(Position(4,0), branch.position)
+        assertEquals(Dimension(26,24), branch.dimension)
+
+        assertEquals(Position(4,5), fork.position)
+        assertEquals(Dimension(8,8), fork.dimension)
+
+        assertEquals(Position(12,0), upper.position)
+        assertEquals(Dimension(10,6), upper.dimension)
+
+        assertEquals(Position(12,6), task.position)
+        assertEquals(Dimension(10,6), task.dimension)
+
+        assertEquals(Position(12,12), lower.position)
+        assertEquals(Dimension(10,6), lower.dimension)
+
+        assertEquals(Position(12,18), lower2.position)
+        assertEquals(Dimension(10,6), lower2.dimension)
+
+        assertEquals(Position(22,5), join.position)
+        assertEquals(Dimension(8,8), join.dimension)
+
+        assertEquals(Position(30,7), box3.position)
+        assertEquals(Dimension(4,4), box3.dimension)
+
+        assertEquals(Dimension(34,24), process.dimension)
+
+    }
 
 }
