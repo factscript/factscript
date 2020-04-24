@@ -27,7 +27,7 @@ class Container(val emptyHeight: Int = 0): Box() {
                     if (it is Container) (it.contained.map { box -> box.latitudes.map { it.dimension }.sumWidth }.max()
                         ?: 0) else it.dimension.width
                 }.max()!!,
-                height = contained.map { box -> box.longitudes.map { it.dimension }.sumHeight }.max() ?: emptyHeight
+                height = contained.map { box -> box.longitudes.map { it.dimension }.sumHeight - box.longitudes.first().west.y + box.longitudes.first().equator }.max() ?: emptyHeight
             )
         }
         return internalDimension
