@@ -191,11 +191,11 @@ class ArrowTest {
         val join = Artefact(6, 6, 1)
         val box3 = Artefact(2, 2, 1)
 
-        box1.insideOf(process)
+        box1.westEntryOf(process)
         branch.eastOf(box1)
         box3.eastOf(branch)
 
-        fork.insideOf(branch)
+        fork.westEntryOf(branch)
         task.eastOf(fork)
         upper.northOf(task)
         lower.southOf(task)

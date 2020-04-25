@@ -4,7 +4,7 @@ class Container(val emptyHeight: Int = 0): Box() {
 
     constructor(vararg artefact: Artefact): this() {
         artefact.forEach {
-            it.insideOf(this)
+            it.westEntryOf(this)
         }
     }
 
@@ -13,8 +13,8 @@ class Container(val emptyHeight: Int = 0): Box() {
 
     val contained: Set<Box> get() = westend?.connected ?: emptySet()
 
-    override val westEntry: Artefact? get() = westend?.westEntry
-    override val eastEntry: Artefact? get() = eastend?.eastEntry
+    override val mostWestern: Artefact? get() = westend?.mostWestern
+    override val mostEastern: Artefact? get() = eastend?.mostEastern
 
     override val allArrows: Set<Arrow> get() = (arrows + contained.map { it.arrows }.flatten()).toSet()
 

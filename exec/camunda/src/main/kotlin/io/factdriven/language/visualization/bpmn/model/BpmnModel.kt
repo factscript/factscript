@@ -45,6 +45,9 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
         return file
     }
 
+    override val east: Symbol<*, *> get() = children.first().east
+    override val west: Symbol<*, *> get() = children.last().east
+
     override fun initDiagram() {
         Position.Zero = Position(142,74)
     }
@@ -76,7 +79,7 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     companion object {
 
-        const val groups = false
+        const val groups = true
 
     }
 

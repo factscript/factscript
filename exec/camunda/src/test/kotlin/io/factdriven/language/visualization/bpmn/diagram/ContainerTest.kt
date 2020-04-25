@@ -14,7 +14,7 @@ class ContainerTest {
         val container = Container()
 
         val box1 = Artefact(2, 2, 1)
-        box1.insideOf(container)
+        box1.westEntryOf(container)
 
         val box2 = Artefact(4, 4, 1)
         box2.eastOf(box1)
@@ -46,7 +46,7 @@ class ContainerTest {
         val container = Container()
 
         val box1 = Artefact(2, 2, 1)
-        box1.insideOf(container)
+        box1.westEntryOf(container)
 
         val box2 = Artefact(4, 4, 1)
         box1.northOf(box2)
@@ -83,7 +83,7 @@ class ContainerTest {
         val upper = Artefact(4, 4, 1)
         val lower = Artefact(3, 3, 1)
 
-        box1.insideOf(container)
+        box1.westEntryOf(container)
         box2.eastOf(box1)
         box2.southOf(upper)
         box2.northOf(lower)

@@ -15,6 +15,9 @@ abstract class Element<IN: Node, OUT: Any>(val node: IN, open val parent: Elemen
 
     internal abstract val model: OUT
 
+    internal abstract val west: Symbol<*,*>
+    internal abstract val east: Symbol<*,*>
+
     internal val process: BpmnModel get() = parent?.process ?: this as BpmnModel
 
     open fun toExecutable(): OUT {

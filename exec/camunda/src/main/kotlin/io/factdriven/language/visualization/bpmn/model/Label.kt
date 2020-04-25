@@ -18,6 +18,9 @@ class Label(node: Node, parent: Element<*, out BaseElement>): Element<Node, Bpmn
     override val diagram: Artefact = Artefact(20,20,0)
     override val children = emptyList<Element<*,*>>()
 
+    override val east: Symbol<*, *> get() = TODO("Not yet implemented")
+    override val west: Symbol<*, *> get() = TODO("Not yet implemented")
+
     override fun initDiagram() {
         // Nothing to initialize
     }

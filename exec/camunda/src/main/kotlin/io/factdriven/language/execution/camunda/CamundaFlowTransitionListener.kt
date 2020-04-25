@@ -7,7 +7,7 @@ import io.factdriven.language.definition.Branching
 import io.factdriven.language.definition.Calling
 import io.factdriven.execution.MessageId
 import io.factdriven.execution.Receptor
-import io.factdriven.language.visualization.bpmn.model.toMessageName
+import io.factdriven.language.visualization.bpmn.model.asBpmnId
 import org.camunda.bpm.engine.delegate.DelegateExecution
 import org.camunda.bpm.engine.delegate.ExecutionListener
 import org.camunda.bpm.engine.delegate.Expression
@@ -27,7 +27,7 @@ class CamundaFlowTransitionListener: ExecutionListener {
             else -> emptyMap()
         }
         handling.forEach {
-            execution.setVariable(it.key.toMessageName(), it.value.hash)
+            execution.setVariable(it.key.asBpmnId(), it.value.hash)
         }
 
     }

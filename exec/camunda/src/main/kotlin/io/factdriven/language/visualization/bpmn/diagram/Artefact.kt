@@ -20,8 +20,8 @@ open class Artefact(private val inner: Dimension, private val margin: Int): Box(
 
     }
 
-    override val westEntry: Artefact get() = this
-    override val eastEntry: Artefact get() = this
+    override val mostWestern: Artefact get() = this
+    override val mostEastern: Artefact get() = this
 
     override val west: Position get() = Position(0, dimension.height / 2)
     override val east: Position get() = Position(dimension.width, dimension.height / 2)

@@ -16,8 +16,8 @@ abstract class Box: Space {
 
     val arrows: MutableList<Arrow> = mutableListOf()
 
-    abstract val westEntry: Artefact?
-    abstract val eastEntry: Artefact?
+    abstract val mostWestern: Artefact?
+    abstract val mostEastern: Artefact?
 
     private lateinit var internalPosition: Position
 
@@ -58,9 +58,15 @@ abstract class Box: Space {
         return that
     }
 
-    fun insideOf(that: Container): Box {
+    fun westEntryOf(that: Container): Box {
         container = that
         that.westend = this
+        that.eastend = this // TODO
+        return that
+    }
+
+    fun eastEntryOf(that: Container): Box {
+        container = that
         that.eastend = this
         return that
     }

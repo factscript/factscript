@@ -7,6 +7,7 @@ import io.factdriven.execution.type
 import io.factdriven.language.Emit
 import io.factdriven.language.Issue
 import io.factdriven.language.Sentence
+import io.factdriven.language.definition.Promising
 import kotlin.reflect.KClass
 
 open class ThrowingImpl<T: Any>(parent: Node):
@@ -40,6 +41,14 @@ open class ThrowingImpl<T: Any>(parent: Node):
     override fun by(instance: T.() -> Any) {
         @Suppress("UNCHECKED_CAST")
         this.instance = instance as Any.() -> Any
+    }
+
+    override fun isSucceeding(): Boolean {
+        return root.find(nodeOfType = Promising::class)?.succeeding == throwing
+    }
+
+    override fun isFailing(): Boolean {
+        return root.find(nodeOfType = Promising::class)?.failing?.contains(throwing) ?: false
     }
 
 }

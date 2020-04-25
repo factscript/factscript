@@ -29,8 +29,11 @@ class Loop(node: Looping, parent: Element<*,*>): Group<Flow>(node,parent) {
         Path(fork, join, this, ConditionalImpl<Any>(node), loop)
     )
 
+    override val west: Symbol<*, *> get() = join
+    override val east: Symbol<*, *> get() = fork
+
     override fun initDiagram() {
-        join.diagram.insideOf(diagram)
+        join.diagram.westEntryOf(diagram)
         sequence.diagram.eastOf(join.diagram)
         loop.northOf(sequence.diagram)
         fork.diagram.eastOf(sequence.diagram)

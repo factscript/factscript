@@ -16,7 +16,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
     override val children: MutableList<Node> = mutableListOf()
 
     @Suppress("LeakingThis")
-    override val root: Flow = (parent?.root ?: this) as Flow
+    override val root: Flow get() = (parent?.root ?: this) as Flow
 
     override val id: String get() = id()
 

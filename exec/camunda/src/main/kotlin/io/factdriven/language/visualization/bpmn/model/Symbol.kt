@@ -17,6 +17,9 @@ abstract class Symbol<IN: Node, OUT: FlowNode>(node: IN, override val parent: Gr
 
     abstract override val diagram: Artefact
 
+    override val west: Symbol<*, *> get() = this
+    override val east: Symbol<*, *> get() = this
+
     override fun initDiagram() {}
 
     override fun initModel() {

@@ -23,16 +23,12 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
         //
     }
 
+    override val west: Symbol<*, *> get() = from.east
+    override val east: Symbol<*, *> get() = to.west
+
     override fun initModel() {
 
         val extensionElements = process.model.newInstance(ExtensionElements::class.java)
-
-        fun symbol(element: Element<*,*>, first: Boolean): Symbol<*,*> {
-            return (if (element is Symbol) element else symbol(if (first) element.children.first() else element.children.last(), first))
-        }
-
-        val source = symbol(from, false).model
-        val target = symbol(to, true).model
 
         with(extensionElements.addExtensionElement(CamundaExecutionListener::class.java)) {
             camundaClass = CamundaFlowTransitionListener::class.java.canonicalName
@@ -40,7 +36,7 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
             val camundaField = modelInstance.newInstance(org.camunda.bpm.model.bpmn.instance.camunda.CamundaField::class.java)
             with(camundaField) {
                 camundaName = "target"
-                camundaStringValue = symbol(to, true).node.id
+                camundaStringValue = east.node.id
             }
             addChildElement(camundaField)
         }
@@ -48,9 +44,9 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
         with(model) {
             process.bpmnProcess.addChildElement(this)
             addChildElement(extensionElements)
-            this.source = source
+            this.source = west.model
             this.source.outgoing.add(this)
-            this.target = target
+            this.target = east.model
             this.target.incoming.add(this)
         }
 
@@ -76,9 +72,9 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
                     model.conditionExpression = process.model.newInstance(org.camunda.bpm.model.bpmn.instance.ConditionExpression::class.java);
                     model.conditionExpression.textContent = "#{condition.evaluate(execution, '${id}')}"
                 } else {
-                    when (source) {
-                        is ExclusiveGateway -> source.default = model
-                        is InclusiveGateway -> source.default = model
+                    when (west.model) {
+                        is ExclusiveGateway -> (west.model as ExclusiveGateway).default = model
+                        is InclusiveGateway -> (west.model as InclusiveGateway).default = model
                     }
                 }
 

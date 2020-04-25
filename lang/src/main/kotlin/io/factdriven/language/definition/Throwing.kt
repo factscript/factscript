@@ -10,4 +10,7 @@ interface Throwing: Node {
     val throwing: KClass<*>
     val instance: Any.() -> Any
 
+    fun isSucceeding(): Boolean
+    fun isFailing(): Boolean
+
 }
