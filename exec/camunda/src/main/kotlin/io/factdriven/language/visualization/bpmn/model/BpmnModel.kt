@@ -18,6 +18,8 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     override val diagram: Box = Container()
 
+    internal val paths: MutableList<Path> = mutableListOf()
+
     override val children: List<Element<*,*>> = listOf(Sequence(node, this))
 
     internal val bpmnDefinitions: Definitions = model.newInstance(Definitions::class.java)
@@ -32,6 +34,7 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
             fun initDiagram(element: Element<*,*>) { element.initDiagram(); element.children.forEach { initDiagram(it) } }
             initDiagram(this)
             super.toExecutable();
+            paths.forEach { it.toExecutable() }
             isInitialized = true
         }
         Bpmn.validateModel(model);

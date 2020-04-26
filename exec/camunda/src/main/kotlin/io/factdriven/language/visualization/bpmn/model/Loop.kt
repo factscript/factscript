@@ -1,8 +1,10 @@
 package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.*
+import io.factdriven.language.impl.definition.ConditionalExecutionImpl
 import io.factdriven.language.visualization.bpmn.diagram.*
 import io.factdriven.language.impl.definition.ConditionalImpl
+import io.factdriven.language.impl.definition.TriggeredExecutionImpl
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -10,33 +12,41 @@ import io.factdriven.language.impl.definition.ConditionalImpl
 class Loop(node: Looping, parent: Element<*,*>): Group<Flow>(node,parent) {
 
     var join: GatewaySymbol<*>
-    var sequence: Sequence
+    var forward: Sequence
+    var backward: Sequence
     var fork: GatewaySymbol<*>
 
     override val diagram: Container = Container(36)
-    private val loop: Container = Container(36)
 
-    override val children: List<Element<*, *>> = let {
+    override val children: List<Element<*, *>>
+
+    init {
+
         join = ExclusiveGatewaySymbol(node.children.last(), this)
-        sequence = Sequence(node, this)
+        forward = Sequence(node, this)
+        backward = let {
+            val execution = ConditionalExecutionImpl(node.entity, node)
+            execution.children.add(ConditionalImpl<Any>(execution)("No") as Node)
+            Sequence(execution, this)
+        }
         fork = ExclusiveGatewaySymbol(node.children.last(), this)
-        listOf(join) + sequence + fork
-    }
 
-    override val paths: List<Path> = listOf(
-        Path(join, sequence, this),
-        Path(sequence, fork, this, if (sequence.children.last() is Loop) sequence.children.last().node.children.last() as Conditional else null),
-        Path(fork, join, this, ConditionalImpl<Any>(node), loop)
-    )
+        children = listOf(join) + forward + backward + fork
+
+        Path(join, forward, forward)
+        Path(forward, fork, forward)
+        Path(fork, join, backward)
+
+    }
 
     override val west: Symbol<*, *> get() = join
     override val east: Symbol<*, *> get() = fork
 
     override fun initDiagram() {
         join.diagram.westEntryOf(diagram)
-        sequence.diagram.eastOf(join.diagram)
-        loop.northOf(sequence.diagram)
-        fork.diagram.eastOf(sequence.diagram)
+        forward.diagram.eastOf(join.diagram)
+        backward.diagram.northOf(forward.diagram)
+        fork.diagram.eastOf(forward.diagram)
     }
 
 }

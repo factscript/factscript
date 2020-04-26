@@ -1,5 +1,6 @@
 package io.factdriven.language.impl.utils
 
+import io.factdriven.language.definition.Node
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.memberFunctions
@@ -34,3 +35,6 @@ fun Any.apply(vararg parameters: Any) {
     }
     method?.call(this, *parameters)
 }
+
+@Suppress("UNCHECKED_CAST")
+inline fun <reified A: Any> Any.asType(type: KClass<A> = A::class): A? = (if (type.isInstance(this)) this else null) as A?

@@ -27,31 +27,33 @@ class Label(node: Node, parent: Element<*, out BaseElement>): Element<Node, Bpmn
 
     override fun initModel() {
 
-        (parent!!.model as BaseElement).diagramElement.addChildElement(model)
-        process.bpmnProcess.diagramElement.addChildElement((parent.model as BaseElement).diagramElement)
-
-        val diagram = if (parent is Path) diagram else (parent.diagram as Artefact)
-
-        val position = if (parent is Path) when {
+        val position = if (parent is Path && parent.conditional != null) when {
             parent.from is Loop || parent.from is Sequence -> (parent.from.diagram as Box).position + (parent.from.diagram as Box).east west 12 north 17
-            parent.parent is Loop -> (parent.parent as Loop).fork.diagram.raw.position + (parent.parent as Loop).fork.diagram.raw.north east 10 north 17
-            else -> Position((parent.parent!!.diagram as Box).position.x, parent.diagram.waypoints[1].y) west 12 north ((parent.conditional!!.label.toLines().size - 1) * 13 + 20)
+            parent.parent?.parent is Loop -> (parent.parent?.parent as Loop).fork.diagram.raw.position + (parent.parent?.parent as Loop).fork.diagram.raw.north east 10 north 17
+            else -> Position(
+                (parent.parent!!.diagram as Box).position.x,
+                parent.diagram.waypoints[1].y
+            ) west 12 north ((parent.conditional!!.label.toLines().size - 1) * 13 + 20)
         } else when {
-            parent is EventSymbol -> diagram.raw.position + diagram.raw.south west diagram.raw.dimension.width / 2 south 6
-            parent is TaskSymbol -> diagram.raw.position west 6 south 6
-            parent is GatewaySymbol && parent.parent is Branch && (parent.parent as Branch).needsSouthLabel() -> diagram.raw.position south diagram.raw.dimension.height south 6
-            parent is GatewaySymbol && parent.parent is Branch && (parent.parent as Branch).needsNorthWestLabel() -> diagram.raw.position north ((node.label.toLines().size - 1) * 13 + 18) west (node.label.toLines().maxBy { it.length }!!.length * 3 + 6)
-            parent is GatewaySymbol && parent.parent is Branch -> diagram.raw.position north ((node.label.toLines().size - 1) * 13 + 18)
-            parent is GatewaySymbol && parent.parent is Loop -> diagram.raw.position south diagram.raw.dimension.height south 6
-            else -> throw IllegalStateException()
+            parent is EventSymbol -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6
+            parent is TaskSymbol -> parent.diagram.raw.position west 6 south 6
+            parent is GatewaySymbol && parent.parent is Branch && (parent.parent as Branch).needsSouthLabel() -> parent.diagram.raw.position south parent.diagram.raw.dimension.height south 6 east 14
+            parent is GatewaySymbol && parent.parent is Branch && (parent.parent as Branch).needsNorthWestLabel() -> parent.diagram.raw.position north ((node.label.toLines().size - 1) * 13 + 18) west (node.label.toLines().maxBy { it.length }!!.length * 3 + 6) east 14
+            parent is GatewaySymbol && parent.parent is Branch -> parent.diagram.raw.position north ((node.label.toLines().size - 1) * 13 + 18) east 14
+            parent is GatewaySymbol && parent.parent is Loop -> parent.diagram.raw.position south parent.diagram.raw.dimension.height south 6 east 14
+            else -> null
         }
 
-        with(process.model.newInstance(Bounds::class.java)) {
-            x = position.x.toDouble()
-            y = position.y.toDouble()
-            height = diagram.raw.dimension.height.toDouble()
-            width = diagram.raw.dimension.width.toDouble()
-            model.addChildElement(this)
+        if (position != null) {
+            (parent!!.model as BaseElement).diagramElement.addChildElement(model)
+            process.bpmnProcess.diagramElement.addChildElement((parent.model as BaseElement).diagramElement)
+            with(process.model.newInstance(Bounds::class.java)) {
+                x = position.x.toDouble()
+                y = position.y.toDouble()
+                height = diagram.raw.dimension.height.toDouble()
+                width = diagram.raw.dimension.width.toDouble()
+                model.addChildElement(this)
+            }
         }
 
     }

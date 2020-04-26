@@ -1,11 +1,10 @@
 package io.factdriven.language.visualization.bpmn.model
 
-import io.factdriven.language.definition.Conditional
-import io.factdriven.language.definition.Looping
-import io.factdriven.language.definition.Node
+import io.factdriven.language.definition.*
 import io.factdriven.language.visualization.bpmn.diagram.*
 import io.factdriven.language.execution.camunda.CamundaFlowTransitionListener
 import io.factdriven.language.impl.utils.asLines
+import io.factdriven.language.impl.utils.asType
 import org.camunda.bpm.model.bpmn.instance.*
 import org.camunda.bpm.model.bpmn.instance.bpmndi.BpmnEdge
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaExecutionListener
@@ -14,17 +13,26 @@ import org.camunda.bpm.model.bpmn.instance.di.Waypoint
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: Element<*,*>, val conditional: Conditional? = null, val via: Container? = null): Element<Node, SequenceFlow>(to.node, parent) {
+class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, via: Element<*,*>): Element<Node, SequenceFlow>(to.node, via) {
 
     override val model: SequenceFlow = process.model.newInstance(SequenceFlow::class.java)
-    override val diagram: Arrow = (from.diagram as Box).connect(to.diagram as Box, via ?: parent.diagram as Box).arrows.last()
+    override val diagram: Arrow = (from.diagram as Box).connect(to.diagram as Box, via.diagram as Box).arrows.last()
 
-    override fun initDiagram() {
-        //
+    override fun initDiagram() { }
+
+    init {
+        process.paths.add(this)
     }
 
     override val west: Symbol<*, *> get() = from.east
     override val east: Symbol<*, *> get() = to.west
+
+    val conditional: Conditional? get() = let {
+        val branchConditional = if (parent?.parent is Branch) parent.asType<Sequence>()?.node?.find(Conditional::class) else null
+        val loopConditional1 = if (from is Loop && from.fork == west) west.asType<GatewaySymbol<*>>()?.node?.asType<Conditional>() else null
+        val loopConditional2 = if (parent?.parent is Loop && parent.parent?.asType<Loop>()?.fork == west) parent.asType<Sequence>()?.node?.find(Conditional::class) else null
+        branchConditional ?: loopConditional1 ?: loopConditional2
+    }
 
     override fun initModel() {
 
@@ -64,8 +72,11 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
 
         with(conditional) {
 
-            if (this != null) {
+            val conditionalNotYetUsed = process.bpmnProcess.getChildElementsByType(SequenceFlow::class.java).find { it.id == conditional?.id } == null
 
+            if (this != null && conditionalNotYetUsed) {
+
+                model.id = conditional!!.id
                 model.name = if (parent is Looping) (if (condition != null) "Yes" else "No") else label.asLines()
 
                 if (condition != null) {
@@ -83,7 +94,7 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, parent: 
 
     }
 
-    override val children: List<Element<*,*>> = if (conditional != null) listOf(Label(conditional, this)) else emptyList()
+    override val children: List<Element<*,*>> = listOf(Label(this.node, this))
 
 }
 

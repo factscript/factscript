@@ -1,5 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model
 
+import io.factdriven.language.definition.Conditional
 import io.factdriven.language.definition.Node
 import io.factdriven.language.visualization.bpmn.diagram.Container
 import org.camunda.bpm.model.bpmn.instance.Group

@@ -48,7 +48,4 @@ interface Node {
 
     fun findReceptorsFor(message: Message): List<Receptor>
 
-    fun asCatching(): Catching? = if (this is Catching) this else null
-    fun asThrowing(): Throwing? = if (this is Throwing) this else null
-
 }

@@ -1,7 +1,10 @@
 package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.*
+import io.factdriven.language.impl.definition.ConditionalImpl
+import io.factdriven.language.impl.utils.asType
 import io.factdriven.language.visualization.bpmn.diagram.*
+import io.factdriven.language.visualization.bpmn.model.Element.Companion.asType
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -17,24 +20,14 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
             is Branching -> Branch(it, this)
             is Looping -> Loop(it, this)
             is Flow -> Sequence(it, this)
-            is Conditional -> null
+            is Conditional -> null // Label(it, this)
             else -> throw IllegalStateException()
         }
     }
 
-    override val paths: List<Path> =
-        if (children.size > 1) children.subList(1, children.size).map {
-            val previous = children.get(children.indexOf(it) - 1)
-            val conditional = let {
-                if (previous is Loop) previous.node.children.last() as Conditional
-                else if (previous is Branch && previous.join == null && previous.east is GatewaySymbol)
-                    previous.vertical.find { it.children.isEmpty() }!!.node.children.first() as Conditional else null
-            }
-            val via = let {
-                if (previous is Branch && previous.join == null && previous.east is GatewaySymbol)
-                    previous.vertical.find { it.children.isEmpty() }!!.diagram else null
-            }
-            Path(previous, it, it, conditional, via)
+    val paths2: List<Path> = if (children.size > 1)
+        children.subList(1, children.size).mapIndexed { i, it ->
+            Path(children[i], it, it.asType<Group<*>>() ?: children[i].asType<Group<*>>() ?: this)
         } else emptyList()
 
     override val west: Symbol<*, *> get() = children.first().west

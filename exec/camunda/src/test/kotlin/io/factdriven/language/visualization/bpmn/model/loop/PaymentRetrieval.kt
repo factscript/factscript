@@ -21,11 +21,14 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 on command RetrievePayment::class
 
                 loop {
-                    execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(
-                            id,
-                            1F
-                        )
+                    loop {
+                        execute command ChargeCreditCard::class by {
+                            ChargeCreditCard(
+                                id,
+                                1F
+                            )
+                        }
+                        until("Payment covered?") condition { covered == total }
                     }
                     until("Payment covered?") condition { covered == total }
                 }

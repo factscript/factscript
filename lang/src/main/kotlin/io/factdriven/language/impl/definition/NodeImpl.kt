@@ -53,9 +53,10 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
             nodeOfType.isSubclassOf(Promising::class) -> {
                 children.find { it is Promising && (it.succeeding == dealingWith || dealingWith == null) }
             }
-            else -> {
+            nodeOfType.isSubclassOf(Catching::class) -> {
                 children.find { it is Catching && (it.catching == dealingWith || dealingWith == null) }
             }
+            else -> children.find { nodeOfType.isInstance(it) && dealingWith == null }
         } as N?
 
     @Suppress("UNCHECKED_CAST")
@@ -67,9 +68,10 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
             nodesOfType.isSubclassOf(Promising::class) -> {
                 children.filter { it is Promising && (it.succeeding == dealingWith || dealingWith == null) }
             }
-            else -> {
+            nodesOfType.isSubclassOf(Catching::class) -> {
                 children.filter { it is Catching && (it.catching == dealingWith || dealingWith == null) }
             }
+            else -> children.filter { nodesOfType.isInstance(it) && dealingWith == null }
         } as List<N>
 
     override fun get(id: String): Node? {
