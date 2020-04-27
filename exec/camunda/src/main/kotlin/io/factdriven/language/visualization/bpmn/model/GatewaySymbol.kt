@@ -16,7 +16,7 @@ abstract class GatewaySymbol<OUT: Gateway>(node: Node, parent: Group<out Node>):
 
     override fun initModel() {
         super.initModel()
-        if (parent.children.indexOf(this) == 0) {
+        if (parent.elements.indexOf(this) == 0) {
             model.setAttributeValue("id", model.getAttributeValue("id") + "${positionSeparator}Fork", false)
             if (parent is Branch)
                 model.setAttributeValue("name", node.label.asLines(), false)

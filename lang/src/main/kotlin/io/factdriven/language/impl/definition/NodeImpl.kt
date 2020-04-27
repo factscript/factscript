@@ -18,7 +18,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
     @Suppress("LeakingThis")
     override val root: Flow get() = (parent?.root ?: this) as Flow
 
-    override val id: String get() = id()
+    override val id: String get() = Id(id())
 
     override val type: Type get() = entity.type
 
@@ -41,7 +41,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
         val nodeTypeCount = if (isChild()) parent!!.children.count { it.type == type } else 0
         val nodeTypePos = if (nodeTypeCount > 1) "${positionSeparator}${parent!!.children.count { it.type == type && it.position <= position }}" else ""
         val id = if (isChild()) "${parentId}${idSeparator}${type.name}${nodeTypePos}" else parentId
-        return Id(id)
+        return id
     }
 
     @Suppress("UNCHECKED_CAST")

@@ -9,56 +9,53 @@ import io.factdriven.language.visualization.bpmn.diagram.*
  */
 class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(node, parent) {
 
-    var fork: GatewaySymbol<*>
-    var join: GatewaySymbol<*>?
+    var fork: GatewaySymbol<*> = when(node.gateway) {
+        Gateway.Exclusive -> ExclusiveGatewaySymbol(node, this)
+        Gateway.Inclusive -> InclusiveGatewaySymbol(node, this)
+        Gateway.Parallel -> ParallelGatewaySymbol(node, this)
+        Gateway.Catching -> EventBasedGatewaySymbol(node, this)
+    }
 
-    @Suppress("UNCHECKED_CAST")
-    val vertical: List<Sequence> get() = children.filter { it is Sequence } as List<Sequence>
-    val horizontal: List<Element<*,*>> get() = listOf(fork, vertical.first(), join).filterNotNull()
+    val branches: List<Sequence> get() = elements.filterIsInstance<Sequence>()
 
-    override val children: List<Element<*,*>>
+    override val conditional: Conditional? get() = null
 
-    init {
-        fork = when(node.gateway) {
-            Gateway.Exclusive -> ExclusiveGatewaySymbol(node, this)
-            Gateway.Inclusive -> InclusiveGatewaySymbol(node, this)
-            Gateway.Parallel -> ParallelGatewaySymbol(node, this)
-            Gateway.Catching -> EventBasedGatewaySymbol(node, this)
-        }
-        val joinRequired = node.children.count { it.children.isEmpty() || it.find(Throwing::class)?.isFailing() != true } > 1
-        join = if (joinRequired) when(node.gateway) {
+    var join: GatewaySymbol<*>? = if (node.children.count { it.children.isEmpty() || it.find(Throwing::class)?.isFailing() != true } > 1)
+        when(node.gateway) {
             Gateway.Exclusive -> ExclusiveGatewaySymbol(node, this)
             Gateway.Inclusive -> InclusiveGatewaySymbol(node, this)
             Gateway.Parallel -> ParallelGatewaySymbol(node, this)
             Gateway.Catching -> ExclusiveGatewaySymbol(node, this)
         } else null
-        val sequences = node.children.map { Sequence(it as Flow, this) }
-        children = listOf(fork) + sequences + listOf(join).filterNotNull()
-        vertical.mapNotNull { sequence ->
-            if (sequence.children.isNotEmpty()) Path(fork, sequence, sequence) else if (join != null) Path(fork, join!!, sequence) else null
-        } + vertical.mapNotNull { sequence ->
-            if (sequence.children.isNotEmpty() && join != null && sequence.node.find(Throwing::class)?.isFailing() != true) Path(sequence, join!!, sequence) else null
+
+    override val elements: List<Element<*,*>> = listOf(fork) + node.children.map { Sequence(it as Flow, this) } + listOfNotNull(join)
+
+    override val west: Symbol<*, *> get() = fork
+    override val east: Symbol<*, *> get() = if (join != null) join!! else branches.find { it.elements.isNotEmpty() && it.elements.last().node.asType<Throwing>()?.isFailing() != true }?.east ?: fork
+
+    init {
+        this.branches.mapNotNull { sequence ->
+            if (sequence.elements.isNotEmpty()) Path(fork, sequence, sequence, sequence.node.find(Conditional::class)) else if (join != null) Path(fork, join!!, sequence, sequence.node.find(Conditional::class)) else null
+        } + this.branches.mapNotNull { sequence ->
+            if (sequence.elements.isNotEmpty() && join != null && sequence.node.find(Throwing::class)?.isFailing() != true) Path(sequence, join!!, sequence, sequence.conditional) else null
         }
     }
 
-    override val west: Symbol<*, *> get() = fork
-    override val east: Symbol<*, *> get() = if (join != null) join!! else vertical.find { it.children.isNotEmpty() && it.children.last().node.asType<Throwing>()?.isFailing() != true }?.east ?: fork
-
     override fun initDiagram() {
         fork.diagram.westEntryOf(diagram)
-        var sequenceDiagram = vertical.first().diagram
+        var sequenceDiagram = branches.first().diagram
         fork.diagram.westOf(sequenceDiagram)
-        vertical.subList(1, vertical.size).forEach {
+        branches.subList(1, branches.size).forEach {
             if (it.node.children.isEmpty() || (it.node.children.first() is Conditional && (it.node.children.first() as Conditional).condition == null)) {
-                it.diagram.northOf(vertical.first().diagram)
+                it.diagram.northOf(branches.first().diagram)
             } else {
                 sequenceDiagram = sequenceDiagram.northOf(it.diagram) as Container
             }
         }
         if (join != null)
-            join!!.diagram.eastOf(vertical.first().diagram)
+            join!!.diagram.eastOf(branches.first().diagram)
         else {
-            val sequence = vertical.find { it.children.isNotEmpty() && it.children.last().node.asType<Throwing>()?.isFailing() != true }
+            val sequence = branches.find { it.elements.isNotEmpty() && it.elements.last().node.asType<Throwing>()?.isFailing() != true }
             if (sequence != null)  {
                 sequence.diagram.eastEntryOf(diagram)
             } else {

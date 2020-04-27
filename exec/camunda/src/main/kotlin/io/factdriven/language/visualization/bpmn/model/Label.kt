@@ -7,7 +7,6 @@ import io.factdriven.language.impl.utils.toLines
 import org.camunda.bpm.model.bpmn.instance.BaseElement
 import org.camunda.bpm.model.bpmn.instance.bpmndi.BpmnLabel
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds
-import java.lang.IllegalStateException
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -16,7 +15,7 @@ class Label(node: Node, parent: Element<*, out BaseElement>): Element<Node, Bpmn
 
     override val model = process.model.newInstance(BpmnLabel::class.java)
     override val diagram: Artefact = Artefact(20,20,0)
-    override val children = emptyList<Element<*,*>>()
+    override val elements = emptyList<Element<*,*>>()
 
     override val east: Symbol<*, *> get() = TODO("Not yet implemented")
     override val west: Symbol<*, *> get() = TODO("Not yet implemented")
@@ -61,19 +60,19 @@ class Label(node: Node, parent: Element<*, out BaseElement>): Element<Node, Bpmn
 }
 
 fun Branch.needsAdaptedLabel(): Boolean {
-    val hasDefaultFlow = vertical.find {
+    val hasDefaultFlow = branches.find {
         it.node.children.isEmpty() ||
                 (it.node.children.first() is Conditional
                         && (it.node.children.first() as Conditional).condition == null )
     } != null
-    val defaultFlowIsFirst = hasDefaultFlow && vertical.first().node.children.first() is Conditional && (vertical.first().node.children.first() as Conditional).condition == null
+    val defaultFlowIsFirst = hasDefaultFlow && branches.first().node.children.first() is Conditional && (branches.first().node.children.first() as Conditional).condition == null
     return hasDefaultFlow && !defaultFlowIsFirst
 }
 
 fun Branch.needsSouthLabel(): Boolean {
-    return needsAdaptedLabel() && vertical.size <= 2
+    return needsAdaptedLabel() && branches.size <= 2
 }
 
 fun Branch.needsNorthWestLabel(): Boolean {
-    return needsAdaptedLabel() && vertical.size > 2
+    return needsAdaptedLabel() && branches.size > 2
 }

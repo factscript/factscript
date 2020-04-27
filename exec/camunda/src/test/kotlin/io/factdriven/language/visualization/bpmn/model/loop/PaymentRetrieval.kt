@@ -22,13 +22,22 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 loop {
                     loop {
+                        loop {
+                            execute command ChargeCreditCard::class by {
+                                ChargeCreditCard(
+                                    id,
+                                    1F
+                                )
+                            }
+                            until("ABC") condition { covered == total }
+                        }
                         execute command ChargeCreditCard::class by {
                             ChargeCreditCard(
                                 id,
                                 1F
                             )
                         }
-                        until("Payment covered?") condition { covered == total }
+                        until("ABC") condition { covered == total }
                     }
                     until("Payment covered?") condition { covered == total }
                 }

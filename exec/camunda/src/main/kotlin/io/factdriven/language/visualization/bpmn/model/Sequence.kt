@@ -1,17 +1,20 @@
 package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.*
-import io.factdriven.language.impl.definition.ConditionalImpl
 import io.factdriven.language.impl.utils.asType
 import io.factdriven.language.visualization.bpmn.diagram.*
-import io.factdriven.language.visualization.bpmn.model.Element.Companion.asType
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
 
-    override val children: List<Element<*,*>> = node.children.mapNotNull {
+    override val west: Symbol<*, *> get() = elements.first().west
+    override val east: Symbol<*, *> get() = elements.last().east
+
+    override val conditional: Conditional? get() = elements.lastOrNull()?.asType<Loop>()?.conditional
+
+    override val elements: List<Element<*,*>> = node.children.mapNotNull {
         when (it) {
             is Calling -> ServiceTaskSymbol(it, this)
             is Promising -> CatchingEventSymbol(it, this)
@@ -20,24 +23,23 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
             is Branching -> Branch(it, this)
             is Looping -> Loop(it, this)
             is Flow -> Sequence(it, this)
-            is Conditional -> null // Label(it, this)
+            is Conditional -> null
             else -> throw IllegalStateException()
         }
     }
 
-    val paths2: List<Path> = if (children.size > 1)
-        children.subList(1, children.size).mapIndexed { i, it ->
-            Path(children[i], it, it.asType<Group<*>>() ?: children[i].asType<Group<*>>() ?: this)
-        } else emptyList()
-
-    override val west: Symbol<*, *> get() = children.first().west
-    override val east: Symbol<*, *> get() = children.last().east
+    init {
+        if (elements.size > 1)
+            elements.subList(1, elements.size).mapIndexed { i, it ->
+                Path(elements[i], it, it.asType<Group<*>>() ?: elements[i].asType<Group<*>>() ?: this, elements[i].asType<Group<*>>()?.conditional)
+            } else emptyList()
+    }
 
     override fun initDiagram() {
-        if (children.isNotEmpty())
-            (children.first().diagram as Box).westEntryOf(diagram)
-        if (children.size > 1) children.subList(1, children.size).forEachIndexed { index, element ->
-            (element.diagram as Box).eastOf(children[index].diagram as Box)
+        if (elements.isNotEmpty())
+            (elements.first().diagram as Box).westEntryOf(diagram)
+        if (elements.size > 1) elements.subList(1, elements.size).forEachIndexed { index, element ->
+            (element.diagram as Box).eastOf(elements[index].diagram as Box)
         }
     }
 

@@ -4,21 +4,26 @@ import io.factdriven.language.definition.*
 import io.factdriven.language.impl.definition.ConditionalExecutionImpl
 import io.factdriven.language.visualization.bpmn.diagram.*
 import io.factdriven.language.impl.definition.ConditionalImpl
-import io.factdriven.language.impl.definition.TriggeredExecutionImpl
+import io.factdriven.language.impl.definition.NodeImpl
+import io.factdriven.language.impl.utils.asType
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 class Loop(node: Looping, parent: Element<*,*>): Group<Flow>(node,parent) {
 
-    var join: GatewaySymbol<*>
-    var forward: Sequence
-    var backward: Sequence
-    var fork: GatewaySymbol<*>
+    private var join: GatewaySymbol<*>
+    private var forward: Sequence
+    private var backward: Sequence
+    internal var fork: GatewaySymbol<*>
+
+    override val west: Symbol<*, *> get() = join
+    override val east: Symbol<*, *> get() = fork
 
     override val diagram: Container = Container(36)
+    override val elements: List<Element<*, *>>
 
-    override val children: List<Element<*, *>>
+    override val conditional: Conditional? get() = forward.node.find(Conditional::class)
 
     init {
 
@@ -31,16 +36,13 @@ class Loop(node: Looping, parent: Element<*,*>): Group<Flow>(node,parent) {
         }
         fork = ExclusiveGatewaySymbol(node.children.last(), this)
 
-        children = listOf(join) + forward + backward + fork
+        elements = listOf(join) + forward + backward + fork
 
-        Path(join, forward, forward)
-        Path(forward, fork, forward)
-        Path(fork, join, backward)
+        Path(join, forward, forward, null)
+        Path(forward, fork, forward, forward.conditional)
+        Path(fork, join, backward, backward.node.find(Conditional::class))
 
     }
-
-    override val west: Symbol<*, *> get() = join
-    override val east: Symbol<*, *> get() = fork
 
     override fun initDiagram() {
         join.diagram.westEntryOf(diagram)

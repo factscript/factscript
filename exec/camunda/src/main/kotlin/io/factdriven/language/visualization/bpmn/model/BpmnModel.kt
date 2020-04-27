@@ -15,12 +15,12 @@ import java.io.File
 class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     override val model: BpmnModelInstance = Bpmn.createEmptyModel()
-
     override val diagram: Box = Container()
-
     internal val paths: MutableList<Path> = mutableListOf()
+    override val elements: List<Element<*,*>> = listOf(Sequence(node, this))
 
-    override val children: List<Element<*,*>> = listOf(Sequence(node, this))
+    override val east: Symbol<*, *> get() = elements.first().east
+    override val west: Symbol<*, *> get() = elements.last().east
 
     internal val bpmnDefinitions: Definitions = model.newInstance(Definitions::class.java)
     internal val bpmnProcess: Process = model.newInstance(Process::class.java)
@@ -29,30 +29,16 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     private var isInitialized: Boolean = false
 
-    override fun toExecutable(): BpmnModelInstance {
-        if (!isInitialized) {
-            fun initDiagram(element: Element<*,*>) { element.initDiagram(); element.children.forEach { initDiagram(it) } }
-            initDiagram(this)
-            super.toExecutable();
-            paths.forEach { it.toExecutable() }
-            isInitialized = true
-        }
-        Bpmn.validateModel(model);
-        return model
-    }
+    companion object {
 
-    fun toTempFile(openInModeler: Boolean = false): File {
-        val file = File.createTempFile("./bpmn-model-api-", ".bpmn")
-        Bpmn.writeModelToFile(file, toExecutable())
-        if (openInModeler && "Mac OS X" == System.getProperty("os.name")) Runtime.getRuntime().exec("open " + file.absoluteFile)
-        return file
-    }
+        const val groups = true
 
-    override val east: Symbol<*, *> get() = children.first().east
-    override val west: Symbol<*, *> get() = children.last().east
+    }
 
     override fun initDiagram() {
+
         Position.Zero = Position(142,74)
+
     }
 
     override fun initModel() {
@@ -80,9 +66,26 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     }
 
-    companion object {
+    override fun toExecutable(): BpmnModelInstance {
 
-        const val groups = true
+        if (!isInitialized) {
+            fun initDiagram(element: Element<*,*>) { element.initDiagram(); element.elements.forEach { initDiagram(it) } }
+            initDiagram(this)
+            super.toExecutable();
+            paths.forEach { it.toExecutable() }
+            isInitialized = true
+        }
+        Bpmn.validateModel(model);
+        return model
+
+    }
+
+    fun toTempFile(openInModeler: Boolean = false): File {
+
+        val file = File.createTempFile("./bpmn-model-api-", ".bpmn")
+        Bpmn.writeModelToFile(file, toExecutable())
+        if (openInModeler && "Mac OS X" == System.getProperty("os.name")) Runtime.getRuntime().exec("open " + file.absoluteFile)
+        return file
 
     }
 

@@ -11,7 +11,7 @@ import org.camunda.bpm.model.bpmn.instance.dc.Bounds
 abstract class Symbol<IN: Node, OUT: FlowNode>(node: IN, override val parent: Group<*>): Element<IN, OUT>(node, parent) {
 
     @Suppress("LeakingThis")
-    override val children: List<Element<*,*>> = let {
+    override val elements: List<Element<*,*>> = let {
         listOf(Label(node, this))
     }
 
