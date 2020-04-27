@@ -5,12 +5,9 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Throwing: Node {
+interface Throwing: Node, Terminable {
 
     val throwing: KClass<*>
     val instance: Any.() -> Any
-
-    fun isSucceeding(): Boolean
-    fun isFailing(): Boolean
 
 }

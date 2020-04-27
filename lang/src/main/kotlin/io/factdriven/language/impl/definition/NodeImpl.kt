@@ -36,6 +36,9 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
     override val forward: Node? get() = nextSibling ?: parent?.forward
     override val backward: Node? get() = previousSibling ?: parent?.backward
 
+    override val firstChild: Node? get() = children.firstOrNull()
+    override val lastChild: Node? get() = children.lastOrNull()
+
     protected fun id(): String {
         val parentId =  if (isChild()) parent!!.id else "${entity.type.context}${idSeparator}${entity.type.name}"
         val nodeTypeCount = if (isChild()) parent!!.children.count { it.type == type } else 0

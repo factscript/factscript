@@ -10,7 +10,7 @@ import io.factdriven.language.visualization.bpmn.diagram.*
 class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
 
     override val west: Symbol<*, *> get() = elements.first().west
-    override val east: Symbol<*, *> get() = elements.last().east
+    override val east: Symbol<*, *> get() = elements.lastOrNull()?.east ?: parent!!.asType<Branch>()!!.fork
 
     override val conditional: Conditional? get() = elements.lastOrNull()?.asType<Loop>()?.conditional
 

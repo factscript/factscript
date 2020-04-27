@@ -40,6 +40,9 @@ interface Node {
     val forward: Node?
     val backward: Node?
 
+    val firstChild: Node?
+    val lastChild: Node?
+
     fun isStart(): Boolean
     fun isFinish(): Boolean
 
