@@ -10,16 +10,18 @@ import org.camunda.bpm.model.bpmn.instance.dc.Bounds
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
+@Suppress("LeakingThis")
 abstract class Group<IN: Node>(node: IN, parent: Element<*,*>): Element<IN, Group>(node, parent) {
 
     override val model: Group = process.model.newInstance(Group::class.java)
     override val diagram: Container = Container(36)
 
     abstract val conditional: Conditional?
+    internal open val exit: io.factdriven.language.visualization.bpmn.model.Group<*> = this
 
     override fun initModel() {
 
-        if (BpmnModel.groups) {
+        if (BpmnModel.renderGroups) {
 
             process.bpmnProcess.addChildElement(model)
             val bpmnShape = process.model.newInstance(BpmnShape::class.java)

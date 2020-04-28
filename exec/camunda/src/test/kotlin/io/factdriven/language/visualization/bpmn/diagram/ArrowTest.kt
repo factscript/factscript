@@ -208,7 +208,7 @@ class ArrowTest {
         assertEquals(6, branch.contained.size)
 
         assertEquals(Position(4, 0), branch.position)
-        assertEquals(Dimension(26, 24), branch.dimension)
+        assertEquals(Dimension(26, 26), branch.dimension)
 
         assertEquals(Position(4, 5), fork.position)
         assertEquals(Dimension(8, 8), fork.dimension)
@@ -217,12 +217,12 @@ class ArrowTest {
         assertEquals(Dimension(10, 6), upper.dimension)
 
         assertEquals(Position(12, 6), task.position)
-        assertEquals(Dimension(10, 6), task.dimension)
+        assertEquals(Dimension(10, 8), task.dimension)
 
-        assertEquals(Position(12, 12), lower.position)
+        assertEquals(Position(12, 14), lower.position)
         assertEquals(Dimension(10, 6), lower.dimension)
 
-        assertEquals(Position(12, 18), lower2.position)
+        assertEquals(Position(12, 20), lower2.position)
         assertEquals(Dimension(10, 6), lower2.dimension)
 
         assertEquals(Position(22, 5), join.position)
@@ -231,7 +231,7 @@ class ArrowTest {
         assertEquals(Position(30, 7), box3.position)
         assertEquals(Dimension(4, 4), box3.dimension)
 
-        assertEquals(Dimension(34, 24), process.dimension)
+        assertEquals(Dimension(34, 26), process.dimension)
 
     }
 

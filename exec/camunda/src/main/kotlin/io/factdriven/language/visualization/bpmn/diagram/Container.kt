@@ -24,11 +24,14 @@ class Container(val emptyHeight: Int = 0): Box() {
         if (!::internalDimension.isInitialized) {
             internalDimension = Dimension(
                 width = longitudes.map {
-                    if (it is Container) (it.contained.map { box -> box.latitudes.map { it.dimension }.sumWidth }.max()
+                    if (it is Container) (it.contained.map { box -> box.latitudes.map { it.dimension }.sumWidth + box.latitudes.first().greenwich}.max()
                         ?: 0) else it.dimension.width
                 }.max()!!,
-                height = contained.map { box -> box.longitudes.map { it.dimension }.sumHeight - box.longitudes.first().west.y + box.longitudes.first().equator }.max() ?: emptyHeight
-            )
+                // width = longitudes.map { if (it is Container) (it.contained.map { box -> box.latitudes.map { it.dimension }.sumWidth }.max() ?: 0 + box.latitudes.first().greenwich }.max() ?: 0) else it.dimension.width }}.max()!!,
+                height = latitudes.map {
+                    if (it is Container) (it.contained.map { box -> box.longitudes.map { it.dimension }.sumHeight - box.longitudes.first().west.y + box.longitudes.first().equator }.max()
+                        ?: emptyHeight) else it.dimension.height
+                }.max()!!)
         }
         return internalDimension
     }

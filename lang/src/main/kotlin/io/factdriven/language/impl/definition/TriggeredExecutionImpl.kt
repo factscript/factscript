@@ -73,11 +73,11 @@ open class TriggeredExecutionImpl<T:Any>(entity: KClass<T>, override val parent:
     override val backward: Node? get() = if (parent is Branching) parent?.backward else previousSibling ?: parent?.backward
 
     override fun isSucceeding(): Boolean {
-        return (children.last() as? Throwing)?.isSucceeding() == true
+        return (children.lastOrNull() as? Throwing)?.isSucceeding() == true
     }
 
     override fun isFailing(): Boolean {
-        return (children.last() as? Throwing)?.isFailing() == true
+        return (children.lastOrNull() as? Throwing)?.isFailing() == true
     }
 
 }

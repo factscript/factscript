@@ -14,11 +14,11 @@ import java.lang.UnsupportedOperationException
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, via: Element<*,*>, val conditional: Conditional?): Element<Node, SequenceFlow>(to.node, via) {
+class Path(val from: Element<out Node,*>, private val to: Element<out Node, *>, parent: Group<*>, val conditional: Conditional?): Element<Node, SequenceFlow>(to.node, parent) {
 
     override val elements: List<Element<*,*>> = listOf(Label(this.node, this))
     override val model: SequenceFlow = process.model.newInstance(SequenceFlow::class.java)
-    override val diagram: Arrow = (from.diagram as Box).connect(to.diagram as Box, via.diagram as Box).arrows.last()
+    override val diagram: Arrow = west.diagram.connect(east.diagram, via.diagram)
 
     init {
         process.paths.add(this)
@@ -26,6 +26,7 @@ class Path(val from: Element<out Node,*>, val to: Element<out Node, *>, via: Ele
 
     override val west: Symbol<*, *> get() = from.east
     override val east: Symbol<*, *> get() = to.west
+    val via: Group<*> get() = parent?.asType<Group<*>>()!!.let { if (it == from) it.exit else it }
 
     override fun initDiagram() {
         throw UnsupportedOperationException()

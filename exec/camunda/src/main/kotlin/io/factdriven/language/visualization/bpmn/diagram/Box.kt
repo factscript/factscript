@@ -71,11 +71,11 @@ abstract class Box: Space {
         return that
     }
 
-    fun connect(target: Box, via: Box? = null): Box {
+    fun connect(target: Box, via: Box? = null): Arrow {
         val arrow = Arrow(this, target, via)
         arrows.add(arrow)
         target.arrows.add(arrow)
-        return target
+        return arrow
     }
 
     private fun eastEntry(box: Box) {
@@ -98,6 +98,11 @@ abstract class Box: Space {
     internal val equator: Int get() {
         fun Box.y(): Int = west.y + allOnTop.map { it.dimension }.sumHeight
         return latitudes.maxBy { it.y() }!!.y()
+    }
+
+    internal val greenwich: Int get() {
+        fun Box.x(): Int = allLeft.map { it.dimension }.sumWidth
+        return longitudes.maxBy { it.x() }!!.x()
     }
 
 }

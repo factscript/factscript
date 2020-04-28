@@ -31,7 +31,14 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
     init {
         if (elements.size > 1)
             elements.subList(1, elements.size).mapIndexed { i, it ->
-                Path(elements[i], it, it.asType<Group<*>>() ?: elements[i].asType<Group<*>>() ?: this, elements[i].asType<Group<*>>()?.conditional)
+                Path(
+                    elements[i],
+                    it,
+                    elements[i].asType<Group<*>>()
+                        ?: it.asType<Group<*>>()
+                        ?: this,
+                    elements[i].asType<Group<*>>()?.conditional
+                )
             } else emptyList()
     }
 

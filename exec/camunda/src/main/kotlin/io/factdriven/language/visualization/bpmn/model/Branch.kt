@@ -20,6 +20,8 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
 
     override val conditional: Conditional? get() = if (!hasJoin()) branches.find { it.elements.isEmpty() && !it.node.isFailing() }?.node?.find(Conditional::class) else null
 
+    override val exit: Group<*> get() = branches.find { sequence -> !sequence.node.isFailing() }!!.let { if (hasJoin() && it.node is ConditionalFlow && it.node.isDefault) branches.first() else it }
+
     private fun hasJoin() = join != null || node.children.count { !it.asType<Flow>()!!.isFailing() } > 1
 
     var join: GatewaySymbol<*>? = if (hasJoin())
@@ -33,7 +35,7 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
     override val elements: List<Element<*,*>> = listOf(fork) + node.children.map { Sequence(it as Flow, this) } + listOfNotNull(join)
 
     override val west: Symbol<*, *> get() = fork
-    override val east: Symbol<*, *> get() = join ?: branches.find { !it.node.isFailing() }?.east ?: fork
+    override val east: Symbol<*, *> get() = join ?: exit.east ?: fork
 
     init {
         this.branches.mapNotNull { sequence ->
@@ -61,11 +63,8 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
                 sequenceDiagram = sequenceDiagram.northOf(it.diagram) as Container
             }
         }
-
-        val notFailingSequence = branches.find { it.elements.isNotEmpty() && !it.node.isFailing() }
-        join?.diagram?.eastOf(branches.first().diagram)
-            ?: (notFailingSequence?.diagram
-                ?: fork.diagram).eastEntryOf(diagram)
+        join?.diagram?.eastOf(exit.diagram)
+            ?: exit.diagram.eastEntryOf(diagram)
 
     }
 

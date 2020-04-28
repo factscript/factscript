@@ -27,7 +27,8 @@ data class Arrow(val from: Box, val to: Box, val via: Box? = null) {
 
             fun Box.start(): Box = western?.start() ?: northern?.start() ?: southern?.start() ?: this
 
-            return if ((from.position + from.west).y == (from.start().position + from.start().west).y) {
+            return if ((via != null && (from.position + from.west).y != via.y)
+                || (via == null && (from.position + from.west).y == (from.start().position + from.start().west).y)) {
                 west = source.position + source.let { if (west.y < east.y) it.south else it.north }
                 listOf(west, Position(west.x, east.y), east)
             } else {
