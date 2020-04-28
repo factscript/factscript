@@ -55,7 +55,7 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
         fork.diagram.westOf(sequenceDiagram)
 
         branches.subList(1, branches.size).forEach {
-            if (it.node.firstChild?.asType<Conditional>()?.condition == null) {
+            if ((it.node as? ConditionalFlow)?.isDefault == true) {
                 it.diagram.northOf(branches.first().diagram)
             } else {
                 sequenceDiagram = sequenceDiagram.northOf(it.diagram) as Container

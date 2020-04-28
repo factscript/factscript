@@ -3,6 +3,9 @@ package io.factdriven.language.impl.definition
 import io.factdriven.language.definition.Node
 import io.factdriven.language.ConditionalExecution
 import io.factdriven.language.Given
+import io.factdriven.language.definition.Conditional
+import io.factdriven.language.definition.ConditionalFlow
+import io.factdriven.language.impl.utils.asType
 import kotlin.reflect.KClass
 
 /**
@@ -13,6 +16,7 @@ class ConditionalExecutionImpl<T:Any> (entity: KClass<T>, override val parent: N
 
     ConditionalExecution<T>,
 
+    ConditionalFlow,
     TriggeredExecutionImpl<T>(entity, parent)
 
 {
@@ -23,5 +27,8 @@ class ConditionalExecutionImpl<T:Any> (entity: KClass<T>, override val parent: N
             children.add(child)
             return child
         }
+
+    override val condition: (Any.() -> Boolean)? get() = find(Conditional::class)?.condition
+    override val isDefault: Boolean get() = condition == null
 
 }

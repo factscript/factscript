@@ -73,4 +73,6 @@ open class BranchingImpl<T: Any>(parent: Node):
         return this
     }
 
+    override fun isConditional(): Boolean = gateway == Gateway.Exclusive || gateway == Gateway.Inclusive
+
 }

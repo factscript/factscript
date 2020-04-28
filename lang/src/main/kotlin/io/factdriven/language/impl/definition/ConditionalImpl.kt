@@ -18,6 +18,8 @@ open class ConditionalImpl<T: Any>(parent: Node):
 {
 
     override var condition: (Any.() -> Boolean)? = null
+    override val isDefault: Boolean get() = condition == null
+
     override lateinit var label: String internal set
 
     override val type: Type

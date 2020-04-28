@@ -7,6 +7,8 @@ interface Branching: Node {
 
     val gateway: Gateway
 
+    fun isConditional(): Boolean
+
 }
 
 enum class Gateway { Exclusive, Inclusive, Parallel, Catching }
