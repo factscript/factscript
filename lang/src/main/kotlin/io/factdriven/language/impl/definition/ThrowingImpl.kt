@@ -51,4 +51,8 @@ open class ThrowingImpl<T: Any>(parent: Node):
         return root.find(nodeOfType = Promising::class)?.failing?.contains(throwing) ?: false
     }
 
+    override fun isContinuing(): Boolean {
+        return !isSucceeding() && !isFailing()
+    }
+
 }

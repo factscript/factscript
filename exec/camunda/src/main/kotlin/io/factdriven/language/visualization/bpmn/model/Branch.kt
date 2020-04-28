@@ -18,11 +18,11 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
 
     val branches: List<Sequence> get() = elements.filterIsInstance<Sequence>()
 
-    override val conditional: Conditional? get() = if (!hasJoin()) branches.find { it.elements.isEmpty() && !it.node.isFailing() }?.node?.find(Conditional::class) else null
+    override val conditional: Conditional? get() = if (!hasJoin()) branches.find { it.elements.isEmpty() && it.node.isContinuing() }?.node?.find(Conditional::class) else null
 
-    override val exit: Group<*> get() = branches.find { sequence -> !sequence.node.isFailing() }!!.let { if (hasJoin() && it.node is ConditionalFlow && it.node.isDefault) branches.first() else it }
+    override val exit: Group<*> get() = branches.find { sequence -> sequence.node.isContinuing() }!!.let { if (hasJoin() && ((it.node as? ConditionalFlow)?.isDefault == true)) branches.first() else it }
 
-    private fun hasJoin() = join != null || node.children.count { !it.asType<Flow>()!!.isFailing() } > 1
+    private fun hasJoin() = join != null || node.children.count { it.asType<Flow>()!!.isContinuing() } > 1
 
     var join: GatewaySymbol<*>? = if (hasJoin())
         when(node.gateway) {
@@ -45,7 +45,7 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
                 Path(fork, join!!, sequence, sequence.node.find(Conditional::class))
             else null
         } + this.branches.mapNotNull { sequence ->
-            if (sequence.elements.isNotEmpty() && hasJoin() && !sequence.node.isFailing())
+            if (sequence.elements.isNotEmpty() && hasJoin() && sequence.node.isContinuing())
                 Path(sequence, join!!, sequence, sequence.conditional) else null
         }
     }

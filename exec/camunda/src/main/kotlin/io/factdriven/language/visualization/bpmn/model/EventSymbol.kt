@@ -54,7 +54,7 @@ class CatchingEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
 
 class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>): EventSymbol<Throwing, ThrowEvent>(node, parent) {
 
-    override val model = process.model.newInstance((if (node.isFinish() || node.isFailing()) EndEvent::class else IntermediateThrowEvent::class).java)
+    override val model = process.model.newInstance((if (node.isFinish() || !node.isContinuing()) EndEvent::class else IntermediateThrowEvent::class).java)
 
     override fun initModel() {
 

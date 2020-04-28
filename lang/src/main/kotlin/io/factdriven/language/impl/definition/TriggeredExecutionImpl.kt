@@ -80,4 +80,8 @@ open class TriggeredExecutionImpl<T:Any>(entity: KClass<T>, override val parent:
         return (children.lastOrNull() as? Throwing)?.isFailing() == true
     }
 
+    override fun isContinuing(): Boolean {
+        return !isSucceeding() && !isFailing()
+    }
+
 }
