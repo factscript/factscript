@@ -20,7 +20,7 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
 
     override val conditional: Conditional? get() = if (!hasJoin()) branches.find { it.elements.isEmpty() && it.node.isContinuing() }?.node?.find(Conditional::class) else null
 
-    override val exit: Group<*> get() = branches.find { sequence -> sequence.node.isContinuing() }!!.let { if (hasJoin() && ((it.node as? ConditionalFlow)?.isDefault == true)) branches.first() else it }
+    override val exit: Group<*> get() = branches.find { sequence -> sequence.node.isContinuing() }!!.let { if (hasJoin() && ((it.node as? ConditionalFlow)?.isDefault() == true)) branches.first() else it }
 
     private fun hasJoin() = join != null || node.children.count { it.asType<Flow>()!!.isContinuing() } > 1
 
@@ -57,7 +57,7 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
         fork.diagram.westOf(sequenceDiagram)
 
         branches.subList(1, branches.size).forEach {
-            if ((it.node as? ConditionalFlow)?.isDefault == true) {
+            if ((it.node as? ConditionalFlow)?.isDefault() == true) {
                 it.diagram.northOf(branches.first().diagram)
             } else {
                 sequenceDiagram = sequenceDiagram.northOf(it.diagram) as Container
