@@ -1,6 +1,6 @@
 package io.factdriven.execution
 
-import io.factdriven.flow
+import io.factdriven.language.flow
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

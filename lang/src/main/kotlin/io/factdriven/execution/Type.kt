@@ -1,6 +1,6 @@
 package io.factdriven.execution
 
-import io.factdriven.impl.definition.idSeparator
+import io.factdriven.language.impl.definition.idSeparator
 import kotlin.reflect.KClass
 
 /**
@@ -42,5 +42,5 @@ val Type.kClass: KClass<*> get() {
 }
 
 val Type.label: String get() {
-    return name.let { local -> local.replace("(.)([A-Z\\d])".toRegex()) { "${it.groupValues[1]} ${it.groupValues[2].toLowerCase()}" } }
+    return name.let { local -> local.substring(local.lastIndexOf("$") + 1).replace("(.)([A-Z\\d])".toRegex()) { "${it.groupValues[1]} ${it.groupValues[2].toLowerCase()}" } }
 }

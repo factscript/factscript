@@ -1,6 +1,5 @@
 package io.factdriven.execution
 
-import io.factdriven.Messages
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 

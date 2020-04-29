@@ -1,6 +1,6 @@
 package io.factdriven.execution
 
-import io.factdriven.impl.utils.prettyJson
+import io.factdriven.language.impl.utils.prettyJson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test

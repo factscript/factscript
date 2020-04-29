@@ -1,6 +1,6 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.flow
+import io.factdriven.language.flow
 import kotlin.math.max
 
 /**
@@ -25,7 +25,7 @@ data class CustomerAccount(val fact: WithdrawAmount) {
 
         fun init() {
 
-            flow <CustomerAccount> {
+            flow<CustomerAccount> {
 
                 on command WithdrawAmount::class promise {
                     report success AmountWithdrawn::class

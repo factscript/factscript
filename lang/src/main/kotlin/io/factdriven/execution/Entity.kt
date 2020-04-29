@@ -1,8 +1,7 @@
 package io.factdriven.execution
 
-import io.factdriven.Messages
-import io.factdriven.impl.utils.apply
-import io.factdriven.impl.utils.construct
+import io.factdriven.language.impl.utils.apply
+import io.factdriven.language.impl.utils.construct
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 

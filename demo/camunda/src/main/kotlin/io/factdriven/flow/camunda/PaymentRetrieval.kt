@@ -1,6 +1,6 @@
 package io.factdriven.flow.camunda
 
-import io.factdriven.flow
+import io.factdriven.language.flow
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -28,7 +28,7 @@ data class PaymentRetrieval(
 
         fun init() {
 
-            flow <PaymentRetrieval> {
+            flow<PaymentRetrieval> {
 
                 on command RetrievePayment::class promise {
                     report success PaymentRetrieved::class
