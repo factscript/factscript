@@ -11,6 +11,6 @@ interface Issue<T: Any>: IssueCommand<T>
 @FlowLanguage
 interface IssueCommand<T: Any> {
 
-    infix fun <M: Any> command(type: KClass<M>): Sentence<T, M>
+    infix fun <M: Any> command(type: KClass<M>): By<T, M>
 
 }

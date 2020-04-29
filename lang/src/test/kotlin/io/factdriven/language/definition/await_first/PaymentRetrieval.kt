@@ -21,7 +21,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 on command RetrievePayment::class
 
                 await first {
-                    on command RetrievePayment::class
+                    on event PaymentRetrieved::class
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(id, total - covered)
                     }
@@ -29,7 +29,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                         ChargeCreditCard(id, total - covered)
                     }
                 } or {
-                    on event PaymentRetrieved::class
+                    on event PaymentFailed::class
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(id, total - covered)
                     }
@@ -49,3 +49,4 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
 data class RetrievePayment(val amount: Float)
 data class PaymentRetrieved(val amount: Float)
+data class PaymentFailed(val amount: Float)

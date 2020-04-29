@@ -11,7 +11,7 @@ interface Execute<T: Any>: ExecuteCommand<T>, ExecuteAll<T>
 @FlowLanguage
 interface ExecuteCommand<T: Any> {
 
-    infix fun <M: Any> command(type: KClass<M>): Sentence<T, M>
+    infix fun <M: Any> command(type: KClass<M>): ExecuteBy<T, M>
 
 }
 
@@ -26,5 +26,19 @@ interface ExecuteAll<T: Any> {
 interface ExecuteAnd<T: Any> {
 
     infix fun and(path: Execution<T>.() -> Unit): ExecuteAnd<T>
+
+}
+
+@FlowLanguage
+interface ExecuteBy<T: Any, M: Any>: By<T, M> {
+
+    override fun by(instance: T.() -> M): ExecuteBut<T>
+
+}
+
+@FlowLanguage
+interface ExecuteBut<T: Any> {
+
+    infix fun but(path: TriggeredExecution<T>.() -> Unit)
 
 }

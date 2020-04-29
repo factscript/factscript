@@ -6,15 +6,16 @@ import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.Emit
 import io.factdriven.language.Issue
-import io.factdriven.language.Sentence
+import io.factdriven.language.By
+import io.factdriven.language.ExecuteBy
 import io.factdriven.language.definition.Promising
 import kotlin.reflect.KClass
 
-open class ThrowingImpl<T: Any>(parent: Node):
+open class ThrowingImpl<T: Any, F: Any>(parent: Node):
 
     Emit<T>,
     Issue<T>,
-    Sentence<T, Any>,
+    By<T, Any>,
 
     Throwing,
     NodeImpl(parent)
@@ -26,21 +27,21 @@ open class ThrowingImpl<T: Any>(parent: Node):
 
     override val type: Type get() = throwing.type
 
-    override fun <M : Any> event(type: KClass<M>): Sentence<T, M> {
+    @Suppress("UNCHECKED_CAST")
+    override fun <M : Any> event(type: KClass<M>): By<T, M> {
         this.throwing = type
-        @Suppress("UNCHECKED_CAST")
-        return this as Sentence<T, M>
+        return this as By<T, M>
     }
 
-    override fun <M : Any> command(type: KClass<M>): Sentence<T, M> {
-        this.throwing = type
-        @Suppress("UNCHECKED_CAST")
-        return this as Sentence<T, M>
+    override fun <M : Any> command(type: KClass<M>): By<T, M> {
+        return event(type)
     }
 
-    override fun by(instance: T.() -> Any) {
-        @Suppress("UNCHECKED_CAST")
+    @Suppress("UNCHECKED_CAST")
+    override fun by(instance: T.() -> Any): F {
         this.instance = instance as Any.() -> Any
+        @Suppress("UNCHECKED_CAST")
+        return this as F
     }
 
     override fun isSucceeding(): Boolean {
