@@ -47,10 +47,7 @@ class EngineTransitionListener: ExecutionListener {
         val messageString = execution.getVariableTyped<JsonValue>(
             MESSAGES_VAR, false).valueSerialized
         val messages = Messages.fromJson(messageString)
-        return Receptor(
-            catching,
-            MessageId.nextAfter(messages.last().id)
-        )
+        return Receptor(correlating = MessageId.nextAfter(messages.last().id))
     }
 
     private fun Branching.endpoint(execution: DelegateExecution): Map<String, Receptor> {

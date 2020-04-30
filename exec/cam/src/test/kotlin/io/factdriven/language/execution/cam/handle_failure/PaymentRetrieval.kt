@@ -1,6 +1,7 @@
-package io.factdriven.language.visualization.bpmn.model.handle_failure
+package io.factdriven.language.execution.cam.handle_failure
 
 import io.factdriven.language.flow
+import io.factdriven.language.impl.utils.Id
 import java.util.*
 
 /**
@@ -8,8 +9,26 @@ import java.util.*
  */
 class PaymentRetrieval(fact: RetrievePayment) {
 
-    var id = UUID.randomUUID().toString()
+    var id = Id(fact)
     var total = fact.amount
+    var covered = 0F
+    var successful = false
+    var ended = false
+    var toohigh = false
+
+    fun apply(fact: PaymentRetrieved) {
+        successful = true
+        covered = total
+        ended = true
+    }
+
+    fun apply(fact: PaymentAmountTooHigh) {
+        toohigh = true
+    }
+
+    fun apply(fact: PaymentFailed) {
+        ended = true
+    }
 
     companion object {
 
@@ -26,6 +45,9 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     ChargeCreditCard(id, total)
                 } but {
                     on event CreditCardExpired::class
+                    emit event PaymentFailed::class by { PaymentFailed() }
+                } but {
+                    on event PaymentAmountTooHigh::class
                     emit event PaymentFailed::class by { PaymentFailed() }
                 }
 

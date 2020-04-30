@@ -50,8 +50,8 @@ open class CallingImpl<T: Any>(parent: Node):
     }
 
     override fun findReceptorsFor(message: Message): List<Receptor> {
-        return if (catching.isInstance(message.fact.details) && message.correlating != null)
-            listOf(Receptor(catching, message.correlating))
+        return if (succeeding.isInstance(message.fact.details) || failing.contains(message.fact.details::class) && message.correlating != null)
+            listOf(Receptor(correlating = message.correlating))
         else emptyList()
     }
 
