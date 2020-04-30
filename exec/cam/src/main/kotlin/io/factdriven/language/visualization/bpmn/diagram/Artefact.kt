@@ -11,7 +11,7 @@ open class Artefact(private val inner: Dimension, private val margin: Int): Box(
     val raw: Artefact get() = object: Artefact(inner, margin) {
 
         override val dimension: Dimension get() = inner
-        override val position: Position get() = this@Artefact.position + Dimension(margin, margin)
+        override val position: Position get() = this@Artefact.attached?.position ?: this@Artefact.position + Dimension(margin, margin)
 
         override val south: Position get() = this@Artefact.south - Dimension(margin, margin * 2)
         override val north: Position get() = this@Artefact.north - Dimension(margin, 0)
@@ -27,5 +27,7 @@ open class Artefact(private val inner: Dimension, private val margin: Int): Box(
     override val east: Position get() = Position(dimension.width, dimension.height / 2)
     override val north: Position get() = Position(dimension.width / 2, 0)
     override val south: Position get() = Position(dimension.width / 2, dimension.height)
+
+    override val position: Position get() = super.position.let { if (attached != null) raw.position - Dimension(margin, margin) else it }
 
 }

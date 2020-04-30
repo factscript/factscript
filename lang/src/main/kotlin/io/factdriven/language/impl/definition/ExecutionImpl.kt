@@ -1,31 +1,20 @@
 package io.factdriven.language.impl.definition
 
-import io.factdriven.language.definition.Branching
-import io.factdriven.language.definition.Node
 import io.factdriven.language.*
-import io.factdriven.language.definition.Flow
-import io.factdriven.language.definition.Throwing
+import io.factdriven.language.definition.*
 import kotlin.reflect.KClass
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-open class TriggeringExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
+open class ExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
 
-    PromisingExecution<T>,
-    ExceptionalExecution<T>,
+    Execution<T>,
 
     Flow,
     NodeImpl(parent, entity)
 
 {
-
-    override val on: On<T>
-        get() {
-            val child = PromisingImpl<T>(this)
-            children.add(child)
-            return child
-        }
 
     override val emit: Emit<T>
         get() {
@@ -79,10 +68,6 @@ open class TriggeringExecutionImpl<T:Any>(entity: KClass<T>, override val parent
 
     override fun isFailing(): Boolean {
         return (children.lastOrNull() as? Throwing)?.isFailing() == true
-    }
-
-    override fun isContinuing(): Boolean {
-        return !isSucceeding() && !isFailing()
     }
 
 }

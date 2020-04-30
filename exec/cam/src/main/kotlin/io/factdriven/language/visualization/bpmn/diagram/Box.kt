@@ -19,13 +19,13 @@ abstract class Box: Space {
     abstract val mostWestern: Artefact?
     abstract val mostEastern: Artefact?
 
-    private lateinit var internalPosition: Position
+    internal lateinit var internalPosition: Position
 
     override val position: Position get() {
         if (!::internalPosition.isInitialized) {
             internalPosition = when {
                 container != null && container!!.westend == this -> container!!.position + container!!.west - west
-                western != null -> western!!.position + western!!.east - west
+                western != null-> (western?.attached?.original ?: western!!.position) + western!!.east - west
                 northern != null -> northern!!.position + Dimension(0, northern!!.dimension.height)
                 southern != null -> southern!!.position - Dimension(0, dimension.height)
                 else -> (container?.position ?: Position.Zero) + (container?.west ?: Position(0, equator)) - west
@@ -103,6 +103,12 @@ abstract class Box: Space {
     internal val greenwich: Int get() {
         fun Box.x(): Int = allLeft.map { it.dimension }.sumWidth
         return longitudes.maxBy { it.x() }!!.x()
+    }
+
+    protected var attached: Attached? = null
+
+    fun attachTo(box: Box, vararg direction: Direction = emptyArray()) {
+        attached = Attached(this, box, direction.asList())
     }
 
 }

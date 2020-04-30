@@ -39,6 +39,6 @@ interface ExecuteBy<T: Any, M: Any>: By<T, M> {
 @FlowLanguage
 interface ExecuteBut<T: Any> {
 
-    infix fun but(path: ExceptionalExecution<T>.() -> Unit)
+    infix fun but(path: AwaitingExecution<T>.() -> Unit)
 
 }

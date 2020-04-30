@@ -20,8 +20,8 @@ open class CallingImpl<T: Any>(parent: Node):
 {
 
     override val catching: KClass<*> get() = succeeding
-    override val succeeding: KClass<*> get() = Flows.get(handling = throwing).find(Promising::class)!!.succeeding!!
-    override val failing: List<KClass<*>> get() = Flows.get(handling = throwing).find(Promising::class)!!.failing
+    override val succeeding: KClass<*> get() = Flows.find(handling = throwing)!!.find(Promising::class)!!.succeeding!!
+    override val failing: List<KClass<*>> get() = Flows.find(handling = throwing)!!.find(Promising::class)!!.failing
 
     @Suppress("UNCHECKED_CAST")
     override fun all(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
@@ -29,7 +29,7 @@ open class CallingImpl<T: Any>(parent: Node):
         branch.gateway = Gateway.Parallel
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        val flow = TriggeringExecutionImpl(entity as KClass<T>, branch).apply(path)
+        val flow = ExecutionImpl(entity as KClass<T>, branch).apply(path)
         (branch as NodeImpl).children.add(flow)
         return branch
     }
@@ -40,8 +40,8 @@ open class CallingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun but(path: ExceptionalExecution<T>.() -> Unit) {
-        val flow = TriggeringExecutionImpl(
+    override fun but(path: AwaitingExecution<T>.() -> Unit) {
+        val flow = AwaitingExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)

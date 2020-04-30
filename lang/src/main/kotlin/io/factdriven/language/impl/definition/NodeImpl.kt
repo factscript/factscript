@@ -54,7 +54,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
                 children.find { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
             }
             nodeOfType.isSubclassOf(Promising::class) -> {
-                children.find { it is Promising && (it.succeeding == dealingWith || dealingWith == null) }
+                children.find { it is Promising && (it.succeeding == dealingWith || it.failing.contains(dealingWith) || dealingWith == null) }
             }
             nodeOfType.isSubclassOf(Catching::class) -> {
                 children.find { it is Catching && (it.catching == dealingWith || dealingWith == null) }
