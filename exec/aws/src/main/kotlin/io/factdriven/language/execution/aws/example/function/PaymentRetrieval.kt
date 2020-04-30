@@ -44,71 +44,71 @@ data class PaymentRetrieval(
 //                    }
 //                }
 
-                execute all {
-                    execute command PaymentRetrievalAccepted::class by {
-                        PaymentRetrievalAccepted("1", 25f)
-                    }
-
-                } and {
-                    execute command PaymentRetrievalAccepted2::class by {
-                        PaymentRetrievalAccepted2("1", 25f)
-                    }
-
-                    execute all {
-                        execute command PaymentRetrievalAccepted3::class by {
-                            PaymentRetrievalAccepted3("1", 25f)
-                        }
-
-                    } and {
-                        execute command PaymentRetrievalAccepted4::class by {
-                            PaymentRetrievalAccepted4("1", 25f)
-                        }
-                    } and {
-                        execute command PaymentRetrievalAccepted5::class by {
-                            PaymentRetrievalAccepted5("1", 25f)
-                        }
-
-                        execute all {
-                            execute command PaymentRetrievalAccepted3::class by {
-                                PaymentRetrievalAccepted3("1", 25f)
-                            }
-
-                        } and {
-                            execute command PaymentRetrievalAccepted4::class by {
-                                PaymentRetrievalAccepted4("1", 25f)
-                            }
-                        } and {
-                            execute command PaymentRetrievalAccepted5::class by {
-                                PaymentRetrievalAccepted5("1", 25f)
-                            }
-
-                            select either {
-                                given("Yes") condition { true }
-
-                                execute command PaymentRetrievalAccepted::class by {
-                                    PaymentRetrievalAccepted("1", 25f)
-                                }
-                            } or {
-                                given("Yes") condition { true }
-
-                                execute command PaymentRetrievalAccepted3::class by {
-                                    PaymentRetrievalAccepted3("1", 25f)
-                                }
-
-                                execute all {
-                                    execute command PaymentRetrievalAccepted3::class by {
-                                        PaymentRetrievalAccepted3("1", 25f)
-                                    }
-
-                                } and {
-                                    execute command PaymentRetrievalAccepted4::class by {
-                                        PaymentRetrievalAccepted4("1", 25f)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+//                execute all {
+//                    execute command PaymentRetrievalAccepted::class by {
+//                        PaymentRetrievalAccepted("1", 25f)
+//                    }
+//
+//                } and {
+//                    execute command PaymentRetrievalAccepted2::class by {
+//                        PaymentRetrievalAccepted2("1", 25f)
+//                    }
+//
+//                    execute all {
+//                        execute command PaymentRetrievalAccepted3::class by {
+//                            PaymentRetrievalAccepted3("1", 25f)
+//                        }
+//
+//                    } and {
+//                        execute command PaymentRetrievalAccepted4::class by {
+//                            PaymentRetrievalAccepted4("1", 25f)
+//                        }
+//                    } and {
+//                        execute command PaymentRetrievalAccepted5::class by {
+//                            PaymentRetrievalAccepted5("1", 25f)
+//                        }
+//
+//                        execute all {
+//                            execute command PaymentRetrievalAccepted3::class by {
+//                                PaymentRetrievalAccepted3("1", 25f)
+//                            }
+//
+//                        } and {
+//                            execute command PaymentRetrievalAccepted4::class by {
+//                                PaymentRetrievalAccepted4("1", 25f)
+//                            }
+//                        } and {
+//                            execute command PaymentRetrievalAccepted5::class by {
+//                                PaymentRetrievalAccepted5("1", 25f)
+//                            }
+//
+//                            select either {
+//                                given("Yes") condition { true }
+//
+//                                execute command PaymentRetrievalAccepted::class by {
+//                                    PaymentRetrievalAccepted("1", 25f)
+//                                }
+//                            } or {
+//                                given("Yes") condition { true }
+//
+//                                execute command PaymentRetrievalAccepted3::class by {
+//                                    PaymentRetrievalAccepted3("1", 25f)
+//                                }
+//
+//                                execute all {
+//                                    execute command PaymentRetrievalAccepted3::class by {
+//                                        PaymentRetrievalAccepted3("1", 25f)
+//                                    }
+//
+//                                } and {
+//                                    execute command PaymentRetrievalAccepted4::class by {
+//                                        PaymentRetrievalAccepted4("1", 25f)
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
 
                 execute command PaymentRetrievalAccepted6::class by {
                     PaymentRetrievalAccepted6("1", 25f)

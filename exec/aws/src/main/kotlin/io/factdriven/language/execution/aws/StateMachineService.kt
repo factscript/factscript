@@ -13,6 +13,7 @@ import com.amazonaws.services.stepfunctions.model.CreateStateMachineRequest
 import com.amazonaws.services.stepfunctions.model.StartExecutionRequest
 import com.amazonaws.services.stepfunctions.model.StateMachineAlreadyExistsException
 import com.amazonaws.services.stepfunctions.model.UpdateStateMachineRequest
+import io.factdriven.language.execution.aws.lambda.LambdaInitializationContext
 
 class StateMachineService {
     fun createDummyStateMachineDefinition() : StateMachine {
@@ -37,7 +38,7 @@ class StateMachineService {
                 .build()
     }
 
-    fun createOrUpdateStateMachine(name: String, stateMachine: StateMachine) : String? {
+    fun createOrUpdateStateMachine(lambdaInitializationContext: LambdaInitializationContext, stateMachine: StateMachine) : String? {
         val client = createClient()
         val updateArn: String?
         val stepFunctionRoleArn = System.getenv("STEP_FUNCTION_ROLE_ARN")
@@ -45,7 +46,7 @@ class StateMachineService {
 
         try {
             val resultCreate = client.createStateMachine(CreateStateMachineRequest()
-                    .withName(name)
+                    .withName(lambdaInitializationContext.stateMachine.name)
                     .withRoleArn(stepFunctionRoleArn)
                     .withDefinition(stateMachine))
 

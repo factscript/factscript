@@ -11,7 +11,7 @@ open class FlowTranslator {
     companion object {
         fun translate(flow: Flow) : StateMachine {
             val stateMachineBuilder =  StepFunctionBuilder.stateMachine()
-            val translationContext = TranslationContext(SequentialTransitionStrategy(), StateMachineBuilder(stateMachineBuilder))
+            val translationContext = TranslationContext.of(LambdaFunction("PaymentRetrieval"), SequentialTransitionStrategy(), StateMachineBuilder(stateMachineBuilder))
             FlowTranslator().translateGraph(translationContext, flow)
             return stateMachineBuilder.build()
         }
@@ -42,8 +42,8 @@ open class FlowTranslator {
                 ParallelTranslationStrategy(this),
                 GivenTranslator(this),
                 FlowTranslationStrategy(this),
-                XOrTranslationStrategy(this),
-                OrTranslationStrategy(this),
+                ExclusiveTranslationStrategy(this),
+                InclusiveTranslationStrategy(this),
                 ExecuteTranslationStrategy(this)
         )
     }
