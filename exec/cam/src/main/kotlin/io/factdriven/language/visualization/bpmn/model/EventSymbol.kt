@@ -7,6 +7,7 @@ import io.factdriven.language.visualization.bpmn.diagram.Artefact
 import io.factdriven.language.impl.utils.asLines
 import io.factdriven.language.visualization.bpmn.diagram.Attached
 import io.factdriven.language.visualization.bpmn.diagram.Box
+import io.factdriven.language.visualization.bpmn.diagram.Direction
 import org.camunda.bpm.model.bpmn.instance.*
 
 /**
@@ -93,7 +94,11 @@ class BoundaryEventSymbol(node: Awaiting, parent: Group<out Flow>): EventSymbol<
 
     override fun initDiagram() {
         super.initDiagram()
-        diagram.attachTo((parent.parent as Task).task.diagram as Box)
+        diagram.attachTo(
+            (parent.parent as Task).task.diagram as Box,
+            if ((parent.parent as Task).sequences.indexOf(parent) < 2) Direction.South else Direction.North,
+            if (((parent.parent as Task).sequences.indexOf(parent) % 2) == 1) Direction.East else Direction.West
+        )
     }
 
     override fun initModel() {

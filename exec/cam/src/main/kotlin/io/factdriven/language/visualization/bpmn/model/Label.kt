@@ -35,7 +35,10 @@ class Label(node: Node, parent: Element<*, out BaseElement>): Element<Node, Bpmn
 
         } else when {
 
-            parent is BoundaryEventSymbol -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6 west (node.label.toLines().maxBy { it.length }!!.length * 3)
+            parent is BoundaryEventSymbol && parent.labelIndex() == 0 && parent.numberOfBoundaries() > 1 -> parent.diagram.raw.position + parent.diagram.raw.south east 9 south 18 east (node.label.toLines().maxBy { it.length }!!.length * 3) north ((node.label.toLines().size - 1) * 13 + 18)
+            parent is BoundaryEventSymbol && parent.labelIndex() == 0 -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6 west (node.label.toLines().maxBy { it.length }!!.length * 3)
+            parent is BoundaryEventSymbol && parent.labelIndex() == 1 -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6 west (node.label.toLines().maxBy { it.length }!!.length * 3)
+            parent is BoundaryEventSymbol && parent.labelIndex() == 2 -> parent.diagram.raw.position + parent.diagram.raw.north west parent.diagram.raw.dimension.width / 2 east 7 south 6 west (node.label.toLines().maxBy { it.length }!!.length * 3) north ((node.label.toLines().size - 1) * 13 + 18)
             parent is EventSymbol -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6
             parent is TaskSymbol -> parent.diagram.raw.position west 6 south 6
             parent is GatewaySymbol && parent.parent is Branch && (parent.parent as Branch).needsSouthLabel() -> parent.diagram.raw.position south parent.diagram.raw.dimension.height south 6 east 14
@@ -61,6 +64,14 @@ class Label(node: Node, parent: Element<*, out BaseElement>): Element<Node, Bpmn
 
     }
 
+}
+
+fun BoundaryEventSymbol.labelIndex(): Int {
+    return (parent.parent as? Task)?.sequences?.indexOf(parent) ?: 0
+}
+
+fun BoundaryEventSymbol.numberOfBoundaries(): Int {
+    return (parent.parent as? Task)?.sequences?.size ?: 0
 }
 
 fun Branch.needsAdaptedLabel(): Boolean {

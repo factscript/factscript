@@ -40,12 +40,13 @@ open class CallingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun but(path: AwaitingExecution<T>.() -> Unit) {
+    override fun but(path: AwaitingExecution<T>.() -> Unit): ExecuteBut<T> {
         val flow = AwaitingExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)
         children.add(flow)
+        return this
     }
 
     override fun findReceptorsFor(message: Message): List<Receptor> {

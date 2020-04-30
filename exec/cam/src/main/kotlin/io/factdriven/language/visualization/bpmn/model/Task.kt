@@ -2,6 +2,7 @@ package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.*
 import io.factdriven.language.visualization.bpmn.diagram.*
+import java.lang.IllegalArgumentException
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -16,7 +17,7 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
     override val diagram: Container = Container(36)
     override val elements: List<Element<*, *>>
 
-    private val sequences get() = elements.filterIsInstance<Sequence>()
+    internal val sequences get() = elements.filterIsInstance<Sequence>()
 
     override val conditional: Conditional? get() = null
 
@@ -35,9 +36,11 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
 
     override fun initDiagram() {
         task.diagram.westEntryOf(diagram)
-        sequences.forEach {
-            it.diagram.southOf(task.diagram)
-        }
+        assert(sequences.size <= 3) { "More than three boundary events are not supported for tasks." }
+        sequences.getOrNull(0)?.diagram?.southOf(task.diagram)
+        sequences.getOrNull(1)?.diagram?.southOf(sequences[0].diagram)
+        sequences.getOrNull(2)?.diagram?.northOf(task.diagram)
+        // sequences.getOrNull(3)?.diagram?.northOf(sequences[2].diagram) TODO()
         task.diagram.eastEntryOf(diagram)
     }
 
