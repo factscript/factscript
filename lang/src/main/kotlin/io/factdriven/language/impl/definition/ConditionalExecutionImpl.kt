@@ -29,6 +29,6 @@ class ConditionalExecutionImpl<T:Any> (entity: KClass<T>, override val parent: N
         }
 
     override val condition: (Any.() -> Boolean)? get() = find(Conditional::class)?.condition
-    override val isDefault: Boolean get() = condition == null
+    override fun isDefault(): Boolean = condition == null
 
 }

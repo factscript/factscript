@@ -12,7 +12,7 @@ import kotlin.reflect.KClass
  */
 open class TriggeredExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
 
-    TriggeredExecution<T>,
+    PromisingExecution<T>,
 
     Flow,
     NodeImpl(parent, entity)
@@ -28,14 +28,14 @@ open class TriggeredExecutionImpl<T:Any>(entity: KClass<T>, override val parent:
 
     override val emit: Emit<T>
         get() {
-            val child = ThrowingImpl<T>(this)
+            val child = ThrowingImpl<T, Any>(this)
             children.add(child)
             return child
         }
 
     override val issue: Issue<T>
         get() {
-            val child = ThrowingImpl<T>(this)
+            val child = ThrowingImpl<T, Any>(this)
             children.add(child)
             return child
         }

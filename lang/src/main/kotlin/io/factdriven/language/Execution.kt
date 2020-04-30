@@ -25,7 +25,14 @@ interface Execution<T: Any>: Flow {
 @FlowLanguage
 interface TriggeredExecution<T:Any>: Execution<T> {
 
-    val on: On<T>
+    val on: Await<T>
+
+}
+
+@FlowLanguage
+interface PromisingExecution<T:Any>: TriggeredExecution<T> {
+
+    override val on: On<T>
 
 }
 

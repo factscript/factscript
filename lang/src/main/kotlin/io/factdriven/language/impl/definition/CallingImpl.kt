@@ -1,38 +1,51 @@
 package io.factdriven.language.impl.definition
 
-import io.factdriven.language.Flows
 import io.factdriven.language.definition.Calling
 import io.factdriven.language.definition.Gateway
 import io.factdriven.language.definition.Node
 import io.factdriven.language.definition.Promising
 import io.factdriven.execution.Message
 import io.factdriven.execution.Receptor
-import io.factdriven.language.Execute
-import io.factdriven.language.ExecuteAnd
-import io.factdriven.language.Execution
-import io.factdriven.language.Sentence
+import io.factdriven.language.*
 import kotlin.reflect.KClass
 
 open class CallingImpl<T: Any>(parent: Node):
 
     Execute<T>,
-    Sentence<T, Any>,
+    ExecuteBut<T>,
+    ExecuteBy<T, Any>,
     Calling,
-    ThrowingImpl<T>(parent)
+    ThrowingImpl<T, ExecuteBut<T>>(parent)
 
 {
 
-    override val catching: KClass<*> get() = Flows.get(handling = throwing).find(nodeOfType = Promising::class)!!.succeeding!!
+    override val catching: KClass<*> get() = succeeding
+    override val succeeding: KClass<*> get() = Flows.get(handling = throwing).find(Promising::class)!!.succeeding!!
+    override val failing: List<KClass<*>> get() = Flows.get(handling = throwing).find(Promising::class)!!.failing
 
+    @Suppress("UNCHECKED_CAST")
     override fun all(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
         val branch = BranchingImpl<T>(parent!!)
         branch.gateway = Gateway.Parallel
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        @Suppress("UNCHECKED_CAST")
         val flow = TriggeredExecutionImpl(entity as KClass<T>, branch).apply(path)
         (branch as NodeImpl).children.add(flow)
         return branch
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <M : Any> command(type: KClass<M>): ExecuteBy<T, M> {
+        return super.command(type) as ExecuteBy<T, M>
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun but(path: TriggeredExecution<T>.() -> Unit) {
+        val flow = TriggeredExecutionImpl(
+            entity as KClass<T>,
+            this
+        ).apply(path)
+        children.add(flow)
     }
 
     override fun findReceptorsFor(message: Message): List<Receptor> {

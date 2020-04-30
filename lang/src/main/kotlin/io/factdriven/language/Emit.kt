@@ -11,7 +11,7 @@ interface Emit<T: Any>: EmitEvent<T>
 @FlowLanguage
 interface EmitEvent<T: Any> {
 
-    infix fun <M: Any> event(type: KClass<M>): Sentence<T, M>
+    infix fun <M: Any> event(type: KClass<M>): By<T, M>
 
 }
 

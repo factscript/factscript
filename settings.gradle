@@ -2,9 +2,11 @@ enableFeaturePreview('IMPROVED_POM_SUPPORT')
 
 rootProject.name = 'factdriven'
 include 'lang'
-include 'camunda'
-project(':camunda').projectDir = new File('exec/camunda')
-include 'camunda-demo'
-project(':camunda-demo').projectDir = new File('demo/camunda')
+include 'cam'
+project(':cam').projectDir = new File('exec/cam')
+include 'cam-demo'
+project(':cam-demo').projectDir = new File('demo/cam')
 include 'aws'
 project(':aws').projectDir = new File('exec/aws')
+include 'aws-demo'
+project(':aws-demo').projectDir = new File('demo/aws')

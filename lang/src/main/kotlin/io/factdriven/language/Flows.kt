@@ -21,12 +21,12 @@ object Flows {
         return result
     }
 
-    fun <T: Any> register(flow: TriggeredExecution<T>): Flow {
+    fun <T: Any> register(flow: PromisingExecution<T>): Flow {
         flows[flow.entity] = flow
         return flow
     }
 
-    inline fun <reified T: Any> register(type: KClass<T> = T::class, flow: TriggeredExecution<T>.() -> Unit): Flow {
+    inline fun <reified T: Any> register(type: KClass<T> = T::class, flow: PromisingExecution<T>.() -> Unit): Flow {
         val definition = TriggeredExecutionImpl(type).apply(flow)
         register(definition)
         return definition
@@ -59,6 +59,6 @@ object Flows {
 
 }
 
-inline fun <reified T: Any> flow(type: KClass<T> = T::class, flow: TriggeredExecution<T>.() -> Unit): Flow {
+inline fun <reified T: Any> flow(type: KClass<T> = T::class, flow: PromisingExecution<T>.() -> Unit): Flow {
     return Flows.register(type, flow)
 }

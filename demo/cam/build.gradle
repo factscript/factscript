@@ -1,0 +1,86 @@
+buildscript {
+    ext {
+        kotlinVersion = '1.3.10'
+        springBootVersion = '2.1.2.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
+        classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
+    }
+}
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.10'
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-spring'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group 'factdriven'
+version '1.0.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+def isEe = project.hasProperty("buildProfile") ? buildProfile == "ee" : false
+
+repositories {
+    mavenCentral()
+    if (isEe) {
+        maven {
+            credentials {
+                username = camundaUser
+                password = camundaPassword
+            }
+            url "https://app.camunda.com/nexus/content/repositories/camunda-bpm-ee"
+        }
+    }
+}
+
+dependencies {
+
+    compile project(':cam')
+
+    if (isEe){
+        println "using ee dependencies"
+
+        // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-bom
+        implementation group: 'org.camunda.bpm', name: 'camunda-bom', version: '7.12.0-ee', ext: 'pom'
+
+        // https://mvnrepository.com/artifact/org.camunda.bpm.springboot/camunda-bpm-spring-boot-starter-webapp-ee
+        compile group: 'org.camunda.bpm.springboot', name: 'camunda-bpm-spring-boot-starter-webapp-ee', version: '3.2.1'
+    } else {
+        println "using ce dependencies"
+
+        // https://mvnrepository.com/artifact/org.camunda.bpm/camunda-bom
+        implementation group: 'org.camunda.bpm', name: 'camunda-bom', version: '7.12.0', ext: 'pom'
+
+        // https://mvnrepository.com/artifact/org.camunda.bpm.springboot/camunda-bpm-spring-boot-starter-webapp
+        compile group: 'org.camunda.bpm.springboot', name: 'camunda-bpm-spring-boot-starter-webapp', version: '3.2.1'
+    }
+    // https://mvnrepository.com/artifact/com.h2database/h2
+    compile group: 'com.h2database', name: 'h2', version: '1.4.197'
+
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+    }
+}
