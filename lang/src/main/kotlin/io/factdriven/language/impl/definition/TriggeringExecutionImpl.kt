@@ -10,9 +10,10 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-open class TriggeredExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
+open class TriggeringExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
 
     PromisingExecution<T>,
+    ExceptionalExecution<T>,
 
     Flow,
     NodeImpl(parent, entity)

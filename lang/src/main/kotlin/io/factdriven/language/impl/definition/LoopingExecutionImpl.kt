@@ -15,7 +15,7 @@ class LoopingExecutionImpl<T:Any> (entity: KClass<T>, override val parent: Node?
     LoopingExecution<T>,
 
     Looping,
-    TriggeredExecutionImpl<T>(entity, parent)
+    TriggeringExecutionImpl<T>(entity, parent)
 
 {
 

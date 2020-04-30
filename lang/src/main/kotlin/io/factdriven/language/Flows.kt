@@ -6,7 +6,7 @@ import io.factdriven.execution.Message
 import io.factdriven.execution.Receptor
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
-import io.factdriven.language.impl.definition.TriggeredExecutionImpl
+import io.factdriven.language.impl.definition.TriggeringExecutionImpl
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
@@ -27,7 +27,7 @@ object Flows {
     }
 
     inline fun <reified T: Any> register(type: KClass<T> = T::class, flow: PromisingExecution<T>.() -> Unit): Flow {
-        val definition = TriggeredExecutionImpl(type).apply(flow)
+        val definition = TriggeringExecutionImpl(type).apply(flow)
         register(definition)
         return definition
     }

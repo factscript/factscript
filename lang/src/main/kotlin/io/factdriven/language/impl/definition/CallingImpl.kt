@@ -29,7 +29,7 @@ open class CallingImpl<T: Any>(parent: Node):
         branch.gateway = Gateway.Parallel
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        val flow = TriggeredExecutionImpl(entity as KClass<T>, branch).apply(path)
+        val flow = TriggeringExecutionImpl(entity as KClass<T>, branch).apply(path)
         (branch as NodeImpl).children.add(flow)
         return branch
     }
@@ -40,8 +40,8 @@ open class CallingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun but(path: TriggeredExecution<T>.() -> Unit) {
-        val flow = TriggeredExecutionImpl(
+    override fun but(path: ExceptionalExecution<T>.() -> Unit) {
+        val flow = TriggeringExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)

@@ -7,7 +7,7 @@ import org.camunda.bpm.model.bpmn.instance.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-abstract class TaskSymbol<IN: Node, OUT: Task>(node: IN, parent: Group<out Flow>): Symbol<IN, OUT>(node, parent) {
+abstract class TaskSymbol<IN: Node, OUT: org.camunda.bpm.model.bpmn.instance.Task>(node: IN, parent: Group<*>): Symbol<IN, OUT>(node, parent) {
 
     override val diagram: Artefact = Artefact(100, 80, 18)
 
@@ -21,7 +21,7 @@ abstract class TaskSymbol<IN: Node, OUT: Task>(node: IN, parent: Group<out Flow>
 
 }
 
-class ServiceTaskSymbol(node: Calling, parent: Group<out Flow>): TaskSymbol<Calling, ServiceTask>(node, parent) {
+class ServiceTaskSymbol(node: Calling, parent: Group<*>): TaskSymbol<Calling, ServiceTask>(node, parent) {
 
     override val model = process.model.newInstance(ServiceTask::class.java)
 
@@ -36,7 +36,7 @@ class ServiceTaskSymbol(node: Calling, parent: Group<out Flow>): TaskSymbol<Call
 
 }
 
-class SendTaskSymbol(node: Throwing, parent: Group<out Flow>): TaskSymbol<Throwing, SendTask>(node, parent) {
+class SendTaskSymbol(node: Throwing, parent: Group<*>): TaskSymbol<Throwing, SendTask>(node, parent) {
 
     override val model = process.model.newInstance(SendTask::class.java)
 
@@ -50,7 +50,7 @@ class SendTaskSymbol(node: Throwing, parent: Group<out Flow>): TaskSymbol<Throwi
 
 }
 
-class ReceiveTaskSymbol(node: Catching, parent: Group<out Flow>): TaskSymbol<Catching, ReceiveTask>(node, parent) {
+class ReceiveTaskSymbol(node: Catching, parent: Group<*>): TaskSymbol<Catching, ReceiveTask>(node, parent) {
 
     override val model = process.model.newInstance(ReceiveTask::class.java)
 

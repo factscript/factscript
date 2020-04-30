@@ -37,6 +37,9 @@ interface PromisingExecution<T:Any>: TriggeredExecution<T> {
 }
 
 @FlowLanguage
+interface ExceptionalExecution<T:Any>: TriggeredExecution<T>
+
+@FlowLanguage
 interface ConditionalExecution<T: Any>: Execution<T> {
 
     val given: Given<T>

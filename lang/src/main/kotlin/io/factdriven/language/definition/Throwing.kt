@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
  */
 interface Throwing: Node, Terminable {
 
-    val throwing: KClass<*>
+    val throwing: KClass<out Any>
     val instance: Any.() -> Any
 
 }

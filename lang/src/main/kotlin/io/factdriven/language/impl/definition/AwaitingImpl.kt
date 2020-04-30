@@ -22,7 +22,7 @@ open class AwaitingImpl<T: Any>(parent: Node):
 
 {
 
-    override lateinit var catching: KClass<*>
+    override lateinit var catching: KClass<out Any>
     override val properties = mutableListOf<String>()
     override val matching = mutableListOf<Any.() -> Any?>()
 
@@ -49,7 +49,7 @@ open class AwaitingImpl<T: Any>(parent: Node):
         branch.gateway = Gateway.Catching
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        val flow = TriggeredExecutionImpl(
+        val flow = TriggeringExecutionImpl(
             entity as KClass<T>,
             branch
         ).apply(path)

@@ -5,7 +5,6 @@ import io.factdriven.language.ConditionalExecution
 import io.factdriven.language.Given
 import io.factdriven.language.definition.Conditional
 import io.factdriven.language.definition.ConditionalFlow
-import io.factdriven.language.impl.utils.asType
 import kotlin.reflect.KClass
 
 /**
@@ -17,7 +16,7 @@ class ConditionalExecutionImpl<T:Any> (entity: KClass<T>, override val parent: N
     ConditionalExecution<T>,
 
     ConditionalFlow,
-    TriggeredExecutionImpl<T>(entity, parent)
+    TriggeringExecutionImpl<T>(entity, parent)
 
 {
 
