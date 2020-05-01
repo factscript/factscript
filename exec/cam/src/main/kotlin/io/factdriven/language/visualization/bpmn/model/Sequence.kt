@@ -17,8 +17,8 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
     override val elements: List<Element<*,*>> = node.children.mapNotNull {
         when (it) {
             is Promising -> CatchingEventSymbol(it, this)
-            is Awaiting -> if (it.isFailing()) BoundaryEventSymbol(it, this) else CatchingEventSymbol(it, this)
-            is Catching -> Task(it, this)
+            is ConsumingEvent -> if (it.isFailing()) BoundaryEventSymbol(it, this) else CatchingEventSymbol(it, this)
+            is Consuming -> Task(it, this)
             is Throwing -> if (it.isFinish() || !it.isContinuing()) ThrowingEventSymbol(it, this) else Task(it, this)
             is Branching -> Branch(it, this)
             is Looping -> Loop(it, this)

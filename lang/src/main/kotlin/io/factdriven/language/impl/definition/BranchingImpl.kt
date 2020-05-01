@@ -20,7 +20,7 @@ open class BranchingImpl<T: Any>(parent: Node):
 {
 
     override lateinit var gateway: Gateway
-    override var label: String = ""; protected set
+    override var description: String = ""; protected set
 
     override val type: Type
         get() = Type(
@@ -70,7 +70,7 @@ open class BranchingImpl<T: Any>(parent: Node):
     }
 
     override fun invoke(case: String): Select<T> {
-        this.label = case
+        this.description = case
         return this
     }
 

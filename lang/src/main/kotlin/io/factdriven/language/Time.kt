@@ -6,6 +6,9 @@ import java.time.LocalDateTime
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLanguage
+interface Time<T: Any>: TimeCycle<T>, TimeDuration<T>, TimeLimit<T>
+
+@FlowLanguage
 interface AwaitTime<T: Any> {
 
     infix fun time (cycle: AwaitTimeCycle<T>): AwaitTimeCycleFromLimitTimes<T>
@@ -13,9 +16,6 @@ interface AwaitTime<T: Any> {
     infix fun time (limit: AwaitTimeLimit<T>)
 
 }
-
-@FlowLanguage
-interface Time<T: Any>: TimeCycle<T>, TimeDuration<T>, TimeLimit<T>
 
 @FlowLanguage
 interface TimeCycle<T: Any> {
@@ -42,28 +42,18 @@ interface TimeLimit<T: Any> {
 }
 
 @FlowLanguage
-interface AwaitTimeCycle<T>: AwaitTimeFrom<T, Unit>
+interface AwaitTimeCycle<T>
 
 @FlowLanguage
-interface AwaitTimeDuration<T>: AwaitTimeFrom<T, Unit>
+interface AwaitTimeDuration<T>
 
 @FlowLanguage
 interface AwaitTimeLimit<T>
 
 @FlowLanguage
-interface AwaitTimeCycleFromLimitTimes<T>: AwaitTimeFrom<T, AwaitTimeCycleLimitTimes<T>>, AwaitTimeCycleLimit<T, AwaitTimeCycleFromTimes<T>>,
-    AwaitTimeCycleTimes<T, AwaitTimeCycleFromLimit<T>>
+interface AwaitTimeCycleFromLimitTimes<T>: AwaitTimeFrom<T, AwaitTimeCycleFromLimitTimes<T>>, AwaitTimeCycleLimit<T, AwaitTimeCycleFromLimitTimes<T>>,
+    AwaitTimeCycleTimes<T, AwaitTimeCycleFromLimitTimes<T>>
 
-@FlowLanguage
-interface AwaitTimeCycleFromTimes<T>: AwaitTimeFrom<T, AwaitTimeCycleTimes<T, Unit>>, AwaitTimeCycleTimes<T, AwaitTimeFrom<T, Unit>>
-
-@FlowLanguage
-interface AwaitTimeCycleFromLimit<T>: AwaitTimeFrom<T, AwaitTimeCycleLimit<T, Unit>>, AwaitTimeCycleLimit<T, AwaitTimeFrom<T, Unit>>
-
-@FlowLanguage
-interface AwaitTimeCycleLimitTimes<T>: AwaitTimeCycleTimes<T, AwaitTimeCycleLimit<T, Unit>>, AwaitTimeCycleLimit<T, AwaitTimeCycleTimes<T, Unit>>
-
-@FlowLanguage
 interface AwaitTimeFrom<T,O> {
 
     infix fun from(date: T.() -> LocalDateTime): O

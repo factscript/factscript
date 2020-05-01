@@ -26,15 +26,15 @@ class CreditCardChargeTest {
 
         val on = definition.children[0] as Promising
         assertEquals(CreditCardCharge::class, on.entity)
-        assertEquals(ChargeCreditCard::class, on.catching)
+        assertEquals(ChargeCreditCard::class, on.consuming)
         assertEquals(CreditCardCharged::class, on.succeeding)
         assertEquals(1, on.failing.size)
         assertEquals(CreditCardExpired::class, on.failing.first())
         assertEquals(definition, on.parent)
 
-        val await = definition.children[1] as Awaiting
+        val await = definition.children[1] as ConsumingEvent
         assertEquals(CreditCardCharge::class, await.entity)
-        assertEquals(CreditCardGatewayConfirmationReceived::class, await.catching)
+        assertEquals(CreditCardGatewayConfirmationReceived::class, await.consuming)
         assertEquals(1, await.matching.size)
         assertEquals("1234432112344321", await.matching.first().invoke(instance))
         assertEquals(1, await.properties.size)
@@ -44,7 +44,7 @@ class CreditCardChargeTest {
         val branching = definition.children[2] as Branching
         assertEquals(CreditCardCharge::class, branching.entity)
         assertEquals(Gateway.Exclusive, branching.gateway)
-        assertEquals("Credit card expired?", branching.label)
+        assertEquals("Credit card expired?", branching.description)
 
         assertEquals(2, branching.children.size)
 

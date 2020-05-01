@@ -19,11 +19,11 @@ abstract class GatewaySymbol<OUT: Gateway>(node: Node, parent: Group<out Node>):
         if (parent.elements.indexOf(this) == 0) {
             model.setAttributeValue("id", model.getAttributeValue("id") + "${positionSeparator}Fork", false)
             if (parent is Branch)
-                model.setAttributeValue("name", node.label.asLines(), false)
+                model.setAttributeValue("name", node.description.asLines(), false)
         } else {
             model.setAttributeValue("id", model.getAttributeValue("id") + "${positionSeparator}Join", false)
             if (parent is Loop)
-                model.setAttributeValue("name", node.label.asLines(), false)
+                model.setAttributeValue("name", node.description.asLines(), false)
         }
     }
 

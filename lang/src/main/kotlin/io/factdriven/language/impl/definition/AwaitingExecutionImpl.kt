@@ -23,8 +23,8 @@ open class AwaitingExecutionImpl<T:Any>(entity: KClass<T>, override val parent: 
             return child
         }
 
-    override val catching: KClass<*> get() = find(Catching::class)!!.catching
-    override val matching: List<Any.() -> Any?> get() = find(Awaiting::class)!!.matching
-    override val properties: List<String> get() = find(Awaiting::class)!!.properties
+    override val consuming: KClass<*> get() = find(Consuming::class)!!.consuming
+    override val matching: List<Any.() -> Any?> get() = find(ConsumingEvent::class)!!.matching
+    override val properties: List<String> get() = find(ConsumingEvent::class)!!.properties
 
 }

@@ -1,7 +1,7 @@
 package io.factdriven.language.definition.start_and_end_event
 
 import io.factdriven.language.Flows
-import io.factdriven.language.definition.Catching
+import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Throwing
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -20,9 +20,9 @@ class PaymentRetrievalTest {
         Assertions.assertEquals(PaymentRetrieval::class, definition.entity)
         Assertions.assertEquals(2, definition.children.size)
 
-        val on = definition.find(nodeOfType = Catching::class, dealingWith = RetrievePayment::class)
+        val on = definition.find(nodeOfType = Consuming::class, dealingWith = RetrievePayment::class)
         Assertions.assertEquals(PaymentRetrieval::class, on?.entity)
-        Assertions.assertEquals(RetrievePayment::class, on?.catching)
+        Assertions.assertEquals(RetrievePayment::class, on?.consuming)
         Assertions.assertEquals(definition, on?.parent)
 
         val emit = definition.find(nodeOfType = Throwing::class, dealingWith = PaymentRetrieved::class)

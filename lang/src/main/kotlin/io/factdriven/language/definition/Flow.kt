@@ -7,4 +7,4 @@ interface Flow: Node, Reporting
 
 interface ConditionalFlow: Flow, Conditional
 
-interface AwaitingFlow: Flow, Awaiting
+interface AwaitingFlow: Flow, ConsumingEvent

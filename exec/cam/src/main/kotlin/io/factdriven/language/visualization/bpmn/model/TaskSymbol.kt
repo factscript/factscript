@@ -15,7 +15,7 @@ abstract class TaskSymbol<IN: Node, OUT: org.camunda.bpm.model.bpmn.instance.Tas
 
         super.initModel()
 
-        model.setAttributeValue("name", node.label, false)
+        model.setAttributeValue("name", node.description, false)
 
     }
 
@@ -50,7 +50,7 @@ class SendTaskSymbol(node: Throwing, parent: Group<*>): TaskSymbol<Throwing, Sen
 
 }
 
-class ReceiveTaskSymbol(node: Catching, parent: Group<*>): TaskSymbol<Catching, ReceiveTask>(node, parent) {
+class ReceiveTaskSymbol(node: Consuming, parent: Group<*>): TaskSymbol<Consuming, ReceiveTask>(node, parent) {
 
     override val model = process.model.newInstance(ReceiveTask::class.java)
 

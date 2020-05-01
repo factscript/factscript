@@ -44,8 +44,9 @@ object Flows {
 
     fun find(type: KClass<*>? = null, handling: KClass<*>? = null, reporting: KClass<*>? = null): Flow? {
         type?.companionObjectInstance
+        val flows = flows
         val result =  flows.values.filter { definition ->
-            (definition.entity == type || type == null) && definition.children.any { it is Promising && (it.catching == handling || handling == null) && (it.succeeding == reporting || it.failing.contains(reporting) || reporting == null) }
+            (definition.entity == type || type == null) && ((handling == null && reporting == null) || (definition.children.any { it is Promising && (it.consuming == handling || handling == null) && (it.succeeding == reporting || it.failing.contains(reporting) || reporting == null) }))
         }
         return result.firstOrNull()
     }

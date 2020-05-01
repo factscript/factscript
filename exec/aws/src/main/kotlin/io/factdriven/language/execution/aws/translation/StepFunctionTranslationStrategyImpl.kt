@@ -192,9 +192,9 @@ class GivenTranslator(flowTranslator: FlowTranslator) : StepFunctionTranslationS
 
 fun toStateName(prefix: String?, node: Node) : String{
     if(prefix != null){
-        return "$prefix-${node.label}-${node.id}"
+        return "$prefix-${node.description}-${node.id}"
     }
-    return "${node.label}-${node.id}"
+    return "${node.description}-${node.id}"
 }
 
 fun toStateName(node: Node) : String{

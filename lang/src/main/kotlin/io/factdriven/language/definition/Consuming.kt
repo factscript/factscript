@@ -1,6 +1,12 @@
 package io.factdriven.language.definition
 
+import kotlin.reflect.KClass
+
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Calling: Throwing, Consuming, Succeeding, Failing
+interface Consuming : Catching {
+
+    val consuming: KClass<*>
+
+}

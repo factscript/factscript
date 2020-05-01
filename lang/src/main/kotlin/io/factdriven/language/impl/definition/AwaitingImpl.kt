@@ -7,7 +7,6 @@ import io.factdriven.execution.type
 import io.factdriven.language.impl.utils.getValue
 import io.factdriven.language.*
 import io.factdriven.language.definition.*
-import io.factdriven.language.impl.utils.asType
 import kotlin.reflect.KClass
 
 open class AwaitingImpl<T: Any>(parent: Node):
@@ -16,19 +15,19 @@ open class AwaitingImpl<T: Any>(parent: Node):
     AwaitEventHaving<T>,
     AwaitEventHavingMatch<T>,
 
-    Awaiting,
+    ConsumingEvent,
     NodeImpl(parent)
 
 {
 
-    override lateinit var catching: KClass<out Any>
+    override lateinit var consuming: KClass<out Any>
     override val properties = mutableListOf<String>()
     override val matching = mutableListOf<Any.() -> Any?>()
 
-    override val type: Type get() = catching.type
+    override val type: Type get() = consuming.type
 
     override fun <M : Any> event(type: KClass<M>): AwaitEventHaving<T> {
-        this.catching = type
+        this.consuming = type
         return this
     }
 
@@ -57,22 +56,31 @@ open class AwaitingImpl<T: Any>(parent: Node):
     }
 
     override fun time(cycle: AwaitTimeCycle<T>): AwaitTimeCycleFromLimitTimes<T> {
-        TODO("Not yet implemented")
+        (parent as NodeImpl).children.remove(this)
+        (parent as NodeImpl).children.add(cycle as AwaitingTimeImpl)
+        cycle.parent = parent
+        return cycle
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun time(duration: AwaitTimeDuration<T>): AwaitTimeFrom<T, Unit> {
-        TODO("Not yet implemented")
+        (parent as NodeImpl).children.remove(this)
+        (parent as NodeImpl).children.add(duration as AwaitingTimeImpl)
+        duration.parent = parent
+        return duration as AwaitTimeFrom<T, Unit>
     }
 
     override fun time(limit: AwaitTimeLimit<T>) {
-        TODO("Not yet implemented")
+        (parent as NodeImpl).children.remove(this)
+        (parent as NodeImpl).children.add(limit as AwaitingTimeImpl)
+        limit.parent = parent
     }
 
     override fun findReceptorsFor(message: Message): List<Receptor> {
-        return if (catching.isInstance(message.fact.details))
+        return if (consuming.isInstance(message.fact.details))
             listOf(
                 Receptor(
-                    catching,
+                    consuming,
                     properties.map { it to message.fact.details.getValue(it) }.toMap()
                 )
             )
@@ -80,11 +88,11 @@ open class AwaitingImpl<T: Any>(parent: Node):
     }
 
     override fun isSucceeding(): Boolean {
-        return Flows.find(reporting = catching)?.find(Promising::class)?.succeeding == catching
+        return Flows.find(reporting = consuming)?.find(Promising::class)?.succeeding == consuming
     }
 
     override fun isFailing(): Boolean {
-        return Flows.find(reporting = catching)?.find(Promising::class)?.failing?.contains(catching) == true
+        return Flows.find(reporting = consuming)?.find(Promising::class)?.failing?.contains(consuming) == true
     }
 
 }

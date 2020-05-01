@@ -1,7 +1,7 @@
 package io.factdriven.language.definition.await_event
 
 import io.factdriven.language.Flows
-import io.factdriven.language.definition.Catching
+import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Throwing
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -18,16 +18,16 @@ class CreditCardChargeTest {
         Assertions.assertEquals(CreditCardCharge::class, definition.entity)
         Assertions.assertEquals(3, definition.children.size)
 
-        val on = definition.find(nodeOfType = Catching::class, dealingWith = ChargeCreditCard::class)
+        val on = definition.find(nodeOfType = Consuming::class, dealingWith = ChargeCreditCard::class)
         Assertions.assertEquals(definition.children[0], on)
         Assertions.assertEquals(CreditCardCharge::class, on?.entity)
-        Assertions.assertEquals(ChargeCreditCard::class, on?.catching)
+        Assertions.assertEquals(ChargeCreditCard::class, on?.consuming)
         Assertions.assertEquals(definition, on?.parent)
 
-        val notice = definition.find(nodeOfType = Catching::class, dealingWith = ConfirmationReceived::class)
+        val notice = definition.find(nodeOfType = Consuming::class, dealingWith = ConfirmationReceived::class)
         Assertions.assertEquals(definition.children[1], notice)
         Assertions.assertEquals(CreditCardCharge::class, on?.entity)
-        Assertions.assertEquals(ChargeCreditCard::class, on?.catching)
+        Assertions.assertEquals(ChargeCreditCard::class, on?.consuming)
         Assertions.assertEquals(definition, on?.parent)
 
         val emit = definition.find(nodeOfType = Throwing::class, dealingWith = CreditCardCharged::class)

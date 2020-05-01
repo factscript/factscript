@@ -5,7 +5,6 @@ import io.factdriven.execution.Receptor
 import io.factdriven.language.impl.utils.Id
 import io.factdriven.language.visualization.bpmn.diagram.Artefact
 import io.factdriven.language.impl.utils.asLines
-import io.factdriven.language.visualization.bpmn.diagram.Attached
 import io.factdriven.language.visualization.bpmn.diagram.Box
 import io.factdriven.language.visualization.bpmn.diagram.Direction
 import org.camunda.bpm.model.bpmn.instance.*
@@ -21,13 +20,13 @@ abstract class EventSymbol<IN: Node, OUT: Event>(node: IN, parent: Group<out Flo
 
         super.initModel()
 
-        model.setAttributeValue("name", node.label.asLines(), false)
+        model.setAttributeValue("name", node.description.asLines(), false)
 
     }
 
 }
 
-class CatchingEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<Catching, CatchEvent>(node, parent) {
+class CatchingEventSymbol(node: Consuming, parent: Group<out Flow>): EventSymbol<Consuming, CatchEvent>(node, parent) {
 
     override val model: CatchEvent = process.model.newInstance((if (node.isStart()) StartEvent::class else IntermediateCatchEvent::class).java)
 
@@ -87,7 +86,7 @@ class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>): EventSymbol<
 
 }
 
-class BoundaryEventSymbol(node: Awaiting, parent: Group<out Flow>): EventSymbol<Awaiting, BoundaryEvent>(node, parent) {
+class BoundaryEventSymbol(node: ConsumingEvent, parent: Group<out Flow>): EventSymbol<ConsumingEvent, BoundaryEvent>(node, parent) {
 
     override val model = process.model.newInstance(BoundaryEvent::class.java)
     override val diagram: Artefact = Artefact(36, 36, 36)

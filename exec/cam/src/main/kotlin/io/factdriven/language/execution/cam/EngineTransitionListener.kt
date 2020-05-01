@@ -2,7 +2,7 @@ package io.factdriven.language.execution.cam
 
 import io.factdriven.language.Flows
 import io.factdriven.execution.Messages
-import io.factdriven.language.definition.Awaiting
+import io.factdriven.language.definition.ConsumingEvent
 import io.factdriven.language.definition.Branching
 import io.factdriven.language.definition.Calling
 import io.factdriven.execution.MessageId
@@ -21,7 +21,7 @@ class EngineTransitionListener: ExecutionListener {
 
         val nodeId = target.getValue(execution).toString()
         val handling = when (val node = Flows.get(nodeId).get(nodeId)) {
-            is Awaiting -> mapOf(nodeId to node.endpoint(execution))
+            is ConsumingEvent -> mapOf(nodeId to node.endpoint(execution))
             is Calling -> mapOf(nodeId to node.endpoint(execution))
             is Branching -> node.endpoint(execution)
             else -> emptyMap()
@@ -32,7 +32,7 @@ class EngineTransitionListener: ExecutionListener {
 
     }
 
-    private fun Awaiting.endpoint(execution: DelegateExecution): Receptor {
+    private fun ConsumingEvent.endpoint(execution: DelegateExecution): Receptor {
         val messageString = execution.getVariableTyped<JsonValue>(
             MESSAGES_VAR, false).valueSerialized
         val messages = Messages.fromJson(messageString)
@@ -40,7 +40,7 @@ class EngineTransitionListener: ExecutionListener {
         val details = properties.mapIndexed { propertyIndex, propertyName ->
             propertyName to matching[propertyIndex].invoke(handlerInstance)
         }.toMap()
-        return Receptor(catching, details)
+        return Receptor(consuming, details)
     }
 
     private fun Calling.endpoint(execution: DelegateExecution): Receptor {
@@ -57,11 +57,11 @@ class EngineTransitionListener: ExecutionListener {
         val handlerInstance = Messages.load(messages, entity)
         return children.mapNotNull {
             val awaiting = it.children.first()
-            if (awaiting is Awaiting) {
+            if (awaiting is ConsumingEvent) {
                 val details = awaiting.properties.mapIndexed { propertyIndex, propertyName ->
                     propertyName to awaiting.matching[propertyIndex].invoke(handlerInstance)
                 }.toMap()
-                awaiting.id to Receptor(awaiting.catching, details)
+                awaiting.id to Receptor(awaiting.consuming, details)
             } else null
         }.toMap()
     }

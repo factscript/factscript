@@ -50,7 +50,7 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
         with(bpmnProcess) {
             setAttributeValue("id", node.id, true)
-            setAttributeValue("name", node.label, false)
+            setAttributeValue("name", node.description, false)
             isExecutable = true
             bpmnDefinitions.addChildElement(this)
         }

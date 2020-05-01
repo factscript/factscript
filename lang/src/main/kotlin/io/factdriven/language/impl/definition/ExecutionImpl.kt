@@ -72,27 +72,27 @@ open class ExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = 
     }
 
     override fun cycle(period: T.() -> String): AwaitTimeCycle<T> {
-        TODO("Not yet implemented")
+        return AwaitingTimeImpl(this, period = period, times = { Int.MAX_VALUE } )
     }
 
     override fun cycle(description: String, period: T.() -> String): AwaitTimeCycle<T> {
-        TODO("Not yet implemented")
+        return AwaitingTimeImpl(this, description= description, period = period, times = { Int.MAX_VALUE } )
     }
 
     override fun duration(period: T.() -> String): AwaitTimeDuration<T> {
-        TODO("Not yet implemented")
+        return AwaitingTimeImpl(this, period = period)
     }
 
     override fun duration(description: String, period: T.() -> String): AwaitTimeDuration<T> {
-        TODO("Not yet implemented")
+        return AwaitingTimeImpl(this, description= description, period = period)
     }
 
     override fun limit(date: T.() -> LocalDateTime): AwaitTimeLimit<T> {
-        TODO("Not yet implemented")
+        return AwaitingTimeImpl(this, limit = date)
     }
 
     override fun limit(description: String, date: T.() -> LocalDateTime): AwaitTimeLimit<T> {
-        TODO("Not yet implemented")
+        return AwaitingTimeImpl(this, description = description, limit = date)
     }
 
 }

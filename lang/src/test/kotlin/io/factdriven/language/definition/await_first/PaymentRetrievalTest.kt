@@ -26,15 +26,15 @@ class PaymentRetrievalTest {
 
         val instance = PaymentRetrieval(RetrievePayment(3F))
 
-        val on = definition.children[0] as Catching
+        val on = definition.children[0] as Consuming
         assertEquals(PaymentRetrieval::class, on.entity)
-        assertEquals(RetrievePayment::class, on.catching)
+        assertEquals(RetrievePayment::class, on.consuming)
         assertEquals(definition, on.parent)
 
         val branching = definition.children[1] as Branching
         assertEquals(PaymentRetrieval::class, branching.entity)
         assertEquals(Gateway.Catching, branching.gateway)
-        assertEquals("", branching.label)
+        assertEquals("", branching.description)
         assertEquals(2, branching.children.size)
         assertTrue(Flow::class.isInstance(branching.children[0]))
         assertTrue(Flow::class.isInstance(branching.children[1]))

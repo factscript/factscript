@@ -20,7 +20,7 @@ open class ConditionalImpl<T: Any>(parent: Node):
     override var condition: (Any.() -> Boolean)? = null
     override fun isDefault(): Boolean = condition == null
 
-    override lateinit var label: String internal set
+    override lateinit var description: String internal set
 
     override val type: Type
         get() = Type(
@@ -29,7 +29,7 @@ open class ConditionalImpl<T: Any>(parent: Node):
         )
 
     override fun invoke(case: String): Given<T> {
-        this.label = case
+        this.description = case
         return this
     }
 

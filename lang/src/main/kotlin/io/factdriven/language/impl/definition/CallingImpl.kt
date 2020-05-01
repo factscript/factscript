@@ -19,7 +19,7 @@ open class CallingImpl<T: Any>(parent: Node):
 
 {
 
-    override val catching: KClass<*> get() = succeeding
+    override val consuming: KClass<*> get() = succeeding
     override val succeeding: KClass<*> get() = Flows.find(handling = throwing)!!.find(Promising::class)!!.succeeding!!
     override val failing: List<KClass<*>> get() = Flows.find(handling = throwing)!!.find(Promising::class)!!.failing
 

@@ -110,25 +110,25 @@ class NodeTest {
             .children.first().children.first().forward!!
             .children.first().children.first()
 
-        assertTrue (node is Awaiting)
+        assertTrue (node is ConsumingEvent)
         assertFalse(node.isLastSibling())
         assertFalse(node.isFinish())
 
         node = node.forward!!
 
-        assertTrue (node is Awaiting)
+        assertTrue (node is ConsumingEvent)
         assertTrue (node.isLastSibling())
         assertFalse(node.isFinish())
 
         node = node.forward!!
 
-        assertTrue (node is Awaiting)
+        assertTrue (node is ConsumingEvent)
         assertTrue(node.isLastSibling())
         assertFalse(node.isFinish())
 
         node = node.forward!!
 
-        assertTrue (node is Awaiting)
+        assertTrue (node is ConsumingEvent)
         assertFalse(node.isLastSibling())
         assertFalse(node.isFinish())
 

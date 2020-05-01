@@ -25,14 +25,14 @@ class PaymentRetrievalTest {
 
         val instance = PaymentRetrieval(RetrievePayment(3F))
 
-        val on = definition.children[0] as Catching
+        val on = definition.children[0] as Consuming
         assertEquals(PaymentRetrieval::class, on.entity)
-        assertEquals(RetrievePayment::class, on.catching)
+        assertEquals(RetrievePayment::class, on.consuming)
         assertEquals(definition, on.parent)
 
         val loop = definition.children[1] as Looping
         assertEquals(PaymentRetrieval::class, loop.entity)
-        assertEquals("Payment retrieval", loop.label)
+        assertEquals("Payment retrieval", loop.description)
         assertEquals(2, loop.children.size)
         assertTrue(Calling::class.isInstance(loop.children[0]))
         assertTrue(Conditional::class.isInstance(loop.children[1]))

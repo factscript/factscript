@@ -2,7 +2,6 @@ package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.*
 import io.factdriven.language.visualization.bpmn.diagram.*
-import java.lang.IllegalArgumentException
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -25,7 +24,7 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
 
         task = when (node) {
             is Calling -> ServiceTaskSymbol(node, this)
-            is Awaiting -> ReceiveTaskSymbol(node, this)
+            is ConsumingEvent -> ReceiveTaskSymbol(node, this)
             is Throwing -> SendTaskSymbol(node, this)
             else -> throw IllegalStateException()
         }
