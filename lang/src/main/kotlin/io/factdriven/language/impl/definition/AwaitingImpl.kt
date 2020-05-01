@@ -56,6 +56,18 @@ open class AwaitingImpl<T: Any>(parent: Node):
         return branch
     }
 
+    override fun time(cycle: AwaitTimeCycle<T>): AwaitTimeCycleFromLimitTimes<T> {
+        TODO("Not yet implemented")
+    }
+
+    override fun time(duration: AwaitTimeDuration<T>): AwaitTimeFrom<T, Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override fun time(limit: AwaitTimeLimit<T>) {
+        TODO("Not yet implemented")
+    }
+
     override fun findReceptorsFor(message: Message): List<Receptor> {
         return if (catching.isInstance(message.fact.details))
             listOf(

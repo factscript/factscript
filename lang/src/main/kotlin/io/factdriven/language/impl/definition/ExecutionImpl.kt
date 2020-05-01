@@ -2,6 +2,7 @@ package io.factdriven.language.impl.definition
 
 import io.factdriven.language.*
 import io.factdriven.language.definition.*
+import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
 /**
@@ -68,6 +69,30 @@ open class ExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = 
 
     override fun isFailing(): Boolean {
         return (children.lastOrNull() as? Throwing)?.isFailing() == true
+    }
+
+    override fun cycle(period: T.() -> String): AwaitTimeCycle<T> {
+        TODO("Not yet implemented")
+    }
+
+    override fun cycle(description: String, period: T.() -> String): AwaitTimeCycle<T> {
+        TODO("Not yet implemented")
+    }
+
+    override fun duration(period: T.() -> String): AwaitTimeDuration<T> {
+        TODO("Not yet implemented")
+    }
+
+    override fun duration(description: String, period: T.() -> String): AwaitTimeDuration<T> {
+        TODO("Not yet implemented")
+    }
+
+    override fun limit(date: T.() -> LocalDateTime): AwaitTimeLimit<T> {
+        TODO("Not yet implemented")
+    }
+
+    override fun limit(description: String, date: T.() -> LocalDateTime): AwaitTimeLimit<T> {
+        TODO("Not yet implemented")
     }
 
 }

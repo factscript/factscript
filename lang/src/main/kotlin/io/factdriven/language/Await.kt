@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLanguage
-interface Await<T: Any>: AwaitEvent<T>, AwaitFirst<T>
+interface Await<T: Any>: AwaitEvent<T>, AwaitFirst<T>, AwaitTime<T>
 
 @FlowLanguage
 interface AwaitEvent<T: Any> {

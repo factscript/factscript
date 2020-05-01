@@ -6,7 +6,7 @@ import io.factdriven.language.definition.Flow
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLanguage
-interface Execution<T: Any>: Flow {
+interface Execution<T: Any>: Flow, Time<T> {
 
     val emit: Emit<T>
 
