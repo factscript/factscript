@@ -20,47 +20,24 @@ class Container(val emptyHeight: Int = 0): Box() {
 
     override val allArrows: Set<Arrow> get() = (arrows + contained.map { it.arrows }.flatten()).toSet()
 
-    private var width = -1
-    private var height = -1
+    private var innerDimension: Dimension? = null
 
-    private fun longitudeWidth(): Int {
-        if (width == -1) {
-            width = longitudes.map { if (it is Container) it.innerWidth() else it.dimension.width }.max()!!
-        }
-        return width
+    override fun innerDimension(): Dimension {
+        innerDimension = innerDimension?: Dimension(
+            width = contained.map { box -> (
+                    box.latitudes.map { it.dimension }.sumWidth
+                            + box.latitudes.first().greenwich
+                    )
+            }.max() ?: 0,
+            height = contained.map { box -> (
+                    box.longitudes.map {it.dimension }.sumHeight
+                            - box.longitudes.first().west.y
+                            + box.longitudes.first().equator
+                    )
+            }.max() ?: emptyHeight
+        )
+        return innerDimension!!
     }
-
-    private fun innerWidth(): Int {
-        return contained.map { box -> (
-                box.latitudes.map { it.dimension }.sumWidth
-                + box.latitudes.first().greenwich
-            )
-        }.max() ?: 0
-    }
-
-    private fun latitudeHeight(): Int {
-        if (height == -1) {
-            height = latitudes.map { if (it is Container) it.innerHeight() else it.dimension.height }.max()!!
-        }
-        return height
-    }
-
-    private fun innerHeight(): Int {
-        return contained.map { box -> (
-                box.longitudes.map {it.dimension }.sumHeight
-                - box.longitudes.first().west.y
-                + box.longitudes.first().equator
-            )
-        }.max() ?: emptyHeight
-    }
-
-    override val dimension: Dimension get() = Dimension(
-        longitudeWidth(),
-        max(latitudeHeight() + let {
-            val mostNorthern = allOnTop.firstOrNull() ?: this
-            mostNorthern.west.y - mostNorthern.equator
-        }, innerHeight())
-    )
 
     override val west: Position get() = Position(0, westend?.equator ?: latitudeHeight() / 2)
     override val east: Position get() = Position(longitudeWidth(), eastend?.equator ?: latitudeHeight() / 2)

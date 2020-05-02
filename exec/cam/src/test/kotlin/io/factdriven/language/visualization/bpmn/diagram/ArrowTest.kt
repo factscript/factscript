@@ -203,7 +203,7 @@ class ArrowTest {
         join.eastOf(task)
 
         assertEquals(Position(0, 7), box1.position)
-        assertEquals(Dimension(4, 4), box1.dimension)
+        assertEquals(Dimension(4, 19), box1.dimension)
 
         assertEquals(6, branch.contained.size)
 
@@ -229,7 +229,7 @@ class ArrowTest {
         assertEquals(Dimension(8, 8), join.dimension)
 
         assertEquals(Position(30, 7), box3.position)
-        assertEquals(Dimension(4, 4), box3.dimension)
+        assertEquals(Dimension(4, 19), box3.dimension)
 
         assertEquals(Dimension(34, 26), process.dimension)
 

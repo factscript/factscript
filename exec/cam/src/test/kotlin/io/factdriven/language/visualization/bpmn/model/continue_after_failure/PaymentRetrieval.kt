@@ -26,13 +26,18 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     ChargeCreditCard(id, total)
                 } but {
                     on event CreditCardExpired::class
+                } but {
+                    on event CreditCardExpired::class
+                    execute command ChargeCreditCard::class by {
+                        ChargeCreditCard(id, total)
+                    }
                     emit event PaymentFailed::class by { PaymentFailed() }
                 } but {
                     on event CreditCardExpired::class
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(id, total)
                     }
-//                    emit event PaymentFailed::class by { PaymentFailed() }
+                    emit event PaymentFailed::class by { PaymentFailed() }
                 }
 
                 emit event PaymentRetrieved::class by {

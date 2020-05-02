@@ -1,5 +1,7 @@
 package io.factdriven.language.visualization.bpmn.diagram
 
+import kotlin.math.max
+
 abstract class Box: Space {
 
     var western: Box? = null
@@ -25,13 +27,34 @@ abstract class Box: Space {
         if (!::internalPosition.isInitialized) {
             internalPosition = when {
                 container != null && container!!.westend == this -> container!!.position + container!!.west - west
-                western != null-> (western?.attached?.original ?: western!!.position) + western!!.east - west
+                western != null-> (western?.attached?.original ?: western!!.position) + western!!.west - west + Dimension(western!!.longitudeWidth(), 0)
                 northern != null -> northern!!.position + Dimension(0, northern!!.dimension.height)
                 southern != null -> southern!!.position - Dimension(0, dimension.height)
                 else -> (container?.position ?: Position.Zero) + (container?.west ?: Position(0, equator)) - west
             }
         }
         return internalPosition
+    }
+
+    private var internalDimension: Dimension? = null
+
+    protected fun longitudeWidth(): Int {
+        return longitudes.map { it.innerDimension().width }.max()!!
+    }
+
+    protected fun latitudeHeight(): Int {
+        return latitudes.map { it.innerDimension().height }.max()!!
+    }
+
+    override val dimension: Dimension get() {
+        val internalDimension = internalDimension ?: Dimension(
+            max(longitudeWidth(), innerDimension().width),
+            max(latitudeHeight() + let {
+                val mostNorthern = allOnTop.firstOrNull() ?: this
+                mostNorthern.west.y - mostNorthern.equator
+            }, innerDimension().height)
+        )
+        return internalDimension
     }
 
     fun eastOf(that: Box): Box {
@@ -110,5 +133,7 @@ abstract class Box: Space {
     fun attachTo(box: Box, vararg direction: Direction = emptyArray()) {
         attached = Attached(this, box, direction.asList())
     }
+
+    abstract fun innerDimension(): Dimension
 
 }
