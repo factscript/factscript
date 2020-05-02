@@ -1,6 +1,7 @@
 package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.*
+import io.factdriven.language.impl.utils.asType
 import io.factdriven.language.visualization.bpmn.diagram.*
 
 /**
@@ -8,10 +9,10 @@ import io.factdriven.language.visualization.bpmn.diagram.*
  */
 class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
 
-    internal var task: TaskSymbol<out Node, out org.camunda.bpm.model.bpmn.instance.Task>
+    internal val task: TaskSymbol<out Node, out org.camunda.bpm.model.bpmn.instance.Task>
 
     override val west: Symbol<*, *> get() = task
-    override val east: Symbol<*, *> get() = task
+    override val east: Symbol<*, *> get() = join ?: task
 
     override val diagram: Container = Container(36)
     override val elements: List<Element<*, *>>
@@ -19,6 +20,10 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
     internal val sequences get() = elements.filterIsInstance<Sequence>()
 
     override val conditional: Conditional? get() = null
+
+    private fun hasJoin() = join != null || node.children.count { it.asType<Flow>()?.isContinuing() == true } > 0
+
+    private val join: GatewaySymbol<*>?
 
     init {
 
@@ -29,7 +34,16 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
             else -> throw IllegalStateException()
         }
 
-        elements = listOf(task) + node.children.map { Sequence(it as Flow, this) }
+        join = if (hasJoin()) ExclusiveGatewaySymbol(node, this) else null
+
+        elements = listOf(task) + node.children.map { Sequence(it as Flow, this) }  + listOfNotNull(join)
+
+        if (join != null) {
+            Path(task, join, this, null)
+            sequences.filter { it.node.asType<Flow>()?.isContinuing() == true }.forEach {
+                Path(it, join, it, it.conditional)
+            }
+        }
 
     }
 
@@ -40,7 +54,8 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
         sequences.getOrNull(1)?.diagram?.southOf(sequences[0].diagram)
         sequences.getOrNull(2)?.diagram?.northOf(task.diagram)
         // sequences.getOrNull(3)?.diagram?.northOf(sequences[2].diagram) TODO()
-        task.diagram.eastEntryOf(diagram)
+        join?.diagram?.eastOf(task.diagram)
+            ?: task.diagram.eastEntryOf(diagram)
     }
 
 }

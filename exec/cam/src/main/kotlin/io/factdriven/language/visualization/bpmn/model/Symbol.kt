@@ -22,11 +22,13 @@ abstract class Symbol<IN: Node, OUT: FlowNode>(node: IN, override val parent: Gr
 
     override fun initDiagram() {}
 
+    open val id: String get() = node.id
+
     override fun initModel() {
 
         process.bpmnProcess.addChildElement(model)
 
-        model.setAttributeValue("id", node.id, false)
+        model.setAttributeValue("id", id, false)
 
         val extensionElements = process.model.newInstance(ExtensionElements::class.java)
         model.addChildElement(extensionElements)

@@ -35,7 +35,7 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
     override val elements: List<Element<*,*>> = listOf(fork) + node.children.map { Sequence(it as Flow, this) } + listOfNotNull(join)
 
     override val west: Symbol<*, *> get() = fork
-    override val east: Symbol<*, *> get() = join ?: exit.east ?: fork
+    override val east: Symbol<*, *> get() = join ?: exit.east
 
     init {
         this.branches.mapNotNull { sequence ->
