@@ -62,8 +62,8 @@ class ContainerTest {
 
         assertEquals(Position(0, 2), container.west)
         assertEquals(Position(6, 12), container.east)
-        assertEquals(Position(2, 0), container.north)
-        assertEquals(Position(2, 14), container.south)
+        assertEquals(Position(3, 0), container.north)
+        assertEquals(Position(3, 14), container.south)
 
         assertEquals(Position.Zero, container.position)
         assertEquals(Position(0, 0), box1.position)
@@ -104,6 +104,35 @@ class ContainerTest {
         assertEquals(Position(10, 7), box3.position)
         assertEquals(Position(4, 0), upper.position)
         assertEquals(Position(4, 12), lower.position)
+
+    }
+
+    @Test
+    fun testAnotherMatrix() {
+
+        val container1 = Container()
+
+        val box1 = Artefact(20, 20, 10)
+        val container2 = Container()
+        val box2 = Artefact(20, 20, 10)
+        val box3 = Artefact(20, 20, 10)
+
+        box1.westEntryOf(container1)
+        container2.southOf(box1)
+        box2.westEntryOf(container2)
+        box3.eastOf(box2)
+
+        assertEquals(Dimension(80,40), box1.dimension)
+        assertEquals(Position(0,20), box1.west)
+        assertEquals(Position(40,40), box1.south)
+        assertEquals(Position(80,20), box1.east)
+        assertEquals(Position(40,0), box1.north)
+
+        assertEquals(Dimension(20,20), box1.raw.dimension)
+        assertEquals(Position(0,10), box1.raw.west)
+        assertEquals(Position(10,20), box1.raw.south)
+        assertEquals(Position(20,10), box1.raw.east)
+        assertEquals(Position(10,0), box1.raw.north)
 
     }
 

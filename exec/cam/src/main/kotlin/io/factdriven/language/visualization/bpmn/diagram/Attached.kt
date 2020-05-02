@@ -10,11 +10,11 @@ data class Attached (val attach: Box, val to: Box, val directions: List<Directio
     val position: Position get() {
         val rawTo = (to as? Artefact)?.raw ?: to
         val rawAttach = (attach as? Artefact)?.raw ?: attach
-        return rawTo.position + (rawTo.north / 2) - (rawAttach.north) - rawAttach.west +
-            when (directions.getOrNull(0)) {
-                Direction.North -> if (directions.getOrNull(1) == Direction.East) Position(0,0) else rawTo.north
-                else -> if (directions.getOrNull(1) == Direction.East) rawTo.south - rawTo.north else rawTo.south
-            }
+        val south = directions.getOrNull(0) == Direction.South
+        val east = directions.getOrNull(1) == Direction.East
+        return rawTo.position - (rawAttach.west) +
+            (if (east) rawTo.north / -2  else rawTo.north / 2) +
+            (if (south) rawTo.west * 2 else Position(0,0))
     }
 
     val original: Position get() {

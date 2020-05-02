@@ -126,7 +126,7 @@ class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>): EventSymbol<
 class BoundaryEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<Catching, BoundaryEvent>(node, parent) {
 
     override val model = process.model.newInstance(BoundaryEvent::class.java)
-    override val diagram: Artefact = Artefact(Dimension(36, 36), Dimension(36, 0))
+    override val diagram: Artefact = Artefact(Dimension(36, 36), Dimension(32, 0))
 
     override fun initDiagram() {
         super.initDiagram()
