@@ -1,9 +1,11 @@
 package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.Node
-import io.factdriven.language.visualization.bpmn.diagram.Artefact
 import io.factdriven.language.execution.cam.EngineStartListener
-import org.camunda.bpm.model.bpmn.instance.*
+import io.factdriven.language.visualization.bpmn.diagram.Artefact
+import org.camunda.bpm.model.bpmn.instance.BoundaryEvent
+import org.camunda.bpm.model.bpmn.instance.ExtensionElements
+import org.camunda.bpm.model.bpmn.instance.FlowNode
 import org.camunda.bpm.model.bpmn.instance.bpmndi.BpmnShape
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaExecutionListener
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds
@@ -51,6 +53,24 @@ abstract class Symbol<IN: Node, OUT: FlowNode>(node: IN, override val parent: Gr
         }
 
         process.bpmnPlane.addChildElement(bpmnShape)
+
+        if (BpmnModel.renderGroups && !(model is BoundaryEvent)) {
+
+            val groupModel = process.model.newInstance(org.camunda.bpm.model.bpmn.instance.Group::class.java)
+            process.bpmnProcess.addChildElement(groupModel)
+            val groupBpmnShape = process.model.newInstance(BpmnShape::class.java)
+            groupBpmnShape.bpmnElement = groupModel
+            process.bpmnProcess.diagramElement.addChildElement(groupBpmnShape)
+
+            with(process.model.newInstance(Bounds::class.java)) {
+                x = diagram.position.x.toDouble()
+                y = diagram.position.y.toDouble()
+                width = diagram.dimension.width.toDouble()
+                height = diagram.dimension.height.toDouble()
+                groupBpmnShape.bounds = this
+            }
+
+        }
 
     }
 
