@@ -27,7 +27,7 @@ abstract class Box: Space {
         if (!::internalPosition.isInitialized) {
             internalPosition = when {
                 container != null && container!!.westend == this -> container!!.position + container!!.west - west
-                western != null-> (western?.attached?.original ?: western!!.position) + western!!.west - west + Dimension(western!!.longitudeWidth(), 0)
+                western != null-> (western?.attached?.original ?: western!!.position) + western!!.east - west
                 northern != null -> northern!!.position + Dimension(0, northern!!.dimension.height)
                 southern != null -> southern!!.position - Dimension(0, dimension.height)
                 else -> (container?.position ?: Position.Zero) + (container?.west ?: Position(0, equator)) - west
