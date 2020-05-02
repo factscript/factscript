@@ -1,9 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.await_time
 
 import io.factdriven.language.flow
-import org.joda.time.DateTime
-import java.time.LocalDateTime
-import java.time.LocalDateTime.now
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -14,17 +11,19 @@ class CreditCardCharge {
 
         init {
 
-            flow<CreditCardCharge> {
+            flow <CreditCardCharge> {
 
                 on time cycle ("Every month") { "P1M" }
 
-                await time duration ("5 Minutes") { "PT5M" }
-
-                execute command ChargeCreditCard::class by {
-                    ChargeCreditCard(reference = "1234432112344321", charge = 3F)
-                } but {
-                    on time duration ("30 seconds") { "PT30S" }
-                    emit event CreditCardFailed::class by { CreditCardFailed() }
+                loop {
+                    execute command ChargeCreditCard::class by {
+                        ChargeCreditCard(reference = "1234432112344321", charge = 3F)
+                    } but {
+                        on time duration ("30 seconds") { "PT30S" }
+                        emit event CreditCardFailed::class by { CreditCardFailed() }
+                        await time duration ("7 days") { "P7D" }
+                    }
+                    until ("Credit card succeeded") condition { true }
                 }
 
                 emit event CreditCardCharged::class by {

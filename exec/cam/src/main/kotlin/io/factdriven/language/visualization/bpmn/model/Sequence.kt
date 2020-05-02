@@ -2,7 +2,7 @@ package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.*
 import io.factdriven.language.impl.utils.asType
-import io.factdriven.language.visualization.bpmn.diagram.*
+import io.factdriven.language.visualization.bpmn.diagram.Box
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -17,7 +17,7 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
     override val elements: List<Element<*,*>> = node.children.mapNotNull {
         when (it) {
             is Promising -> CatchingEventSymbol(it, this)
-            is AwaitingTime -> if (parent is Task) BoundaryEventSymbol(it, this) else CatchingEventSymbol(it, this)
+            is AwaitingTime -> if (parent is Task && node.children.indexOf(it) == 0) BoundaryEventSymbol(it, this) else CatchingEventSymbol(it, this)
             is ConsumingEvent -> if (it.isFailing()) BoundaryEventSymbol(it, this) else CatchingEventSymbol(it, this)
             is Consuming -> Task(it, this)
             is Throwing -> if (it.isFinish() || !it.isContinuing()) ThrowingEventSymbol(it, this) else Task(it, this)
