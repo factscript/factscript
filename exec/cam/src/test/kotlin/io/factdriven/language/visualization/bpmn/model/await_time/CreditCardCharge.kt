@@ -18,17 +18,11 @@ class CreditCardCharge {
                     report failure CreditCardFailed::class
                 }
 
-                loop {
-                    execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(reference = "1234432112344321", charge = 3F)
-                    } but {
-                        on event CreditCardFailed::class
-                        await event CreditCardDetailsUpdated::class but {
-                            on time duration ("Two weeks") { "P14D" }
-                            emit event CreditCardFailed::class
-                        }
-                    }
-                    until ("Credit card succeeded") condition { true }
+                execute command ChargeCreditCard::class by {
+                    ChargeCreditCard(reference = "1234432112344321", charge = 3F)
+                } but {
+                    on time duration ("30 seconds") { "P14D" }
+                    emit event CreditCardFailed::class
                 }
 
                 emit event CreditCardCharged::class by {
