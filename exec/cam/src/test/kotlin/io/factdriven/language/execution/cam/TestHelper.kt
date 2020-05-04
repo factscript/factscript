@@ -60,14 +60,18 @@ open class TestHelper {
 
         Messages.publish(message)
 
-        TestHelper.waitForJobExecutorToProcessAllJobs(
-            engine.processEngineConfiguration as ProcessEngineConfigurationImpl,
-            60000,
-            250
-        )
+        sleep(60)
 
         return message.fact.id
 
+    }
+
+    protected fun sleep(seconds: Long, interval: Long = 250) {
+        TestHelper.waitForJobExecutorToProcessAllJobs(
+            engine.processEngineConfiguration as ProcessEngineConfigurationImpl,
+            seconds * 1000,
+            interval
+        )
     }
 
 }

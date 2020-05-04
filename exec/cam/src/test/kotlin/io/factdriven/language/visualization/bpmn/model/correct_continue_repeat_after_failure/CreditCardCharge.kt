@@ -1,4 +1,4 @@
-package io.factdriven.language.visualization.bpmn.model.continue_after_failure
+package io.factdriven.language.visualization.bpmn.model.correct_continue_repeat_after_failure
 
 import io.factdriven.language.flow
 
@@ -7,7 +7,7 @@ import io.factdriven.language.flow
  */
 data class CreditCardCharge(val fact: ChargeCreditCard) {
 
-    private val reference: String = fact.reference
+    private val reference: String = fact.account
     private val amount: Float = fact.amount
     private var successful: Boolean = false
 
@@ -19,7 +19,7 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
         init {
 
-            flow <CreditCardCharge> {
+            flow<CreditCardCharge> {
 
                 on command ChargeCreditCard::class promise {
                     report success CreditCardCharged::class
@@ -45,8 +45,9 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
 }
 
-data class ChargeCreditCard(val reference: String, val amount: Float)
-data class CreditCardCharged(val reference: String, val amount: Float)
-data class CreditCardExpired(val reference: String)
-data class CreditCardGatewayConfirmationReceived(val reference: String, val amount: Float)
+data class ChargeCreditCard(val account: String, val amount: Float)
+data class CreditCardCharged(val account: String, val amount: Float)
+data class CreditCardDetailsUpdated(val account: String, val amount: Float)
+data class CreditCardExpired(val account: String)
+data class CreditCardGatewayConfirmationReceived(val account: String, val amount: Float)
 

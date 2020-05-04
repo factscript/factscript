@@ -3,6 +3,7 @@ package io.factdriven.language.execution.cam.await_event
 import io.factdriven.language.Flows
 import io.factdriven.language.execution.cam.TestHelper
 import io.factdriven.execution.load
+import io.factdriven.language.visualization.bpmn.model.BpmnModel
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -12,7 +13,9 @@ import org.junit.jupiter.api.Test
 class CreditCardChargeTest: TestHelper() {
 
     init {
-        Flows.initialize(CreditCardCharge::class)
+        Flows.initialize(CreditCardCharge::class).forEach {
+            BpmnModel(it).toTempFile(true)
+        }
     }
 
     @Test

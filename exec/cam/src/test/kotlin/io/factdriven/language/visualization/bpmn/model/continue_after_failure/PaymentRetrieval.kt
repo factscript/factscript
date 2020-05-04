@@ -25,18 +25,14 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 execute command ChargeCreditCard::class by {
                     ChargeCreditCard(id, total)
                 } but {
-                    on event CreditCardExpired::class
+                    on event CreditCardGatewayConfirmationReceived::class
                 } but {
                     on event CreditCardExpired::class
-                    execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(id, total)
-                    }
+                    execute command ChargeCreditCard::class by { ChargeCreditCard(id, total) }
                     emit event PaymentFailed::class by { PaymentFailed() }
                 } but {
-                    on event CreditCardExpired::class
-                    execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(id, total)
-                    }
+                    on time duration ("Two weeks") { "PT5S" }
+                    execute command ChargeCreditCard::class by { ChargeCreditCard(id, total) }
                     emit event PaymentFailed::class by { PaymentFailed() }
                 }
 

@@ -21,7 +21,7 @@ class CreditCardCharge {
                 execute command ChargeCreditCard::class by {
                     ChargeCreditCard(reference = "1234432112344321", charge = 3F)
                 } but {
-                    on time duration ("30 seconds") { "P14D" }
+                    on time duration ("30 seconds") { "PT30S" }
                     emit event CreditCardFailed::class
                 }
 
