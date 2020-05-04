@@ -6,7 +6,7 @@ import io.factdriven.language.definition.Flow
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLanguage
-interface Execution<T: Any>: Flow {
+interface Execution<T: Any>: Flow, Time<T> {
 
     val emit: Emit<T>
 
@@ -23,14 +23,14 @@ interface Execution<T: Any>: Flow {
 }
 
 @FlowLanguage
-interface TriggeredExecution<T:Any>: Execution<T> {
+interface AwaitingExecution<T:Any>: Execution<T> {
 
     val on: Await<T>
 
 }
 
 @FlowLanguage
-interface PromisingExecution<T:Any>: TriggeredExecution<T> {
+interface PromisingExecution<T:Any>: AwaitingExecution<T> {
 
     override val on: On<T>
 

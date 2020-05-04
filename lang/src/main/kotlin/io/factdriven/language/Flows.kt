@@ -1,12 +1,9 @@
 package io.factdriven.language
 
+import io.factdriven.execution.*
 import io.factdriven.language.definition.Flow
 import io.factdriven.language.definition.Promising
-import io.factdriven.execution.Message
-import io.factdriven.execution.Receptor
-import io.factdriven.execution.Type
-import io.factdriven.execution.type
-import io.factdriven.language.impl.definition.TriggeredExecutionImpl
+import io.factdriven.language.impl.definition.PromisingExecutionImpl
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
@@ -27,7 +24,7 @@ object Flows {
     }
 
     inline fun <reified T: Any> register(type: KClass<T> = T::class, flow: PromisingExecution<T>.() -> Unit): Flow {
-        val definition = TriggeredExecutionImpl(type).apply(flow)
+        val definition = PromisingExecutionImpl(type).apply(flow)
         register(definition)
         return definition
     }
@@ -41,12 +38,17 @@ object Flows {
         return if (entityType != null) get(entityType) else throw IllegalArgumentException("Flow '${type}' is not defined!")
     }
 
-    fun get(type: KClass<*>? = null, handling: KClass<*>? = null): Flow {
+    fun get(type: KClass<*>): Flow {
+        return find(type) ?: throw IllegalArgumentException("Flow '${type}' is not defined!")
+    }
+
+    fun find(type: KClass<*>? = null, handling: KClass<*>? = null, reporting: KClass<*>? = null): Flow? {
         type?.companionObjectInstance
+        val flows = flows
         val result =  flows.values.filter { definition ->
-            (definition.entity == type || type == null) && definition.children.any { it is Promising && (it.catching == handling || handling == null) }
+            (definition.entity == type || type == null) && ((handling == null && reporting == null) || (definition.children.any { it is Promising && (it.consuming == handling || handling == null) && (it.succeeding == reporting || it.failing.contains(reporting) || reporting == null) }))
         }
-        return if (result.isNotEmpty()) result[0] else throw IllegalArgumentException("Flow '${type}' is not defined!")
+        return result.firstOrNull()
     }
 
     fun all(): Iterable<Flow> {

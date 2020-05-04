@@ -10,8 +10,7 @@ import kotlin.reflect.full.isSubclassOf
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-abstract class NodeImpl(override val parent: Node?, override val entity: KClass<*> = parent!!.entity):
-    Node {
+abstract class NodeImpl(override val parent: Node?, override val entity: KClass<*> = parent!!.entity): Node {
 
     override val children: MutableList<Node> = mutableListOf()
 
@@ -22,7 +21,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
 
     override val type: Type get() = entity.type
 
-    override val label: String get() = label()
+    override val description: String get() = label()
 
     override val position: Int get() = index()
 
@@ -54,10 +53,10 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
                 children.find { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
             }
             nodeOfType.isSubclassOf(Promising::class) -> {
-                children.find { it is Promising && (it.succeeding == dealingWith || dealingWith == null) }
+                children.find { it is Promising && ((it.succeeding == dealingWith || it.failing.contains(dealingWith) || dealingWith == null)) }
             }
-            nodeOfType.isSubclassOf(Catching::class) -> {
-                children.find { it is Catching && (it.catching == dealingWith || dealingWith == null) }
+            nodeOfType.isSubclassOf(Consuming::class) -> {
+                children.find { it is Consuming && (it.consuming == dealingWith || dealingWith == null) }
             }
             else -> children.find { nodeOfType.isInstance(it) && dealingWith == null }
         } as N?
@@ -71,8 +70,8 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
             nodesOfType.isSubclassOf(Promising::class) -> {
                 children.filter { it is Promising && (it.succeeding == dealingWith || dealingWith == null) }
             }
-            nodesOfType.isSubclassOf(Catching::class) -> {
-                children.filter { it is Catching && (it.catching == dealingWith || dealingWith == null) }
+            nodesOfType.isSubclassOf(Consuming::class) -> {
+                children.filter { it is Consuming && (it.consuming == dealingWith || dealingWith == null) }
             }
             else -> children.filter { nodesOfType.isInstance(it) && dealingWith == null }
         } as List<N>

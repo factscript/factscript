@@ -25,7 +25,7 @@ abstract class LambdaContext constructor(definition: Flow) {
     }
 
     private fun name(flow: Flow) : String {
-        return "${flow.label.replace(" ", "-")}-StateMachine"
+        return "${flow.description.replace(" ", "-")}-StateMachine"
     }
 
     companion object {

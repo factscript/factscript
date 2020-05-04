@@ -23,7 +23,7 @@ open class PromisingImpl<T: Any>(parent: Node):
     override val failing: MutableList<KClass<*>> = mutableListOf()
 
     override fun <M : Any> command(type: KClass<M>): OnCommandPromise<T> {
-        this.catching = type
+        this.consuming = type
         return this
     }
 

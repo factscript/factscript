@@ -1,11 +1,12 @@
 package io.factdriven.language.definition
 
+import kotlin.reflect.KClass
+
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Awaiting: Catching {
+interface Consuming : Catching {
 
-    val properties: List<String>
-    val matching: List<Any.() -> Any?>
+    val consuming: KClass<*>
 
 }

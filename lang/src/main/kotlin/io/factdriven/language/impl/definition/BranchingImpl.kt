@@ -20,7 +20,7 @@ open class BranchingImpl<T: Any>(parent: Node):
 {
 
     override lateinit var gateway: Gateway
-    override var label: String = ""; protected set
+    override var description: String = ""; protected set
 
     override val type: Type
         get() = Type(
@@ -49,8 +49,8 @@ open class BranchingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun or(path: TriggeredExecution<T>.() -> Unit): AwaitOr<T> {
-        val flow = TriggeredExecutionImpl(
+    override fun or(path: AwaitingExecution<T>.() -> Unit): AwaitOr<T> {
+        val flow = AwaitingExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)
@@ -61,7 +61,7 @@ open class BranchingImpl<T: Any>(parent: Node):
     @Suppress("UNCHECKED_CAST")
     override fun and(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
         @Suppress("UNCHECKED_CAST")
-        val flow = TriggeredExecutionImpl(
+        val flow = ExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)
@@ -70,7 +70,7 @@ open class BranchingImpl<T: Any>(parent: Node):
     }
 
     override fun invoke(case: String): Select<T> {
-        this.label = case
+        this.description = case
         return this
     }
 

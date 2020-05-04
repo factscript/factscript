@@ -3,7 +3,9 @@ package io.factdriven.language.execution.cam
 import io.factdriven.language.Flows
 import io.factdriven.execution.Messages
 import io.factdriven.execution.*
+import io.factdriven.language.definition.Promising
 import io.factdriven.language.impl.definition.idSeparator
+import io.factdriven.language.impl.utils.Id
 import io.factdriven.language.impl.utils.prettyJson
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngines
@@ -120,11 +122,22 @@ class EngineMessageProcessor: MessageProcessor {
                 .singleResult()
 
             if (externalTask != null) {
-                engine.externalTaskService.complete(
-                    externalTask.id,
-                    message.receiver!!.receptor.hash,
-                    variables()
-                )
+                val succeeding = Flows.find(reporting = message.fact.details::class)?.find(Promising::class, message.fact.details::class)?.succeeding == message.fact.details::class
+                if (succeeding) {
+                    engine.externalTaskService.complete(
+                        externalTask.id,
+                        message.receiver!!.receptor.hash,
+                        variables()
+                    )
+                } else {
+                    engine.externalTaskService.handleBpmnError(
+                        externalTask.id,
+                        message.receiver!!.receptor.hash,
+                        Id(message.fact.type),
+                        null,
+                        variables()
+                    )
+                }
                 return
             }
 

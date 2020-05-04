@@ -72,7 +72,7 @@ class Path(val from: Element<out Node,*>, private val to: Element<out Node, *>, 
 
             if (this != null) {
 
-                model.name = if (parent is Looping) (if (condition != null) "Yes" else "No") else label.asLines()
+                model.name = if (parent is Looping) (if (condition != null) "Yes" else "No") else description.asLines()
 
                 if (condition != null) {
                     model.conditionExpression = process.model.newInstance(org.camunda.bpm.model.bpmn.instance.ConditionExpression::class.java);

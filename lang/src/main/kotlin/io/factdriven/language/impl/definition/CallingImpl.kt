@@ -19,9 +19,9 @@ open class CallingImpl<T: Any>(parent: Node):
 
 {
 
-    override val catching: KClass<*> get() = succeeding
-    override val succeeding: KClass<*> get() = Flows.get(handling = throwing).find(Promising::class)!!.succeeding!!
-    override val failing: List<KClass<*>> get() = Flows.get(handling = throwing).find(Promising::class)!!.failing
+    override val consuming: KClass<*> get() = succeeding
+    override val succeeding: KClass<*> get() = Flows.find(handling = throwing)!!.find(Promising::class)!!.succeeding!!
+    override val failing: List<KClass<*>> get() = Flows.find(handling = throwing)!!.find(Promising::class)!!.failing
 
     @Suppress("UNCHECKED_CAST")
     override fun all(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
@@ -29,7 +29,7 @@ open class CallingImpl<T: Any>(parent: Node):
         branch.gateway = Gateway.Parallel
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        val flow = TriggeredExecutionImpl(entity as KClass<T>, branch).apply(path)
+        val flow = ExecutionImpl(entity as KClass<T>, branch).apply(path)
         (branch as NodeImpl).children.add(flow)
         return branch
     }
@@ -40,17 +40,18 @@ open class CallingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun but(path: TriggeredExecution<T>.() -> Unit) {
-        val flow = TriggeredExecutionImpl(
+    override fun but(path: AwaitingExecution<T>.() -> Unit): ExecuteBut<T> {
+        val flow = AwaitingExecutionImpl(
             entity as KClass<T>,
             this
         ).apply(path)
         children.add(flow)
+        return this
     }
 
     override fun findReceptorsFor(message: Message): List<Receptor> {
-        return if (catching.isInstance(message.fact.details) && message.correlating != null)
-            listOf(Receptor(catching, message.correlating))
+        return if (succeeding.isInstance(message.fact.details) || failing.contains(message.fact.details::class) && message.correlating != null)
+            listOf(Receptor(correlating = message.correlating))
         else emptyList()
     }
 

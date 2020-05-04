@@ -13,7 +13,7 @@ interface Node {
     val id: String
     val type: Type
     val entity: KClass<*>
-    val label: String
+    val description: String
 
     val root: Flow
     val parent: Node?

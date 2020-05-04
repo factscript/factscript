@@ -6,7 +6,7 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLanguage
-interface Await<T: Any>: AwaitEvent<T>, AwaitFirst<T>
+interface Await<T: Any>: AwaitEvent<T>, AwaitFirst<T>, AwaitTime<T>
 
 @FlowLanguage
 interface AwaitEvent<T: Any> {
@@ -18,14 +18,14 @@ interface AwaitEvent<T: Any> {
 @FlowLanguage
 interface AwaitFirst<T: Any> {
 
-    infix fun first(path: TriggeredExecution<T>.() -> Unit): AwaitOr<T>
+    infix fun first(path: AwaitingExecution<T>.() -> Unit): AwaitOr<T>
 
 }
 
 @FlowLanguage
 interface AwaitOr<T: Any> {
 
-    infix fun or(path: TriggeredExecution<T>.() -> Unit): AwaitOr<T>
+    infix fun or(path: AwaitingExecution<T>.() -> Unit): AwaitOr<T>
 
 }
 

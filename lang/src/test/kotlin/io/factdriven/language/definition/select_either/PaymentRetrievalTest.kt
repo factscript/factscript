@@ -1,7 +1,7 @@
 package io.factdriven.language.definition.select_either
 
 import io.factdriven.language.Flows
-import io.factdriven.language.definition.Catching
+import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Branching
 import io.factdriven.language.definition.Gateway
 import io.factdriven.language.definition.Throwing
@@ -30,15 +30,15 @@ class PaymentRetrievalTest {
 
         val instance = PaymentRetrieval(RetrievePayment(3F))
 
-        val on = definition.children[0] as Catching
+        val on = definition.children[0] as Consuming
         assertEquals(PaymentRetrieval::class, on.entity)
-        assertEquals(RetrievePayment::class, on.catching)
+        assertEquals(RetrievePayment::class, on.consuming)
         assertEquals(definition, on.parent)
 
         val branching = definition.children[1] as Branching
         assertEquals(PaymentRetrieval::class, branching.entity)
         assertEquals(Gateway.Exclusive, branching.gateway)
-        assertEquals("Payment (partly) uncovered?", branching.label)
+        assertEquals("Payment (partly) uncovered?", branching.description)
         assertEquals(2, branching.children.size)
         Assertions.assertTrue(ConditionalExecution::class.isInstance(branching.children[0]))
         Assertions.assertTrue(ConditionalExecution::class.isInstance(branching.children[1]))

@@ -7,4 +7,5 @@ interface Conditional : Node {
 
     val condition: (Any.() -> Boolean)?
     fun isDefault(): Boolean
+
 }

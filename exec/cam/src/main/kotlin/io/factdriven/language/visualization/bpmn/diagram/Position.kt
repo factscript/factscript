@@ -24,7 +24,15 @@ data class Position (val x: Int, val y: Int) {
         return this move dimension * - 1
     }
 
-    infix fun move(dimension: Dimension): Position {
+    operator fun div(int: Int): Position {
+        return Position(x / int, y / int)
+    }
+
+    operator fun times(int: Int): Position {
+        return Position(x * int, y * int)
+    }
+
+    private infix fun move(dimension: Dimension): Position {
         return Position(
             x + dimension.width,
             y + dimension.height

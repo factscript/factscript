@@ -33,7 +33,7 @@ class EngineStartListener: ExecutionListener {
             return when(node) {
                 is Throwing -> {
                     val fact = node.instance.invoke(aggregate())
-                    val correlating = execution.flow.find(nodeOfType = Promising::class)?.succeeding?.isInstance(fact) ?: false
+                    val correlating = execution.flow.find(nodeOfType = Promising::class, dealingWith = fact::class) != null
                     Message(
                         messages,
                         Fact(fact),
