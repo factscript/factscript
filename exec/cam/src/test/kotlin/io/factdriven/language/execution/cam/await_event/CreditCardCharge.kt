@@ -20,16 +20,24 @@ class CreditCardCharge(fact: ChargeCreditCard) {
     companion object {
 
         init {
-            flow<CreditCardCharge> {
+
+            flow <CreditCardCharge> {
+
                 on command ChargeCreditCard::class
-                await event ConfirmationReceived::class having "reference" match { reference }
+
+                await event ConfirmationReceived::class having {
+                    "reference" match { reference }
+                }
+
                 emit event CreditCardCharged::class by {
                     CreditCardCharged(
                         reference = reference,
                         charge = charge
                     )
                 }
+
             }
+
         }
 
     }

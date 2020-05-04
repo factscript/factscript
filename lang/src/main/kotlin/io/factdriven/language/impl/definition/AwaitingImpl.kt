@@ -11,11 +11,12 @@ import io.factdriven.language.definition.Node
 import io.factdriven.language.definition.Promising
 import io.factdriven.language.impl.utils.getValue
 import kotlin.reflect.KClass
+import kotlin.reflect.KProperty1
 
 open class AwaitingImpl<T: Any>(parent: Node):
 
     Await<T>,
-    AwaitEventHaving<T>,
+    AwaitEventHaving<T, Any>,
     AwaitEventHavingMatch<T>,
 
     ConsumingEvent,
@@ -29,13 +30,27 @@ open class AwaitingImpl<T: Any>(parent: Node):
 
     override val type: Type get() = consuming.type
 
-    override fun <M : Any> event(type: KClass<M>): AwaitEventHaving<T> {
+    override fun <M : Any> event(type: KClass<M>): AwaitEventHaving<T, M> {
         this.consuming = type
-        return this
+        @Suppress("UNCHECKED_CAST")
+        return this as AwaitEventHaving<T, M>
     }
 
     override fun having(property: String): AwaitEventHavingMatch<T> {
         this.properties.add(property)
+        return this
+    }
+
+    override fun having(property: KProperty1<Any, *>): AwaitEventHavingMatch<T> {
+        return having(property.name)
+    }
+
+    override fun having(map: AwaitEventHavingMatches<T, Any>.() -> Unit): AwaitEventBut<T> {
+        val matches = AwaitEventHavingMatchesImpl<T>()
+        matches.apply(map)
+        properties.addAll(matches.properties)
+        @Suppress("UNCHECKED_CAST")
+        matching.addAll(matches.matching as Collection<Any.() -> Any?>)
         return this
     }
 
@@ -50,7 +65,8 @@ open class AwaitingImpl<T: Any>(parent: Node):
         val flow = AwaitingExecutionImpl(
             entity as KClass<T>,
             this
-        ).apply(path)
+        )
+        flow.apply(path)
         children.add(flow)
         return this
     }

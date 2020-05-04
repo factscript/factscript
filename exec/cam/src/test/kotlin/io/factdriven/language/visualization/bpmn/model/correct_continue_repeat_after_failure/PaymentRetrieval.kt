@@ -1,5 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.correct_continue_repeat_after_failure
 
+import io.factdriven.language.AwaitEventBut
 import io.factdriven.language.flow
 
 /**
@@ -33,7 +34,9 @@ class PaymentRetrieval(fact: RetrievePayment) {
                             ChargeCreditCard(account, payment)
                         } but {
                             on event CreditCardExpired::class
-                            await event CreditCardDetailsUpdated::class having "account" match { account } but {
+                            await event CreditCardDetailsUpdated::class having {
+                                "account" match { account }
+                            } but {
                                 on event PaymentCoveredManually::class having "account" match { account }
                             } but {
                                 on time duration ("14 days") { "P14D" }

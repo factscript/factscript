@@ -4,7 +4,6 @@ import io.factdriven.language.Flows
 import io.factdriven.language.execution.cam.TestHelper
 import io.factdriven.execution.load
 import io.factdriven.language.visualization.bpmn.model.BpmnModel
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

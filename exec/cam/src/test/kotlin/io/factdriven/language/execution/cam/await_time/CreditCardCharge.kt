@@ -33,7 +33,7 @@ class CreditCardCharge(fact: ChargeCreditCard) {
                     report failure CreditCardFailed::class
                 }
 
-                await event ConfirmationReceived::class having "reference" match { reference } but {
+                await event ConfirmationReceived::class having ConfirmationReceived::reference match { reference } but {
                     on time duration ("3 seconds") { "PT3S" }
                     emit event CreditCardFailed::class by { CreditCardFailed(reference)}
                 }
