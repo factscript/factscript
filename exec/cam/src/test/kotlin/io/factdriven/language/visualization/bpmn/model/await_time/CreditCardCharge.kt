@@ -13,15 +13,20 @@ class CreditCardCharge {
 
             flow <CreditCardCharge> {
 
-                on time cycle ("Every month") { "P1M" }
+                on command ChargeCreditCard::class promise {
+                    report success CreditCardCharged::class
+                    report failure CreditCardFailed::class
+                }
 
                 loop {
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(reference = "1234432112344321", charge = 3F)
                     } but {
-                        on time duration ("30 seconds") { "PT30S" }
-                        emit event CreditCardFailed::class by { CreditCardFailed() }
-                        await time duration ("7 days") { "P7D" }
+                        on event CreditCardFailed::class
+                        await event CreditCardDetailsUpdated::class but {
+                            on time duration ("Two weeks") { "P14D" }
+                            emit event CreditCardFailed::class
+                        }
                     }
                     until ("Credit card succeeded") condition { true }
                 }
@@ -41,3 +46,4 @@ class CreditCardCharge {
 data class ChargeCreditCard(val reference: String, val charge: Float)
 data class CreditCardCharged(val reference: String, val charge: Float? = null)
 class CreditCardFailed()
+class CreditCardDetailsUpdated()

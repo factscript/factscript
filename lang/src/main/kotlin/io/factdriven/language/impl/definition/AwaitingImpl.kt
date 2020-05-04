@@ -4,9 +4,12 @@ import io.factdriven.execution.Message
 import io.factdriven.execution.Receptor
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
-import io.factdriven.language.impl.utils.getValue
 import io.factdriven.language.*
-import io.factdriven.language.definition.*
+import io.factdriven.language.definition.ConsumingEvent
+import io.factdriven.language.definition.Gateway
+import io.factdriven.language.definition.Node
+import io.factdriven.language.definition.Promising
+import io.factdriven.language.impl.utils.getValue
 import kotlin.reflect.KClass
 
 open class AwaitingImpl<T: Any>(parent: Node):
@@ -36,9 +39,20 @@ open class AwaitingImpl<T: Any>(parent: Node):
         return this
     }
 
-    override fun match(value: T.() -> Any?) {
+    override fun match(value: T.() -> Any?): AwaitEventBut<T> {
         @Suppress("UNCHECKED_CAST")
         this.matching.add(value as (Any.() -> Any?))
+        return this
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun but(path: AwaitingExecution<T>.() -> Unit): AwaitEventBut<T> {
+        val flow = AwaitingExecutionImpl(
+            entity as KClass<T>,
+            this
+        ).apply(path)
+        children.add(flow)
+        return this
     }
 
     @Suppress("UNCHECKED_CAST")

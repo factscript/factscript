@@ -31,7 +31,7 @@ interface AwaitOr<T: Any> {
 
 
 @FlowLanguage
-interface AwaitEventHaving<T: Any> {
+interface AwaitEventHaving<T: Any>: AwaitEventBut<T> {
 
     infix fun having(property: String): AwaitEventHavingMatch<T>
 
@@ -40,6 +40,13 @@ interface AwaitEventHaving<T: Any> {
 @FlowLanguage
 interface AwaitEventHavingMatch<T: Any> {
 
-    infix fun match(value: T.() -> Any?)
+    infix fun match(value: T.() -> Any?): AwaitEventBut<T>
+
+}
+
+@FlowLanguage
+interface AwaitEventBut<T: Any> {
+
+    infix fun but(path: AwaitingExecution<T>.() -> Unit): AwaitEventBut<T>
 
 }

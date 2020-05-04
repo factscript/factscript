@@ -2,8 +2,7 @@ package io.factdriven.language.definition.await_time
 
 import io.factdriven.language.flow
 import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalDateTime.*
+import java.time.LocalDateTime.now
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -20,7 +19,10 @@ class CreditCardCharge(fact: ChargeCreditCard) {
 
             flow <CreditCardCharge> {
 
-                on time cycle ("Once a year") { "P1Y" } times 3 from { now() } limit { nikolaus2030 }
+                on command ChargeCreditCard::class promise {
+                    report success CreditCardCharged::class
+                    report failure ChargingProcessFailed::class
+                }
 
                 execute command ChargeCreditCard::class by {
                     ChargeCreditCard(reference, charge)
