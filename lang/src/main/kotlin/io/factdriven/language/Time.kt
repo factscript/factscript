@@ -6,7 +6,7 @@ import java.time.LocalDateTime
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @FlowLanguage
-interface Time<T: Any>: TimeCycle<T>, TimeDuration<T>, TimeLimit<T>
+interface Time<T: Any>: TimeDuration<T>, TimeLimit<T>
 
 @FlowLanguage
 interface AwaitTime<T: Any> {

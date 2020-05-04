@@ -1,7 +1,10 @@
 package io.factdriven.language.impl.definition
 
 import io.factdriven.language.*
-import io.factdriven.language.definition.*
+import io.factdriven.language.definition.Branching
+import io.factdriven.language.definition.Flow
+import io.factdriven.language.definition.Node
+import io.factdriven.language.definition.Throwing
 import java.time.LocalDateTime
 import kotlin.reflect.KClass
 
@@ -71,11 +74,11 @@ open class ExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = 
         return (children.lastOrNull() as? Throwing)?.isFailing() == true
     }
 
-    override fun cycle(period: T.() -> String): AwaitTimeCycle<T> {
+    fun cycle(period: T.() -> String): AwaitTimeCycle<T> {
         return AwaitingTimeImpl(this, period = period, times = { Int.MAX_VALUE } )
     }
 
-    override fun cycle(description: String, period: T.() -> String): AwaitTimeCycle<T> {
+    fun cycle(description: String, period: T.() -> String): AwaitTimeCycle<T> {
         return AwaitingTimeImpl(this, description= description, period = period, times = { Int.MAX_VALUE } )
     }
 
