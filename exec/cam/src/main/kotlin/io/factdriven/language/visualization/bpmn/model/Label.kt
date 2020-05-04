@@ -2,8 +2,10 @@ package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.Conditional
 import io.factdriven.language.definition.Node
-import io.factdriven.language.visualization.bpmn.diagram.*
 import io.factdriven.language.impl.utils.toLines
+import io.factdriven.language.visualization.bpmn.diagram.Artefact
+import io.factdriven.language.visualization.bpmn.diagram.Box
+import io.factdriven.language.visualization.bpmn.diagram.Position
 import org.camunda.bpm.model.bpmn.instance.BaseElement
 import org.camunda.bpm.model.bpmn.instance.bpmndi.BpmnLabel
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds
@@ -35,14 +37,14 @@ class Label(node: Node, parent: Element<*, out BaseElement>): Element<Node, Bpmn
 
         } else when {
 
-            parent is BoundaryEventSymbol && parent.labelIndex() == 0 && parent.numberOfBoundaries() > 1 -> parent.diagram.raw.position + parent.diagram.raw.south east 9 south 18 east (node.description.toLines().maxBy { it.length }!!.length * 3) north ((node.description.toLines().size - 1) * 13 + 18)
-            parent is BoundaryEventSymbol && parent.labelIndex() == 0 -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6 west (node.description.toLines().maxBy { it.length }!!.length * 3)
-            parent is BoundaryEventSymbol && parent.labelIndex() == 1 -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6 west (node.description.toLines().maxBy { it.length }!!.length * 3)
-            parent is BoundaryEventSymbol && parent.labelIndex() == 2 -> parent.diagram.raw.position + parent.diagram.raw.north west parent.diagram.raw.dimension.width / 2 east 7 south 6 west (node.description.toLines().maxBy { it.length }!!.length * 3) north ((node.description.toLines().size - 1) * 13 + 18)
+            parent is BoundaryEventSymbol && parent.labelIndex() == 0 && parent.numberOfBoundaries() > 1 -> parent.diagram.raw.position + parent.diagram.raw.south east 9 south 18 east ((node.description.toLines().maxBy { it.length }!!.length / 2 + 1) * 6) north ((node.description.toLines().size - 1) * 13 + 18)
+            parent is BoundaryEventSymbol && parent.labelIndex() == 0 -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6 west ((node.description.toLines().maxBy { it.length }!!.length / 2 + 1) * 6)
+            parent is BoundaryEventSymbol && parent.labelIndex() == 1 -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6 west ((node.description.toLines().maxBy { it.length }!!.length / 2 + 1) * 6)
+            parent is BoundaryEventSymbol && parent.labelIndex() == 2 -> parent.diagram.raw.position + parent.diagram.raw.north west parent.diagram.raw.dimension.width / 2 east 7 south 6 west ((node.description.toLines().maxBy { it.length }!!.length / 2 + 1) * 6) north ((node.description.toLines().size - 1) * 13 + 18)
             parent is EventSymbol -> parent.diagram.raw.position + parent.diagram.raw.south west parent.diagram.raw.dimension.width / 2 east 7 south 6
             parent is TaskSymbol -> parent.diagram.raw.position west 6 south 6
             parent is GatewaySymbol && parent.parent is Branch && (parent.parent as Branch).needsSouthLabel() -> parent.diagram.raw.position south parent.diagram.raw.dimension.height south 6 east 14
-            parent is GatewaySymbol && parent.parent is Branch && (parent.parent as Branch).needsNorthWestLabel() -> parent.diagram.raw.position north ((node.description.toLines().size - 1) * 13 + 18) west (node.description.toLines().maxBy { it.length }!!.length * 3) east 14
+            parent is GatewaySymbol && parent.parent is Branch && (parent.parent as Branch).needsNorthWestLabel() -> parent.diagram.raw.position north ((node.description.toLines().size - 1) * 13 + 18) west ((node.description.toLines().maxBy { it.length }!!.length  / 2 + 1) * 6) east 14
             parent is GatewaySymbol && parent.parent is Branch -> parent.diagram.raw.position north ((node.description.toLines().size - 1) * 13 + 18) east 14
             parent is GatewaySymbol && parent.parent is Loop -> parent.diagram.raw.position south parent.diagram.raw.dimension.height south 6 east 14
 

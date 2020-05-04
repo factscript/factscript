@@ -1,7 +1,5 @@
 package io.factdriven.language.visualization.bpmn.diagram
 
-import io.factdriven.language.impl.utils.asType
-
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
@@ -12,7 +10,7 @@ data class Attached (val attach: Box, val to: Box, val directions: List<Directio
         val rawAttach = (attach as? Artefact)?.raw ?: attach
         val south = directions.getOrNull(0) == Direction.South
         val east = directions.getOrNull(1) == Direction.East
-        return rawTo.position - (rawAttach.west) +
+        return rawTo.position - (rawAttach.west) - Position(18,0)  +
             (if (east) rawTo.north / -2  else rawTo.north / 2) +
             (if (south) rawTo.west * 2 else Position(0,0))
     }

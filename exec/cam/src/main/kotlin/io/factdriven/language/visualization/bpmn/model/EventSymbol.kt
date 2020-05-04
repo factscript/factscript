@@ -10,7 +10,6 @@ import io.factdriven.language.visualization.bpmn.diagram.Box
 import io.factdriven.language.visualization.bpmn.diagram.Dimension
 import io.factdriven.language.visualization.bpmn.diagram.Direction
 import org.camunda.bpm.model.bpmn.instance.*
-import org.joda.time.format.ISODateTimeFormat
 import java.time.format.DateTimeFormatter
 
 /**
@@ -126,7 +125,7 @@ class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>): EventSymbol<
 class BoundaryEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<Catching, BoundaryEvent>(node, parent) {
 
     override val model = process.model.newInstance(BoundaryEvent::class.java)
-    override val diagram: Artefact = Artefact(Dimension(36, 36), Dimension(32, 0))
+    override val diagram: Artefact = Artefact(Dimension(36, 36), Dimension(50, 0))
 
     override fun initDiagram() {
         super.initDiagram()
