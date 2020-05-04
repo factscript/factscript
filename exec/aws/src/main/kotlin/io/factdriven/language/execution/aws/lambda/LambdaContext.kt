@@ -59,17 +59,24 @@ class ProcessContext(definition: Flow, val input: Map<String, *>, context: Conte
 
     init {
         this.token = input["TaskToken"] as String
-        this.node = definition.get(input["id"] as String)
+        if(input["id"] != null) {
+            this.node = definition.get(input["id"] as String)
+        } else {
+            this.node = null
+        }
         this.messageList = toMessageList()
         this.processInstance = messageList.newInstance(definition.entity)
     }
 
-    private fun toMessageList(): MutableList<Message> {
-        if (input["History"] == null) {
+    fun toMessageList(): MutableList<Message> {
+        return toMessageList(input["History"] as ArrayList<String>?)
+    }
+    fun toMessageList(list: List<String>?): MutableList<Message>{
+        if (list == null) {
             val init = RetrievePayment("a", "b", 1f)
             return mutableListOf(createMessage(init))
         }
-        return (input["History"] as ArrayList<String>).stream()
+        return (list as ArrayList<String>).stream()
                 .map { s -> Message.fromJson(s) }
                 .collect(Collectors.toList())
     }
