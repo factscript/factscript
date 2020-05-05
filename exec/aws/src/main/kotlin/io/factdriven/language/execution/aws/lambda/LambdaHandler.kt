@@ -58,23 +58,25 @@ class MergeHandler : LambdaHandler(){
     private fun isMerge(processContext: ProcessContext) = processContext.input["MergeList"] != null
 
     override fun handle(lambdaContext: LambdaContext) : HandlerResult{
-        TODO("Not yet implemented")
-    }
+        val processContext = lambdaContext as ProcessContext
+        val input = processContext.input["MergeList"] as ArrayList<Map<String, *>>
+        val messageSet = input.stream().sequential()
+                .flatMap { variables -> processContext.toMessageList(variables["Messages"] as java.util.ArrayList<String>).stream() }
+                .collect(Collectors.toList()) //TODO unique items
 
-    //    private fun mergeList(token: String, arrayList: java.util.ArrayList<Map<String, Any>>) {
-//        val messageSet = arrayList.stream().sequential()
-//                .flatMap { variables -> toMessageList(variables["Messages"] as java.util.ArrayList<String>).stream() }
-//                .collect(Collectors.toList()) //TODO unique items
-//
-//        val sendTaskSuccessRequest = SendTaskSuccessRequest()
-//                .withTaskToken(token)
-//                .withOutput(FlowLangVariablesOut(messageSet.stream()
-//                        .map { message -> message.compactJson }
-//                        .collect(Collectors.toList())).compactJson)
-//
-//        val client = stateMachineService.createClient()
-//        client.sendTaskSuccess(sendTaskSuccessRequest)
-//    }
+        val compactJson = FlowLangVariablesOut(messageSet.stream()
+                .map { message -> message.compactJson }
+                .collect(Collectors.toList())).compactJson
+        val client = StateMachineService().createClient()
+
+        val sendTaskSuccessRequest = SendTaskSuccessRequest()
+                .withTaskToken(processContext.token)
+                .withOutput(compactJson)
+
+        client.sendTaskSuccess(sendTaskSuccessRequest)
+
+        return HandlerResult(compactJson)
+    }
 }
 
 abstract class NodeHandler : LambdaHandler (){
