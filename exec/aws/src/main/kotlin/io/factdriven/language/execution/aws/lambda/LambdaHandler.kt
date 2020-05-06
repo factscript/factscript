@@ -1,6 +1,7 @@
 package io.factdriven.language.execution.aws.lambda
 
 import com.amazonaws.services.stepfunctions.model.SendTaskSuccessRequest
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
 import io.factdriven.language.definition.*
@@ -133,23 +134,46 @@ class ExecutionHandler : NodeHandler(){
 }
 
 class InclusiveHandler : NodeHandler() {
+
+    data class InclusiveContext(val conditions: MutableMap<String, Boolean>, val next: Int = 0){
+        constructor() : this(conditions = mutableMapOf())
+    }
+
     override fun test(processContext: ProcessContext): Boolean {
         val node = processContext.node
         return node is Branching && node.gateway == Gateway.Inclusive
     }
 
     override fun handle(processContext: ProcessContext) : HandlerResult {
-        val result = evaluateInclusiveConditions(processContext.processInstance, processContext.node as Branching)
+        val result = evaluateInclusiveConditions(processContext, processContext.node as Branching)
         return HandlerResult(result.compactJson)
     }
 
-    private fun evaluateInclusiveConditions(processInstance: Any, branching: Branching) : Map<String, Boolean>{
+    private fun evaluateInclusiveConditions(processContext: ProcessContext, branching: Branching) : InclusiveContext{
+        val inclusiveContext : InclusiveContext?
+        if(processContext.input["InclusiveContext"] != null){
+           inclusiveContext = ObjectMapper().convertValue(processContext.input["InclusiveContext"], InclusiveContext::class.java)
+        } else {
+            return buildInclusiveConditions(processContext, branching)
+        }
+        for((index, _) in branching.children.withIndex()){
+            val isCurrentIteration = index >= inclusiveContext.next+1 && index < branching.children.size - 1
+            inclusiveContext.conditions["$index"] = isCurrentIteration && inclusiveContext.conditions["$index"]!!
+        }
+        return if(inclusiveContext.conditions.values.count { value -> value } > 1) {
+            InclusiveContext(inclusiveContext.conditions, next = inclusiveContext.conditions.values.indexOf(true))
+        } else {
+            InclusiveContext(inclusiveContext.conditions, next = -1)
+        }
+    }
+
+    private fun buildInclusiveConditions(processContext: ProcessContext, branching: Branching) : InclusiveContext{
         val results = mutableMapOf<String, Boolean>()
         for((index, conditionalExecution) in branching.children.withIndex()){
             val conditional = conditionalExecution.children[0] as Conditional
-            results["$index"] = conditional.condition?.invoke(processInstance)!!
+            results["$index"] = conditional.condition?.invoke(processContext.processInstance)!!
         }
-        return results
+        return InclusiveContext(results, next = -1)
     }
 
 }

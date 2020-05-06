@@ -15,3 +15,6 @@ data class Payload(@JsonProperty("TaskToken.$") val taskToken : String = "\$\$.T
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ParallelMergePayload(@JsonProperty("TaskToken.$") val taskToken : String = "\$\$.Task.Token", @JsonProperty("Execution.$") val execution : String = "\$\$.Execution.Id", @JsonProperty("MergeList.$") var messages: String? = "$[*]") : StepFunctionPayload
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class InclusivePayload(@JsonProperty("TaskToken.$") val taskToken : String = "\$\$.Task.Token", @JsonProperty("id") val id: String, @JsonProperty("History.$") var messages: String? = "$.Messages", @JsonProperty("Execution.$") val execution : String = "\$\$.Execution.Id", @JsonProperty("InclusiveContext.$") var inclusiveContext: String? = "$.InclusiveContext") : StepFunctionPayload
+
