@@ -1,6 +1,5 @@
 package io.factdriven.language.visualization.bpmn.model.correct_continue_repeat_after_failure
 
-import io.factdriven.language.AwaitEventBut
 import io.factdriven.language.flow
 
 /**
@@ -27,31 +26,37 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     WithdrawAmount(account, payment)
                 }
 
-                select ("Payment covered?") either {
-                    given ("No") condition { covered < payment }
+                select ("Payment completely covered?") either {
+
+                    given ("No") condition { covered != payment }
+
                     loop {
+
                         execute command ChargeCreditCard::class by {
                             ChargeCreditCard(account, payment)
                         } but {
                             on event CreditCardExpired::class
-                            await event CreditCardDetailsUpdated::class having {
-                                "account" match { account }
-                            } but {
-                                on event PaymentCoveredManually::class having "account" match { account }
-                            } but {
-                                on time duration ("14 days") { "P14D" }
+                            await first {
+                                on event CreditCardDetailsUpdated::class having "account" match { account }
+                            } or {
+                                on time duration ("14 days") { "PT3M" }
                                 emit event PaymentFailed::class by { PaymentFailed(account, payment) }
                             }
                         }
-                        until ("Credit card charged?") condition { covered == payment }
+
+                        until ("Payment completely covered?") condition { covered == payment }
+
                     }
+
                 } or {
+
                     given ("Yes")
+
+                    emit event PaymentRetrieved::class by { PaymentRetrieved(account, payment) }
+
                 }
 
-                emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(account, payment)
-                }
+                emit event PaymentRetrieved::class by { PaymentRetrieved(account, payment) }
 
             }
 
@@ -63,5 +68,4 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
 data class RetrievePayment(val account: String, val payment: Float)
 data class PaymentRetrieved(val account: String, val payment: Float)
-data class PaymentCoveredManually(val account: String, val payment: Float)
 data class PaymentFailed(val account: String, val payment: Float)
