@@ -1,7 +1,9 @@
 package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.Conditional
+import io.factdriven.language.definition.Looping
 import io.factdriven.language.definition.Node
+import io.factdriven.language.impl.utils.asType
 import io.factdriven.language.impl.utils.toLines
 import io.factdriven.language.visualization.bpmn.diagram.Artefact
 import io.factdriven.language.visualization.bpmn.diagram.Box
@@ -30,8 +32,8 @@ class Label(node: Node, parent: Element<*, out BaseElement>): Element<Node, Bpmn
 
         val position = if (parent is Path && parent.conditional != null) when {
 
-            parent.from is Loop || parent.from is Sequence -> (parent.from.diagram as Box).position + (parent.from.diagram as Box).east west 12 north 17
-            parent.parent?.parent is Loop -> (parent.parent?.parent as Loop).fork.diagram.raw.position + (parent.parent?.parent as Loop).fork.diagram.raw.north east 10 north 17
+            parent.from.asType<Group<*>>()?.conditional?.parent is Looping -> (parent.from.diagram as Box).position + (parent.from.diagram as Box).east west 12 north 20
+            parent.parent?.parent is Loop -> (parent.parent?.parent as Loop).fork.diagram.raw.position + (parent.parent?.parent as Loop).fork.diagram.raw.north east 11 north 19
 
             else -> Position(parent.via.diagram.position.x, parent.diagram.waypoints[1].y) west 12 north ((parent.conditional.description.toLines().size - 1) * 13 + 20)
 

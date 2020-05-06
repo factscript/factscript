@@ -12,7 +12,7 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
     override val west: Symbol<*, *> get() = elements.first().west
     override val east: Symbol<*, *> get() = elements.lastOrNull()?.east ?: parent!!.asType<Branch>()!!.fork
 
-    override val conditional: Conditional? get() = elements.lastOrNull()?.asType<Loop>()?.conditional
+    override val conditional: Conditional? get() = elements.lastOrNull()?.asType<Group<*>>()?.conditional ?: if (elements.isEmpty()) node.children.firstOrNull()?.asType<Conditional>() else null
 
     override val elements: List<Element<*,*>> = node.children.mapNotNull {
         when (it) {

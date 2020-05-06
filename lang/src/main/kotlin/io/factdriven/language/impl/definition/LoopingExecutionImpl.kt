@@ -1,9 +1,9 @@
 package io.factdriven.language.impl.definition
 
-import io.factdriven.language.definition.Looping
-import io.factdriven.language.definition.Node
 import io.factdriven.language.LoopingExecution
 import io.factdriven.language.Until
+import io.factdriven.language.definition.Looping
+import io.factdriven.language.definition.Node
 import kotlin.reflect.KClass
 
 /**
@@ -29,5 +29,13 @@ class LoopingExecutionImpl<T:Any> (entity: KClass<T>, override val parent: Node?
             children.add(child)
             return child
         }
+
+    override fun isFailing(): Boolean {
+        return false
+    }
+
+    override fun isSucceeding(): Boolean {
+        return false
+    }
 
 }

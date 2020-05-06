@@ -2,7 +2,7 @@ package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.*
 import io.factdriven.language.impl.utils.asType
-import io.factdriven.language.visualization.bpmn.diagram.*
+import io.factdriven.language.visualization.bpmn.diagram.Container
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -18,7 +18,9 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
 
     val branches: List<Sequence> get() = elements.filterIsInstance<Sequence>()
 
-    override val conditional: Conditional? get() = if (!hasJoin()) branches.find { it.elements.isEmpty() && it.node.isContinuing() }?.node?.find(Conditional::class) else null
+    override val conditional: Conditional? get() {
+        return if (!hasJoin()) branches.find { it.node.isContinuing() }?.conditional else null
+    }
 
     override val exit: Group<*> get() = branches.find { sequence -> sequence.node.isContinuing() }!!.let { if (hasJoin() && ((it.node as? ConditionalFlow)?.isDefault() == true)) branches.first() else it }
 

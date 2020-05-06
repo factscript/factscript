@@ -5,8 +5,6 @@ interface Reporting {
     fun isSucceeding(): Boolean
     fun isFailing(): Boolean
 
-    fun isContinuing(): Boolean {
-        return !isSucceeding() && !isFailing()
-    }
+    fun isContinuing(): Boolean = !isSucceeding() && !isFailing()
 
 }
