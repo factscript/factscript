@@ -1,11 +1,11 @@
-package io.factdriven.flow.camunda
+package io.factdriven.language.execution.cam
 
 import io.factdriven.language.flow
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-data class CreditCardCharge (
+data class CreditCard (
 
     val reference: String,
     val charge: Float,
@@ -21,9 +21,9 @@ data class CreditCardCharge (
 
     companion object {
 
-        fun init() {
+        init {
 
-            flow<CreditCardCharge> {
+            flow <CreditCard> {
 
                 on command ChargeCreditCard::class promise {
                     report success CreditCardCharged::class
@@ -32,7 +32,10 @@ data class CreditCardCharge (
                 await event ConfirmationReceived::class having "reference" match { reference }
 
                 emit event CreditCardCharged::class by {
-                    CreditCardCharged(reference = reference, charge = charge)
+                    CreditCardCharged(
+                        reference = reference,
+                        charge = charge
+                    )
                 }
 
             }
@@ -42,7 +45,8 @@ data class CreditCardCharge (
     }
 }
 
-
 data class ChargeCreditCard(val reference: String, val charge: Float)
+data class CreditCardExpired(val reference: String, val charge: Float)
+data class CreditCardDetailsUpdated(val reference: String, val charge: Float)
 data class ConfirmationReceived(val reference: String)
 data class CreditCardCharged(val reference: String, val charge: Float)

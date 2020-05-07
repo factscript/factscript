@@ -1,0 +1,123 @@
+###### Varianten der Korrelation events bzw facts
+
+    on event CreditCardExpired::class having "account" match { account }
+
+vs.
+
+    on event CreditCardExpired::class having {
+        "account" match { account }
+    }
+
+vs.
+
+    on event CreditCardExpired::class having {
+        "account" match { account }
+        "number" match { number }
+    }
+
+vs.
+    
+    on event CreditCardExpired::class having CreditCardExpired::account match { account }
+
+vs.
+    
+    on event having CreditCardExpired::account match { account }
+
+vs.
+
+    on event having {
+        CreditCardExpired::account match { account }
+    }
+
+vs.
+
+    on event having {
+        CreditCardExpired::account match { account }
+        CreditCardExpired::number match { number }
+    }
+
+###### Kopfgesteuerte Loops
+
+    loop {
+        select("Payment fully covered?") either {
+            given ("No") condition { covered == total }
+            execute command ChargeCreditCard::class by { ChargeCreditCard(paymentId, total - covered) }
+        } or {
+            given ("Yes")
+        }
+        until ("Payment fully covered?") condition { covered == total }
+    }
+    
+vs.
+
+    loop {
+        until ("Payment fully covered?") condition { covered == total }
+        execute command ChargeCreditCard::class by { ChargeCreditCard(paymentId, total - covered) }
+    }
+    
+Umsetzung von (fuß- und kopfgesteuerten) Loops hat Vor- und Nachteile gegenüber dem Einsatz von XOR Gateways. Kopfgesteuerte Loops sind mit Schleifenmarkierer einfach und sauber umsetzbar, wobei für Camunda zu klären wäre, ob die überhaupt unterstützt werden. Der visuelle Clutter wird durch den Einsatz von Teilprozessen allerdings für viele Leser subjektiv eher grösser (zusätzlicher Rahmen, zusätzliche Start- und Endereignisse). Eine Kopfgesteuerte Loop liesse sich alternativ auch mit zwei doppelt verbundenen XOR Gateways Richtung BPMN umsetzen. Man könnte überlegen, einen der Pfade zu verstecken, oder beide übereinanderzulegen. Nachteil "ein Hack", Vorteil: kompakt, gut lesbar.
+   
+###### Promise Section als reine Möglichkeit eine API zu definieren
+
+    on command RetrievePayment::class promise {
+        report success PaymentRetrieved::class
+    }
+    
+als API vs. folgendem Vorgehen bei expliziter Definition des Flows
+
+    on command RetrievePayment::class
+
+    execute command WithdrawAmount::class by { WithdrawAmount(name = accountId, amount = total) }
+
+    loop {
+        select("Payment fully covered?") either {
+            given ("No") condition { covered == total }
+            execute command ChargeCreditCard::class by {
+                ChargeCreditCard(
+                    reference = paymentId,
+                    charge = total - covered
+                )
+            }
+        } or {
+            given ("Yes")
+        }
+        until ("Payment fully covered?") condition { covered == total }
+    }
+    
+    report success PaymentRetrieved::class by { PaymentRetrieved(paymentId = paymentId, payment = total) }
+    
+"promise" ist für "on command" (und künftig auch "on query") sinnvoll, nicht aber für "on time", "on condition" etc. Diese Scripts laufen aus "eigener Verantwortung", nicht "beauftragt", können aber ebenfalls erfolgreich oder nicht erfolgreich laufen.
+    
+###### "on fact having/match" anstelle von "on event having/match"
+
+Event ist ein in den Software Communities leider extrem stark eingeengter und vorbesetzter Begriff, der zum Verständnis dessen wie "fact-driven" scripting mE funktionieren sollte und was mit "on fact" daher möglich sein sollte (nämlich prinzipiell auf "alle" Arten von Nachrichten zu reagieren (also neben klassischen "event" notifications auch command, query, statement/report), etwa um Querschnittsaspekte wie das Ausschicken von Mails, Business Monitotring etc abzudecken.
+
+###### "on failure" (ohne "having/match") zur Reaktion auf Fehler in "but" sections
+
+###### Möglichkeit zu "execute/issue" command "emit event" ohne Angabe der Class prüfen
+
+    execute command WithdrawAmount::class by { WithdrawAmount(accountId, total) }
+
+vs.
+
+    execute command { WithdrawAmount(accountId, total) }
+
+Das technische Problem ist hier, dass die Klasse auslesbar sein muss **ohne** die Instanz erzeugen zu müssen, etwa zur Generierung des Labels. Es ist denkbar, dass das mit inline functions realisierbar ist, aber  nicht ganz trivial, weil diese auf interfaces nicht direkt erlaubt sind.
+
+##### Möglichkeit "by" wegzulassen
+
+    execute command WithdrawAmount::class by { WithdrawAmount(accountId, total) }
+
+vs.
+
+    execute command WithdrawAmount::class { WithdrawAmount(accountId, total) }
+
+vs.
+
+    execute command { WithdrawAmount(accountId, total) }
+    
+Zweite Variante dürfte aus technischen Gründen nur mit Klammer um "WithdrawAmount::class" umsetzbar sein, weil der Compiler die Zusammenhänge sonst nicht mehr interpretieren kann. Das würde die bisherige Konsistenz etwas mehr brechen als "by" zu verwenden ... bei der dritten Variante (so möglich), würde sich das Problem allerdings gar nicht mehr stellen.
+
+##### Möglichkeit mehrere Flows für eine Entität anzulegen
+
+Hauptflow ist jener, dessen "on fact" eine neue Instanz erzeugt. Alternativ ist es ein on time oder ein condition flow, wenn der Constructor der Entität default ist. Alle anderen Flows wären dann in BPMN Ereignisteilprozesse. Wie entscheiden welcher Flow die Instanz erzeugt, wenn es mehrere nicht "on fact" flows gibt?

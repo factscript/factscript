@@ -1,10 +1,7 @@
-package io.factdriven.flow.camunda
+package io.factdriven.language.execution.cam
 
 import io.factdriven.execution.Messages
-import io.factdriven.language.execution.cam.FactDrivenLanguagePlugin
-import io.factdriven.language.execution.cam.EngineMessageProcessor
-import io.factdriven.language.execution.cam.EngineMessagePublisher
-import io.factdriven.language.execution.cam.EngineMessageStore
+import io.factdriven.language.Flows
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication
@@ -31,9 +28,14 @@ fun main(args: Array<String>) {
         Messages.register(EngineMessageProcessor())
         Messages.register(EngineMessagePublisher())
         Messages.register(EngineMessageStore())
-        PaymentRetrieval.init()
-        CreditCardCharge.init()
-        CustomerAccount.init()
+        Flows.initialize(
+            Fulfillment::class,
+            Shipment::class,
+            Inventory::class,
+            Payment::class,
+            Account::class,
+            CreditCard::class
+        )
     }
 }
 

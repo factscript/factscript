@@ -1,4 +1,4 @@
-package io.factdriven.flow.camunda
+package io.factdriven.language.execution.cam
 
 import io.factdriven.execution.Messages
 import io.factdriven.execution.Fact
@@ -15,14 +15,15 @@ class PaymentRetrievalController {
 
     @RequestMapping("/retrievePayment", method = [RequestMethod.POST])
     fun index(@RequestParam reference: String = "anOrderId", @RequestParam accountId: String = "anAccountId", @RequestParam payment: Float = 5F): String {
-        val fact = RetrievePayment(reference, accountId, payment)
-        return send(PaymentRetrieval::class, fact).prettyJson
+        val fact =
+            RetrievePayment(reference, accountId, payment)
+        return send(Payment::class, fact).prettyJson
     }
 
     @RequestMapping("/confirmation", method = [RequestMethod.POST])
     fun index(@RequestParam reference: String = "anOrderId"): String {
         val fact = ConfirmationReceived(reference)
-        return send(CreditCardCharge::class, fact).prettyJson
+        return send(CreditCard::class, fact).prettyJson
     }
 
     private fun send(type: KClass<*>, fact: Any): Message {
