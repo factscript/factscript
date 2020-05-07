@@ -6,6 +6,17 @@ package io.factdriven.language.definition
 interface Conditional : Node {
 
     val condition: (Any.() -> Boolean)?
-    fun isDefault(): Boolean
+
+}
+
+interface Optional: Conditional {
+
+    fun isDefault(): Boolean = condition == null
+
+}
+
+interface Looping: Conditional {
+
+    override val condition: (Any.() -> Boolean)
 
 }

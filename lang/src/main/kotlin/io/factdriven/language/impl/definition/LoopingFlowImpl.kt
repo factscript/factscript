@@ -1,8 +1,9 @@
 package io.factdriven.language.impl.definition
 
-import io.factdriven.language.LoopingExecution
+import io.factdriven.language.Loop
 import io.factdriven.language.Until
-import io.factdriven.language.definition.Looping
+import io.factdriven.language.definition.Conditional
+import io.factdriven.language.definition.LoopingFlow
 import io.factdriven.language.definition.Node
 import kotlin.reflect.KClass
 
@@ -10,16 +11,16 @@ import kotlin.reflect.KClass
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 
-class LoopingExecutionImpl<T:Any> (entity: KClass<T>, override val parent: Node? = null):
+class LoopingFlowImpl<T:Any> (entity: KClass<T>, override val parent: Node? = null):
 
-    LoopingExecution<T>,
+    Loop<T>,
 
-    Looping,
-    ExecutionImpl<T>(entity, parent)
+    LoopingFlow,
+    FlowImpl<T>(entity, parent)
 
 {
 
-    override fun invoke(path: LoopingExecution<T>.() -> Unit) {
+    override fun invoke(path: Loop<T>.() -> Unit) {
         apply(path)
     }
 
@@ -29,6 +30,8 @@ class LoopingExecutionImpl<T:Any> (entity: KClass<T>, override val parent: Node?
             children.add(child)
             return child
         }
+
+    override val condition: (Any.() -> Boolean) get() = find(Conditional::class)!!.condition!!
 
     override fun isFailing(): Boolean {
         return false

@@ -5,16 +5,16 @@ import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.conditions.*
 import com.amazonaws.services.stepfunctions.builder.states.*
 import io.factdriven.language.definition.Branching
-import io.factdriven.language.definition.Gateway.*
+import io.factdriven.language.definition.Split.*
 import io.factdriven.language.definition.Node
 import io.factdriven.language.impl.utils.prettyJson
-import io.factdriven.language.ConditionalExecution
+import io.factdriven.language.Option
 import io.factdriven.language.Given
 import java.util.stream.Collectors
 
 class ExclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
     override fun test(node: Node): Boolean {
-        return node is Branching && node.gateway == Exclusive
+        return node is Branching && node.split == Exclusive
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
@@ -41,7 +41,7 @@ class ExclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
 
     private fun toChoices(translationContext: TranslationContext, branching: Branching): Array<Choice.Builder> {
         return branching.children.stream()
-                .map {node -> node as ConditionalExecution<*>}
+                .map {node -> node as Option<*>}
                 .peek { conditionalExecution -> flowTranslator.translateGraph(translationContext, conditionalExecution.children.first()) }
                 .map {condition ->
                     Choice.builder().condition(toCondition(condition)).transition(translationContext.transitionStrategy.nextTransition(condition.children.first()) as NextStateTransition.Builder?)
@@ -49,14 +49,14 @@ class ExclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
                 .toTypedArray()
     }
 
-    private fun toCondition(condition: ConditionalExecution<*>): Condition.Builder {
+    private fun toCondition(condition: Option<*>): Condition.Builder {
         return StringEqualsCondition.builder().variable("$.output.condition").expectedValue(toStateName(condition))
     }
 }
 
 class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
     override fun test(node: Node): Boolean {
-        return node is Branching && node.gateway == Inclusive
+        return node is Branching && node.split == Inclusive
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
@@ -99,7 +99,7 @@ class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
 
     private fun toChoices(translationContext: TranslationContext, branching: Branching): Array<Choice.Builder> {
         return branching.children.stream()
-                .map {node -> node as ConditionalExecution<*>}
+                .map {node -> node as Option<*>}
                 .peek { conditionalExecution -> flowTranslator.translateGraph(translationContext, conditionalExecution.children.first()) }
                 .map {condition ->
                     Choice.builder().condition(toCondition(branching.children.indexOf(condition))).transition(translationContext.transitionStrategy.nextTransition(condition.children.first()) as NextStateTransition.Builder?)
@@ -114,7 +114,7 @@ class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
 
 class ParallelTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
     override fun test(node: Node): Boolean {
-        return node is Branching && node.gateway == Parallel
+        return node is Branching && node.split == Parallel
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {

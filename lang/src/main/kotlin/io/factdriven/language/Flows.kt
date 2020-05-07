@@ -1,9 +1,11 @@
 package io.factdriven.language
 
 import io.factdriven.execution.*
+import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Flow
 import io.factdriven.language.definition.Promising
-import io.factdriven.language.impl.definition.PromisingExecutionImpl
+import io.factdriven.language.definition.Throwing
+import io.factdriven.language.impl.definition.PromisingFlowImpl
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
@@ -18,13 +20,13 @@ object Flows {
         return result
     }
 
-    fun <T: Any> register(flow: PromisingExecution<T>): Flow {
+    fun <T: Any> register(flow: Promise<T>): Flow {
         flows[flow.entity] = flow
         return flow
     }
 
-    inline fun <reified T: Any> register(type: KClass<T> = T::class, flow: PromisingExecution<T>.() -> Unit): Flow {
-        val definition = PromisingExecutionImpl(type).apply(flow)
+    inline fun <reified T: Any> register(type: KClass<T> = T::class, flow: Promise<T>.() -> Unit): Flow {
+        val definition = PromisingFlowImpl(type).apply(flow)
         register(definition)
         return definition
     }
@@ -46,7 +48,13 @@ object Flows {
         type?.companionObjectInstance
         val flows = flows
         val result =  flows.values.filter { definition ->
-            (definition.entity == type || type == null) && ((handling == null && reporting == null) || (definition.children.any { it is Promising && (it.consuming == handling || handling == null) && (it.succeeding == reporting || it.failing.contains(reporting) || reporting == null) }))
+            (definition.entity == type || type == null) && (
+                (handling == null && reporting == null) ||
+                (definition.children.any {
+                    it is Promising && definition.children.indexOf(it) == 0
+                        && (it.consuming == handling || handling == null)
+                        && (it.succeeding == reporting || it.failing.contains(reporting) || reporting == null)
+                }))
         }
         return result.firstOrNull()
     }
@@ -61,6 +69,6 @@ object Flows {
 
 }
 
-inline fun <reified T: Any> flow(type: KClass<T> = T::class, flow: PromisingExecution<T>.() -> Unit): Flow {
+inline fun <reified T: Any> flow(type: KClass<T> = T::class, flow: Promise<T>.() -> Unit): Flow {
     return Flows.register(type, flow)
 }

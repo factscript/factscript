@@ -21,7 +21,7 @@ abstract class TaskSymbol<IN: Node, OUT: org.camunda.bpm.model.bpmn.instance.Tas
 
 }
 
-class ServiceTaskSymbol(node: Calling, parent: Group<*>): TaskSymbol<Calling, ServiceTask>(node, parent) {
+class ServiceTaskSymbol(node: Executing, parent: Group<*>): TaskSymbol<Executing, ServiceTask>(node, parent) {
 
     override val model = process.model.newInstance(ServiceTask::class.java)
 

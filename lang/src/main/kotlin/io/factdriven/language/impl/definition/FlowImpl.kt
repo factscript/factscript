@@ -11,7 +11,7 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-open class ExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
+open class FlowImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
 
     Execution<T>,
 
@@ -36,14 +36,14 @@ open class ExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = 
 
     override val await: Await<T>
         get() {
-            val child = AwaitingImpl<T>(this)
+            val child = CorrelatingImpl<T>(this)
             children.add(child)
             return child
         }
 
     override val execute: Execute<T>
         get() {
-            val child = CallingImpl<T>(this)
+            val child = ExecutingImpl<T>(this)
             children.add(child)
             return child
         }
@@ -55,10 +55,10 @@ open class ExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = 
             return child
         }
 
-    override val loop: LoopingExecution<T>
+    override val loop: Loop<T>
         get() {
             @Suppress("UNCHECKED_CAST")
-            val child = LoopingExecutionImpl<T>(entity as KClass<T>, this)
+            val child = LoopingFlowImpl<T>(entity as KClass<T>, this)
             children.add(child)
             return child
         }
@@ -74,28 +74,20 @@ open class ExecutionImpl<T:Any>(entity: KClass<T>, override val parent: Node? = 
         return (children.lastOrNull() as? Throwing)?.isFailing() == true
     }
 
-    fun cycle(period: T.() -> String): AwaitTimeCycle<T> {
-        return AwaitingTimeImpl(this, period = period, times = { Int.MAX_VALUE } )
-    }
-
-    fun cycle(description: String, period: T.() -> String): AwaitTimeCycle<T> {
-        return AwaitingTimeImpl(this, description= description, period = period, times = { Int.MAX_VALUE } )
-    }
-
     override fun duration(period: T.() -> String): AwaitTimeDuration<T> {
-        return AwaitingTimeImpl(this, period = period)
+        return WaitingImpl(this, period = period)
     }
 
     override fun duration(description: String, period: T.() -> String): AwaitTimeDuration<T> {
-        return AwaitingTimeImpl(this, description= description, period = period)
+        return WaitingImpl(this, description= description, period = period)
     }
 
     override fun limit(date: T.() -> LocalDateTime): AwaitTimeLimit<T> {
-        return AwaitingTimeImpl(this, limit = date)
+        return WaitingImpl(this, limit = date)
     }
 
     override fun limit(description: String, date: T.() -> LocalDateTime): AwaitTimeLimit<T> {
-        return AwaitingTimeImpl(this, description = description, limit = date)
+        return WaitingImpl(this, description = description, limit = date)
     }
 
 }

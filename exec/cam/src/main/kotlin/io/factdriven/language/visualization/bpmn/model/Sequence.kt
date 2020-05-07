@@ -16,13 +16,13 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
 
     override val elements: List<Element<*,*>> = node.children.mapNotNull {
         when (it) {
-            is Calling -> Task(it, this)
+            is Executing -> Task(it, this)
             is Throwing -> if (it.throwingType == FactType.Event || it.isFinish() || !it.isContinuing()) ThrowingEventSymbol(it, this) else Task(it, this)
             is Promising -> CatchingEventSymbol(it, this)
-            is Consuming -> if (parent is Task && node.children.indexOf(it) == 0) BoundaryEventSymbol(it, this) else if ((parent is Branch && parent.node.gateway == Gateway.Catching) && node.children.indexOf(it) == 0) CatchingEventSymbol(it, this) else Task(it, this)
+            is Consuming -> if (parent is Task && node.children.indexOf(it) == 0) BoundaryEventSymbol(it, this) else if ((parent is Branch && parent.node.split == Split.Waiting) && node.children.indexOf(it) == 0) CatchingEventSymbol(it, this) else Task(it, this)
             is Catching -> if (parent is Task && node.children.indexOf(it) == 0) BoundaryEventSymbol(it, this) else CatchingEventSymbol(it, this)
             is Branching -> Branch(it, this)
-            is Looping -> Loop(it, this)
+            is LoopingFlow -> Loop(it, this)
             is Flow -> Sequence(it, this)
             is Conditional -> null
             else -> throw IllegalStateException()

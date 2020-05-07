@@ -24,8 +24,8 @@ class EngineTransitionListener: ExecutionListener {
         val messages = Messages.fromJson(messageString)
 
         when (node) {
-            is ConsumingEvent -> node.endpoints(messages)
-            is Calling -> node.endpoints(messages)
+            is Correlating -> node.endpoints(messages)
+            is Executing -> node.endpoints(messages)
             is Branching -> node.endpoints(messages)
             else -> emptyMap()
         }.forEach {
@@ -34,14 +34,14 @@ class EngineTransitionListener: ExecutionListener {
 
     }
 
-    private fun ConsumingEvent.endpoints(messages: List<Message>): Map<String, String> {
+    private fun Correlating.endpoints(messages: List<Message>): Map<String, String> {
         val instance = Messages.load(messages, entity)
         val details = properties.mapIndexed { idx, property -> property to matching[idx].invoke(instance) }.toMap()
         val successfulEndpoint = mapOf(id to Receptor(consuming, details).hash)
         return successfulEndpoint + optionalEndpoints(instance)
     }
 
-    private fun Calling.endpoints(messages: List<Message>): Map<String, String> {
+    private fun Executing.endpoints(messages: List<Message>): Map<String, String> {
         val successfulEndpoint = mapOf(id to Receptor(correlating = MessageId.nextAfter(messages.last().id)).hash)
         return successfulEndpoint + optionalEndpoints(instance)
     }
@@ -53,15 +53,15 @@ class EngineTransitionListener: ExecutionListener {
 
     private fun Node.optionalEndpoints(instance: Any): Map<String, String> {
         return children.mapNotNull {
-            val awaiting = it.children.first()
-            if (awaiting is ConsumingEvent) {
-                val details = awaiting.properties.mapIndexed { propertyIndex, propertyName ->
-                    propertyName to awaiting.matching[propertyIndex].invoke(instance)
+            val correlating = it.children.first()
+            if (correlating is Correlating) {
+                val details = correlating.properties.mapIndexed { propertyIndex, propertyName ->
+                    propertyName to correlating.matching[propertyIndex].invoke(instance)
                 }.toMap()
-                awaiting.id to Receptor(awaiting.consuming, details).hash
-            } else if (awaiting is AwaitingTime) {
-                val timer = awaiting.period?.invoke(instance) // TODO ?: awaiting.limit?.invoke(handlerInstance)
-                awaiting.id to timer!!
+                correlating.id to Receptor(correlating.consuming, details).hash
+            } else if (correlating is Waiting) {
+                val timer = correlating.period?.invoke(instance) // TODO ?: awaiting.limit?.invoke(handlerInstance)
+                correlating.id to timer!!
             } else null
         }.toMap()
     }

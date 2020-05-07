@@ -61,12 +61,12 @@ class NodeTest {
     fun testLevel2Forward() {
 
         var node = Flows.get(NodeTestFlow::class).start.forward!!.children.first().children.first() as Node?
-        assertTrue(node is Calling)
+        assertTrue(node is Executing)
         assertTrue(!node!!.isLastSibling())
         assertTrue(!node.isFinish())
 
         node = node.forward
-        assertTrue(node is Calling)
+        assertTrue(node is Executing)
         assertTrue(node!!.isLastSibling())
         assertTrue(!node.isFinish())
 
@@ -84,12 +84,12 @@ class NodeTest {
     fun testLevel2Backward() {
 
         var node = Flows.get(NodeTestFlow::class).start.forward!!.children.first().children.first().forward as Node?
-        assertTrue(node is Calling)
+        assertTrue(node is Executing)
         assertTrue(!node!!.isFirstSibling())
         assertTrue(!node.isStart())
 
         node = node.backward
-        assertTrue(node is Calling)
+        assertTrue(node is Executing)
         assertTrue(node!!.isFirstSibling())
         assertTrue(!node.isStart())
 
@@ -110,25 +110,25 @@ class NodeTest {
             .children.first().children.first().forward!!
             .children.first().children.first()
 
-        assertTrue (node is ConsumingEvent)
+        assertTrue (node is Consuming)
         assertFalse(node.isLastSibling())
         assertFalse(node.isFinish())
 
         node = node.forward!!
 
-        assertTrue (node is ConsumingEvent)
+        assertTrue (node is Consuming)
         assertTrue (node.isLastSibling())
         assertFalse(node.isFinish())
 
         node = node.forward!!
 
-        assertTrue (node is ConsumingEvent)
+        assertTrue (node is Consuming)
         assertTrue(node.isLastSibling())
         assertFalse(node.isFinish())
 
         node = node.forward!!
 
-        assertTrue (node is ConsumingEvent)
+        assertTrue (node is Consuming)
         assertFalse(node.isLastSibling())
         assertFalse(node.isFinish())
 

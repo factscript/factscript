@@ -2,7 +2,7 @@ package io.factdriven.language.definition.issue_command
 
 import io.factdriven.language.Flows
 import io.factdriven.language.definition.Consuming
-import io.factdriven.language.definition.ConsumingEvent
+import io.factdriven.language.definition.Correlating
 import io.factdriven.language.definition.Throwing
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -33,7 +33,7 @@ class PaymentRetrievalTest {
         Assertions.assertEquals(ChargeCreditCard(instance.id, instance.total), issue?.instance?.invoke(instance))
         Assertions.assertEquals(definition, issue?.parent)
 
-        val notice = definition.find(nodeOfType = ConsumingEvent::class, dealingWith = CreditCardCharged::class)
+        val notice = definition.find(nodeOfType = Correlating::class, dealingWith = CreditCardCharged::class)
         Assertions.assertEquals(PaymentRetrieval::class, notice?.entity)
         Assertions.assertEquals(CreditCardCharged::class, notice?.consuming)
         Assertions.assertEquals(definition, notice?.parent)

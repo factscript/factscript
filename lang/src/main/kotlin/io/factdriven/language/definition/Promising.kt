@@ -1,3 +1,11 @@
 package io.factdriven.language.definition
 
-interface Promising: ConsumingEvent, Succeeding, Failing
+import kotlin.reflect.KClass
+
+interface Promising: Consuming {
+
+    val succeeding: KClass<*>?
+
+    val failing: List<KClass<*>>
+
+}

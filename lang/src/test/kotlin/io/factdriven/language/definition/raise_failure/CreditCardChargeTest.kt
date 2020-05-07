@@ -26,13 +26,13 @@ class CreditCardChargeTest {
 
         val on = definition.children[0] as Promising
         assertEquals(CreditCardCharge::class, on.entity)
-        assertEquals(ChargeCreditCard::class, on.consuming)
+        assertEquals(ChargeCreditCard::class, (on as Consuming).consuming)
         assertEquals(CreditCardCharged::class, on.succeeding)
         assertEquals(1, on.failing.size)
         assertEquals(CreditCardExpired::class, on.failing.first())
         assertEquals(definition, on.parent)
 
-        val await = definition.children[1] as ConsumingEvent
+        val await = definition.children[1] as Correlating
         assertEquals(CreditCardCharge::class, await.entity)
         assertEquals(CreditCardGatewayConfirmationReceived::class, await.consuming)
         assertEquals(1, await.matching.size)
@@ -43,22 +43,22 @@ class CreditCardChargeTest {
 
         val branching = definition.children[2] as Branching
         assertEquals(CreditCardCharge::class, branching.entity)
-        assertEquals(Gateway.Exclusive, branching.gateway)
+        assertEquals(Split.Exclusive, branching.split)
         assertEquals("Credit card expired?", branching.description)
 
         assertEquals(2, branching.children.size)
 
-        assertEquals(null, branching.children[0].asType<ConditionalFlow>()?.condition?.invoke(instance))
-        assertEquals(true, branching.children[0].asType<ConditionalFlow>()?.isDefault())
-        assertEquals(false, branching.children[0].asType<ConditionalFlow>()?.isSucceeding())
-        assertEquals(false, branching.children[0].asType<ConditionalFlow>()?.isFailing())
-        assertEquals(true, branching.children[0].asType<ConditionalFlow>()?.isContinuing())
+        assertEquals(null, branching.children[0].asType<OptionalFlow>()?.condition?.invoke(instance))
+        assertEquals(true, branching.children[0].asType<OptionalFlow>()?.isDefault())
+        assertEquals(false, branching.children[0].asType<OptionalFlow>()?.isSucceeding())
+        assertEquals(false, branching.children[0].asType<OptionalFlow>()?.isFailing())
+        assertEquals(true, branching.children[0].asType<OptionalFlow>()?.isContinuing())
 
-        assertEquals(true, branching.children[1].asType<ConditionalFlow>()?.condition?.invoke(instance))
-        assertEquals(false, branching.children[1].asType<ConditionalFlow>()?.isDefault())
-        assertEquals(false, branching.children[1].asType<ConditionalFlow>()?.isSucceeding())
-        assertEquals(true, branching.children[1].asType<ConditionalFlow>()?.isFailing())
-        assertEquals(false, branching.children[1].asType<ConditionalFlow>()?.isContinuing())
+        assertEquals(true, branching.children[1].asType<OptionalFlow>()?.condition?.invoke(instance))
+        assertEquals(false, branching.children[1].asType<OptionalFlow>()?.isDefault())
+        assertEquals(false, branching.children[1].asType<OptionalFlow>()?.isSucceeding())
+        assertEquals(true, branching.children[1].asType<OptionalFlow>()?.isFailing())
+        assertEquals(false, branching.children[1].asType<OptionalFlow>()?.isContinuing())
 
         val emit = definition.children[3] as Throwing
         assertEquals(CreditCardCharge::class, emit.entity)

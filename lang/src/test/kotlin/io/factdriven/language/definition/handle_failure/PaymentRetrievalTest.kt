@@ -1,7 +1,8 @@
 package io.factdriven.language.definition.handle_failure
 
 import io.factdriven.language.Flows
-import io.factdriven.language.definition.Calling
+import io.factdriven.language.definition.Executing
+import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Promising
 import io.factdriven.language.definition.Throwing
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,16 +32,15 @@ class PaymentRetrievalTest {
 
         val on = definition.children[0] as Promising
         assertEquals(PaymentRetrieval::class, on.entity)
-        assertEquals(RetrievePayment::class, on.consuming)
+        assertEquals(RetrievePayment::class, (on as Consuming).consuming)
         assertEquals(PaymentRetrieved::class, on.succeeding)
         assertEquals(1, on.failing.size)
         assertEquals(PaymentFailed::class, on.failing.first())
         assertEquals(definition, on.parent)
 
-        val execute = definition.find(nodeOfType = Calling::class, dealingWith = ChargeCreditCard::class)
+        val execute = definition.find(nodeOfType = Executing::class, dealingWith = ChargeCreditCard::class)
         assertEquals(PaymentRetrieval::class, execute?.entity)
         assertEquals(ChargeCreditCard::class, execute?.throwing)
-        assertEquals(CreditCardCharged::class, execute?.consuming)
         assertEquals(CreditCardCharged::class, execute?.succeeding)
         assertEquals(1, execute?.failing?.size)
         assertEquals(CreditCardExpired::class, execute?.failing?.first())

@@ -5,10 +5,10 @@ package io.factdriven.language.definition
  */
 interface Branching: Node {
 
-    val gateway: Gateway
+    val split: Split
 
     fun isConditional(): Boolean
 
 }
 
-enum class Gateway { Exclusive, Inclusive, Parallel, Catching }
+enum class Split { Exclusive, Inclusive, Parallel, Waiting }

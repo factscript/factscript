@@ -2,7 +2,7 @@ package io.factdriven.language.definition.execute_command
 
 import io.factdriven.language.Flows
 import io.factdriven.language.definition.Consuming
-import io.factdriven.language.definition.Calling
+import io.factdriven.language.definition.Executing
 import io.factdriven.language.definition.Throwing
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -31,10 +31,10 @@ class PaymentRetrievalTest {
         Assertions.assertEquals(RetrievePayment::class, on?.consuming)
         Assertions.assertEquals(definition, on?.parent)
 
-        val execute = definition.find(nodeOfType = Calling::class, dealingWith = ChargeCreditCard::class)
+        val execute = definition.find(nodeOfType = Executing::class, dealingWith = ChargeCreditCard::class)
         Assertions.assertEquals(PaymentRetrieval::class, execute?.entity)
         Assertions.assertEquals(ChargeCreditCard::class, execute?.throwing)
-        Assertions.assertEquals(CreditCardCharged::class, execute?.consuming)
+        Assertions.assertEquals(CreditCardCharged::class, execute?.succeeding)
         Assertions.assertEquals(ChargeCreditCard(instance.id, instance.total), execute?.instance?.invoke(instance))
         Assertions.assertEquals(definition, execute?.parent)
 

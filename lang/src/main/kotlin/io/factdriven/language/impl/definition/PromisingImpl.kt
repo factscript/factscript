@@ -4,18 +4,18 @@ import io.factdriven.language.definition.Node
 import io.factdriven.language.definition.Promising
 import io.factdriven.language.On
 import io.factdriven.language.OnCommandPromise
-import io.factdriven.language.OnCommandPromiseReportSuccess
+import io.factdriven.language.OnCommandPromiseReport
 import io.factdriven.language.Report
 import kotlin.reflect.KClass
 
 open class PromisingImpl<T: Any>(parent: Node):
 
     On<T>,
-    OnCommandPromiseReportSuccess<T>, OnCommandPromise<T>,
+    OnCommandPromiseReport<T>, OnCommandPromise<T>,
     Report<T>,
 
     Promising,
-    AwaitingImpl<T>(parent)
+    CorrelatingImpl<T>(parent)
 
 {
 
@@ -27,7 +27,7 @@ open class PromisingImpl<T: Any>(parent: Node):
         return this
     }
 
-    override fun promise(promise: OnCommandPromiseReportSuccess<T>.() -> Unit): OnCommandPromiseReportSuccess<T> {
+    override fun promise(promise: OnCommandPromiseReport<T>.() -> Unit): OnCommandPromiseReport<T> {
         this.apply(promise)
         return this
     }

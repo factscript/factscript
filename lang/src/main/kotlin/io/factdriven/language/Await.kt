@@ -1,7 +1,6 @@
 package io.factdriven.language
 
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
 /**
@@ -20,14 +19,14 @@ interface AwaitEvent<T: Any> {
 @FlowLanguage
 interface AwaitFirst<T: Any> {
 
-    infix fun first(path: AwaitingExecution<T>.() -> Unit): AwaitOr<T>
+    infix fun first(path: Catch<T>.() -> Unit): AwaitOr<T>
 
 }
 
 @FlowLanguage
 interface AwaitOr<T: Any> {
 
-    infix fun or(path: AwaitingExecution<T>.() -> Unit): AwaitOr<T>
+    infix fun or(path: Catch<T>.() -> Unit): AwaitOr<T>
 
 }
 
@@ -59,6 +58,6 @@ interface AwaitEventHavingMatch<T: Any> {
 @FlowLanguage
 interface AwaitEventBut<T: Any> {
 
-    infix fun but(path: AwaitingExecution<T>.() -> Unit): AwaitEventBut<T>
+    infix fun but(path: Catch<T>.() -> Unit): AwaitEventBut<T>
 
 }

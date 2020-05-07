@@ -3,7 +3,7 @@ package io.factdriven.language.definition.execute_all
 import io.factdriven.language.Flows
 import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Branching
-import io.factdriven.language.definition.Gateway
+import io.factdriven.language.definition.Split
 import io.factdriven.language.definition.Throwing
 import io.factdriven.language.Execution
 import org.junit.jupiter.api.Assertions.*
@@ -36,7 +36,7 @@ class PaymentRetrievalTest {
 
         val branching = definition.children[1] as Branching
         assertEquals(PaymentRetrieval::class, branching.entity)
-        assertEquals(Gateway.Parallel, branching.gateway)
+        assertEquals(Split.Parallel, branching.split)
         assertEquals("", branching.description)
         assertEquals(2, branching.children.size)
         assertTrue(Execution::class.isInstance(branching.children[0]))

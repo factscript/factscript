@@ -2,7 +2,7 @@ package io.factdriven.language.impl.definition
 
 import io.factdriven.language.definition.Branching
 import io.factdriven.language.definition.Node
-import io.factdriven.language.definition.Gateway
+import io.factdriven.language.definition.Split
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.*
@@ -19,28 +19,28 @@ open class BranchingImpl<T: Any>(parent: Node):
 
 {
 
-    override lateinit var gateway: Gateway
+    override lateinit var split: Split
     override var description: String = ""; protected set
 
     override val type: Type
         get() = Type(
             entity.type.context,
-            gateway.name
+            split.name
         )
 
-    override fun either(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
-        gateway = Gateway.Exclusive
+    override fun either(path: Option<T>.() -> Unit): SelectOr<T> {
+        split = Split.Exclusive
         return or(path)
     }
 
-    override fun all(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
-        gateway = Gateway.Inclusive
+    override fun all(path: Option<T>.() -> Unit): SelectOr<T> {
+        split = Split.Inclusive
         return or(path)
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun or(path: ConditionalExecution<T>.() -> Unit): SelectOr<T> {
-        val flow = ConditionalExecutionImpl(
+    override fun or(path: Option<T>.() -> Unit): SelectOr<T> {
+        val flow = OptionalFlowImpl(
             entity as KClass<T>,
             this
         ).apply(path)
@@ -49,8 +49,8 @@ open class BranchingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun or(path: AwaitingExecution<T>.() -> Unit): AwaitOr<T> {
-        val flow = AwaitingExecutionImpl(
+    override fun or(path: Catch<T>.() -> Unit): AwaitOr<T> {
+        val flow = ConsumingFlowImpl(
             entity as KClass<T>,
             this
         ).apply(path)
@@ -61,7 +61,7 @@ open class BranchingImpl<T: Any>(parent: Node):
     @Suppress("UNCHECKED_CAST")
     override fun and(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
         @Suppress("UNCHECKED_CAST")
-        val flow = ExecutionImpl(
+        val flow = FlowImpl(
             entity as KClass<T>,
             this
         ).apply(path)
@@ -74,6 +74,6 @@ open class BranchingImpl<T: Any>(parent: Node):
         return this
     }
 
-    override fun isConditional(): Boolean = gateway == Gateway.Exclusive || gateway == Gateway.Inclusive
+    override fun isConditional(): Boolean = split == Split.Exclusive || split == Split.Inclusive
 
 }

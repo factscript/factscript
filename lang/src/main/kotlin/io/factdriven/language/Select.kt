@@ -9,20 +9,20 @@ interface Select<T: Any>: SelectEither<T>, SelectAll<T>, Labeled<Select<T>>
 @FlowLanguage
 interface SelectEither<T: Any> {
 
-    infix fun either(path: ConditionalExecution<T>.() -> Unit): SelectOr<T>
+    infix fun either(path: Option<T>.() -> Unit): SelectOr<T>
 
 }
 
 @FlowLanguage
 interface SelectAll<T: Any> {
 
-    infix fun all(path: ConditionalExecution<T>.() -> Unit): SelectOr<T>
+    infix fun all(path: Option<T>.() -> Unit): SelectOr<T>
 
 }
 
 @FlowLanguage
 interface SelectOr<T:Any> {
 
-    infix fun or(path: ConditionalExecution<T>.() -> Unit): SelectOr<T>
+    infix fun or(path: Option<T>.() -> Unit): SelectOr<T>
 
 }

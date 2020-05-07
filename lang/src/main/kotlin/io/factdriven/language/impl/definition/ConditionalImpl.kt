@@ -6,6 +6,7 @@ import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.Given
 import io.factdriven.language.Until
+import io.factdriven.language.definition.Optional
 
 open class ConditionalImpl<T: Any>(parent: Node):
 
@@ -13,6 +14,7 @@ open class ConditionalImpl<T: Any>(parent: Node):
     Until<T>,
 
     Conditional,
+    Optional,
     NodeImpl(parent)
 
 {

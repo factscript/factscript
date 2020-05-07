@@ -35,9 +35,11 @@ open class ThrowingImpl<T: Any, F: Any>(parent: Node):
         return this as By<T, M>
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <M : Any> command(type: KClass<M>): By<T, M> {
         this.throwingType = FactType.Command
-        return event(type)
+        this.throwing = type
+        return this as By<T, M>
     }
 
     @Suppress("UNCHECKED_CAST")

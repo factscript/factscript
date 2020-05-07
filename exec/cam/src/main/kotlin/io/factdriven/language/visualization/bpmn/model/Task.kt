@@ -28,7 +28,7 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
     init {
 
         task = when (node) {
-            is Calling -> ServiceTaskSymbol(node, this)
+            is Executing -> ServiceTaskSymbol(node, this)
             is Throwing -> SendTaskSymbol(node, this)
             is Consuming -> ReceiveTaskSymbol(node, this)
             else -> throw IllegalStateException()

@@ -18,12 +18,12 @@ interface OnCommand<T: Any> {
 @FlowLanguage
 interface OnCommandPromise<T: Any> {
 
-    infix fun promise(promise: OnCommandPromiseReportSuccess<T>.() -> Unit): OnCommandPromiseReportSuccess<T>
+    infix fun promise(promise: OnCommandPromiseReport<T>.() -> Unit): OnCommandPromiseReport<T>
 
 }
 
 @FlowLanguage
-interface OnCommandPromiseReportSuccess<T: Any> {
+interface OnCommandPromiseReport<T: Any> {
 
     val report: Report<T>
 

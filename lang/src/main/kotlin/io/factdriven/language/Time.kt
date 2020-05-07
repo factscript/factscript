@@ -11,17 +11,8 @@ interface Time<T: Any>: TimeDuration<T>, TimeLimit<T>
 @FlowLanguage
 interface AwaitTime<T: Any> {
 
-    infix fun time (cycle: AwaitTimeCycle<T>): AwaitTimeCycleFromLimitTimes<T>
-    infix fun time (duration: AwaitTimeDuration<T>): AwaitTimeFrom<T, Unit>
+    infix fun time (duration: AwaitTimeDuration<T>)
     infix fun time (limit: AwaitTimeLimit<T>)
-
-}
-
-@FlowLanguage
-interface TimeCycle<T: Any> {
-
-    fun cycle(period: T.() -> String): AwaitTimeCycle<T>
-    fun cycle(description: String, period: T.() -> String): AwaitTimeCycle<T>
 
 }
 
@@ -42,35 +33,7 @@ interface TimeLimit<T: Any> {
 }
 
 @FlowLanguage
-interface AwaitTimeCycle<T>
-
-@FlowLanguage
 interface AwaitTimeDuration<T>
 
 @FlowLanguage
 interface AwaitTimeLimit<T>
-
-@FlowLanguage
-interface AwaitTimeCycleFromLimitTimes<T>: AwaitTimeFrom<T, AwaitTimeCycleFromLimitTimes<T>>, AwaitTimeCycleLimit<T, AwaitTimeCycleFromLimitTimes<T>>,
-    AwaitTimeCycleTimes<T, AwaitTimeCycleFromLimitTimes<T>>
-
-interface AwaitTimeFrom<T,O> {
-
-    infix fun from(date: T.() -> LocalDateTime): O
-
-}
-
-@FlowLanguage
-interface AwaitTimeCycleLimit<T,O> {
-
-    infix fun limit(date: T.() -> LocalDateTime): O
-
-}
-
-@FlowLanguage
-interface AwaitTimeCycleTimes<T,O> {
-
-    infix fun times(times: T.() -> Int): O
-    infix fun times(times: Int): O
-
-}

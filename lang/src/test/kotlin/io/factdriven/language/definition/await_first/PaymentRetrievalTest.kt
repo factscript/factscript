@@ -33,7 +33,7 @@ class PaymentRetrievalTest {
 
         val branching = definition.children[1] as Branching
         assertEquals(PaymentRetrieval::class, branching.entity)
-        assertEquals(Gateway.Catching, branching.gateway)
+        assertEquals(Split.Waiting, branching.split)
         assertEquals("", branching.description)
         assertEquals(2, branching.children.size)
         assertTrue(Flow::class.isInstance(branching.children[0]))

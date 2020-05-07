@@ -5,21 +5,21 @@ import io.factdriven.execution.Receptor
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.*
-import io.factdriven.language.definition.ConsumingEvent
-import io.factdriven.language.definition.Gateway
+import io.factdriven.language.definition.Consuming
+import io.factdriven.language.definition.Correlating
+import io.factdriven.language.definition.Split
 import io.factdriven.language.definition.Node
-import io.factdriven.language.definition.Promising
 import io.factdriven.language.impl.utils.getValue
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 
-open class AwaitingImpl<T: Any>(parent: Node):
+open class CorrelatingImpl<T: Any>(parent: Node):
 
     Await<T>,
     AwaitEventHaving<T, Any>,
     AwaitEventHavingMatch<T>,
 
-    ConsumingEvent,
+    Correlating,
     NodeImpl(parent)
 
 {
@@ -61,8 +61,8 @@ open class AwaitingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun but(path: AwaitingExecution<T>.() -> Unit): AwaitEventBut<T> {
-        val flow = AwaitingExecutionImpl(
+    override fun but(path: Catch<T>.() -> Unit): AwaitEventBut<T> {
+        val flow = ConsumingFlowImpl(
             entity as KClass<T>,
             this
         )
@@ -72,12 +72,12 @@ open class AwaitingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun first(path: AwaitingExecution<T>.() -> Unit): AwaitOr<T> {
+    override fun first(path: Catch<T>.() -> Unit): AwaitOr<T> {
         val branch = BranchingImpl<T>(parent!!)
-        branch.gateway = Gateway.Catching
+        branch.split = Split.Waiting
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        val flow = AwaitingExecutionImpl(
+        val flow = ConsumingFlowImpl(
             entity as KClass<T>,
             branch
         ).apply(path)
@@ -85,24 +85,16 @@ open class AwaitingImpl<T: Any>(parent: Node):
         return branch
     }
 
-    override fun time(cycle: AwaitTimeCycle<T>): AwaitTimeCycleFromLimitTimes<T> {
-        (parent as NodeImpl).children.remove(this)
-        (parent as NodeImpl).children.add(cycle as AwaitingTimeImpl)
-        cycle.parent = parent
-        return cycle
-    }
-
     @Suppress("UNCHECKED_CAST")
-    override fun time(duration: AwaitTimeDuration<T>): AwaitTimeFrom<T, Unit> {
+    override fun time(duration: AwaitTimeDuration<T>) {
         (parent as NodeImpl).children.remove(this)
-        (parent as NodeImpl).children.add(duration as AwaitingTimeImpl)
+        (parent as NodeImpl).children.add(duration as WaitingImpl)
         duration.parent = parent
-        return duration as AwaitTimeFrom<T, Unit>
     }
 
     override fun time(limit: AwaitTimeLimit<T>) {
         (parent as NodeImpl).children.remove(this)
-        (parent as NodeImpl).children.add(limit as AwaitingTimeImpl)
+        (parent as NodeImpl).children.add(limit as WaitingImpl)
         limit.parent = parent
     }
 
@@ -117,12 +109,20 @@ open class AwaitingImpl<T: Any>(parent: Node):
         else emptyList()
     }
 
-    override fun isSucceeding(): Boolean {
-        return Flows.find(reporting = consuming)?.find(Promising::class)?.succeeding == consuming
+}
+
+class AwaitEventHavingMatchesImpl<T: Any>: AwaitEventHavingMatches<T, Any> {
+
+    val properties: MutableList<String> = mutableListOf()
+    val matching: MutableList<T.() -> Any?> = mutableListOf()
+
+    override fun String.match(match: T.() -> Any?) {
+        properties.add(this)
+        matching.add(match)
     }
 
-    override fun isFailing(): Boolean {
-        return Flows.find(reporting = consuming)?.find(Promising::class)?.failing?.contains(consuming) == true
+    override fun KProperty1<Any, *>.match(match: T.() -> Any?) {
+        name.match(match)
     }
 
 }

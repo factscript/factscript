@@ -18,36 +18,36 @@ interface Execution<T: Any>: Flow, Time<T> {
 
     val select: Select<T>
 
-    val loop: LoopingExecution<T>
+    val loop: Loop<T>
 
 }
 
 @FlowLanguage
-interface AwaitingExecution<T:Any>: Execution<T> {
+interface Catch<T:Any>: Execution<T> {
 
     val on: Await<T>
 
 }
 
 @FlowLanguage
-interface PromisingExecution<T:Any>: AwaitingExecution<T> {
+interface Promise<T:Any>: Catch<T> {
 
     override val on: On<T>
 
 }
 
 @FlowLanguage
-interface ConditionalExecution<T: Any>: Execution<T> {
+interface Option<T: Any>: Execution<T> {
 
     val given: Given<T>
 
 }
 
 @FlowLanguage
-interface LoopingExecution<T: Any>: Execution<T> {
+interface Loop<T: Any>: Execution<T> {
 
     val until: Until<T>
 
-    operator fun invoke(path: LoopingExecution<T>.() -> Unit)
+    operator fun invoke(path: Loop<T>.() -> Unit)
 
 }

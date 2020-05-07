@@ -1,6 +1,7 @@
 package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.execution.Receptor
+import io.factdriven.language.Flows
 import io.factdriven.language.definition.*
 import io.factdriven.language.impl.utils.Id
 import io.factdriven.language.impl.utils.asLines
@@ -10,7 +11,6 @@ import io.factdriven.language.visualization.bpmn.diagram.Box
 import io.factdriven.language.visualization.bpmn.diagram.Dimension
 import io.factdriven.language.visualization.bpmn.diagram.Direction
 import org.camunda.bpm.model.bpmn.instance.*
-import java.time.format.DateTimeFormatter
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -38,7 +38,8 @@ class CatchingEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
         super.initModel()
 
         when (node) {
-            is AwaitingTime -> {
+
+            is Waiting -> {
 
                 val timerEventDefinition = process.model.newInstance(TimerEventDefinition::class.java)
                 model.addChildElement(timerEventDefinition)
@@ -51,20 +52,10 @@ class CatchingEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
                         timerEventDefinition.timeDuration = process.model.newInstance(TimeDuration::class.java)
                         timerEventDefinition.timeDuration.textContent = "#{${node.id.asBpmnId()}}"
                     }
-                    Timer.Cycle -> {
-                        timerEventDefinition.timeCycle = process.model.newInstance(TimeCycle::class.java)
-                        val timerDefinition = if (node.isStart()) {
-                            val times = node.times!!.invoke(node.entity.construct())
-                            val period = node.period!!.invoke(node.entity.construct())
-                            "R$times/$period"
-                        } else {
-                            "#{${node.id.asBpmnId()}}"
-                        }
-                        timerEventDefinition.timeCycle.textContent = timerDefinition
-                    }
                 }
 
             }
+
             else -> {
 
                 val messageEventDefinition = process.model.newInstance(MessageEventDefinition::class.java)
@@ -84,6 +75,7 @@ class CatchingEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
                 }
 
             }
+
         }
 
     }
@@ -143,40 +135,21 @@ class BoundaryEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
         model.attachedTo = (parent.parent as Task).task.model
         model.cancelActivity()
 
-        if (node is AwaitingTime) {
+        if (node is Waiting) {
 
             val timerEventDefinition = process.model.newInstance(TimerEventDefinition::class.java)
             model.addChildElement(timerEventDefinition)
             when(node.timer) {
                 Timer.Limit -> {
-                    timerEventDefinition.timeDate = process.model.newInstance(TimeDate::class.java)
-                    val timerDefinition = if (node.isStart()) {
-                        val from = node.from!!.invoke(node.entity.construct())
-                        val fmt: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                        fmt.format(from)
-                    } else {
-                        "#{${node.id.asBpmnId()}}"
-                    }
-                    timerEventDefinition.timeDate.textContent = timerDefinition
+                    timerEventDefinition.timeDate.textContent = "#{${node.id.asBpmnId()}}"
                 }
                 Timer.Duration -> {
                     timerEventDefinition.timeDuration = process.model.newInstance(TimeDuration::class.java)
                     timerEventDefinition.timeDuration.textContent = "#{${node.id.asBpmnId()}}"
                 }
-                Timer.Cycle -> {
-                    timerEventDefinition.timeCycle = process.model.newInstance(TimeCycle::class.java)
-                    val timerDefinition = if (node.isStart()) {
-                        val times = node.times!!.invoke(node.entity.construct())
-                        val period = node.period!!.invoke(node.entity.construct())
-                        "R$times/$period"
-                    } else {
-                        "#{${node.id.asBpmnId()}}"
-                    }
-                    timerEventDefinition.timeCycle.textContent = timerDefinition
-                }
             }
 
-        } else if (node is ConsumingEvent && node.isFailing()) {
+        } else if (node is Consuming && Flows.find(reporting = node.consuming)?.find(Promising::class)?.failing?.contains(node.consuming) == true) {
             val errorEventDefinition = process.model.newInstance(ErrorEventDefinition::class.java)
             model.addChildElement(errorEventDefinition)
             val error = process.model.definitions.getChildElementsByType(Error::class.java).find { it.id == node.id + "-Error" }

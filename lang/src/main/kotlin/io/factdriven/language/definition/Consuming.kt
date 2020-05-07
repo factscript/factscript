@@ -11,7 +11,7 @@ interface Consuming : Catching {
 
 }
 
-interface ConsumingEvent: Consuming, Reporting {
+interface Correlating: Consuming {
 
     val properties: List<String>
     val matching: List<Any.() -> Any?>

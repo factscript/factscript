@@ -36,7 +36,7 @@ class CreditCardChargeTest {
             assertEquals(definition, on?.parent)
         */
 
-        val execute = definition.find(nodeOfType = Calling::class)
+        val execute = definition.find(nodeOfType = Executing::class)
         assertEquals(definition.children[1], execute)
         assertEquals(CreditCardCharge::class, execute?.entity)
         assertEquals(ChargeCreditCard::class, execute?.throwing)
@@ -47,22 +47,18 @@ class CreditCardChargeTest {
         assertEquals(definition.children[1], but.parent)
         assertEquals(CreditCardCharge::class, but.entity)
 
-        val duration = but.children[0] as AwaitingTime?
+        val duration = but.children[0] as Waiting?
         assertEquals(but, duration?.parent)
         assertEquals(CreditCardCharge::class, duration?.entity)
         assertEquals(Timer.Duration, duration?.timer)
         assertEquals("PT30S", duration?.period?.invoke(CreditCardCharge(ChargeCreditCard("reference", 3F))))
-        assertNotNull(duration?.from?.invoke(CreditCardCharge(ChargeCreditCard("reference", 3F))))
-        assertNull(duration?.times)
         assertNull(duration?.limit)
 
-        val await = definition.filter(nodesOfType = AwaitingTime::class)[0]
+        val await = definition.filter(nodesOfType = Waiting::class)[0]
         assertEquals(definition.children[2], await)
         assertEquals(CreditCardCharge::class, await.entity)
         assertEquals(Timer.Limit, await.timer)
         assertEquals(null, await.period)
-        assertEquals(null, await.from)
-        assertEquals(null, await.times)
         assertEquals(LocalDate.of(2030, 12, 6).atStartOfDay(), await.limit?.invoke(CreditCardCharge(ChargeCreditCard("reference", 3F))))
         assertEquals(definition, await.parent)
 

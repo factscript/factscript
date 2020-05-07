@@ -141,7 +141,7 @@ class InclusiveHandler : NodeHandler() {
 
     override fun test(processContext: ProcessContext): Boolean {
         val node = processContext.node
-        return node is Branching && node.gateway == Gateway.Inclusive
+        return node is Branching && node.split == Split.Inclusive
     }
 
     override fun handle(processContext: ProcessContext) : HandlerResult {
@@ -181,7 +181,7 @@ class InclusiveHandler : NodeHandler() {
 class ExclusiveHandler : NodeHandler() {
     override fun test(processContext: ProcessContext): Boolean {
         val node = processContext.node
-        return node is Branching && node.gateway == Gateway.Exclusive
+        return node is Branching && node.split == Split.Exclusive
     }
 
     override fun handle(processContext: ProcessContext) : HandlerResult {

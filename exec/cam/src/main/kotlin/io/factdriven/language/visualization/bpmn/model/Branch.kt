@@ -9,11 +9,11 @@ import io.factdriven.language.visualization.bpmn.diagram.Container
  */
 class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(node, parent) {
 
-    var fork: GatewaySymbol<*> = when(node.gateway) {
-        Gateway.Exclusive -> ExclusiveGatewaySymbol(node, this)
-        Gateway.Inclusive -> InclusiveGatewaySymbol(node, this)
-        Gateway.Parallel -> ParallelGatewaySymbol(node, this)
-        Gateway.Catching -> EventBasedGatewaySymbol(node, this)
+    var fork: GatewaySymbol<*> = when(node.split) {
+        Split.Exclusive -> ExclusiveGatewaySymbol(node, this)
+        Split.Inclusive -> InclusiveGatewaySymbol(node, this)
+        Split.Parallel -> ParallelGatewaySymbol(node, this)
+        Split.Waiting -> EventBasedGatewaySymbol(node, this)
     }
 
     val branches: List<Sequence> get() = elements.filterIsInstance<Sequence>()
@@ -22,16 +22,16 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
         return if (!hasJoin()) branches.find { it.node.isContinuing() }?.conditional else null
     }
 
-    override val exit: Group<*> get() = branches.find { sequence -> sequence.node.isContinuing() }!!.let { if (hasJoin() && ((it.node as? ConditionalFlow)?.isDefault() == true)) branches.first() else it }
+    override val exit: Group<*> get() = branches.find { sequence -> sequence.node.isContinuing() }!!.let { if (hasJoin() && ((it.node as? OptionalFlow)?.isDefault() == true)) branches.first() else it }
 
     private fun hasJoin() = join != null || node.children.count { it.asType<Flow>()!!.isContinuing() } > 1
 
     var join: GatewaySymbol<*>? = if (hasJoin())
-        when(node.gateway) {
-            Gateway.Exclusive -> ExclusiveGatewaySymbol(node, this)
-            Gateway.Inclusive -> InclusiveGatewaySymbol(node, this)
-            Gateway.Parallel -> ParallelGatewaySymbol(node, this)
-            Gateway.Catching -> ExclusiveGatewaySymbol(node, this)
+        when(node.split) {
+            Split.Exclusive -> ExclusiveGatewaySymbol(node, this)
+            Split.Inclusive -> InclusiveGatewaySymbol(node, this)
+            Split.Parallel -> ParallelGatewaySymbol(node, this)
+            Split.Waiting -> ExclusiveGatewaySymbol(node, this)
         } else null
 
     override val elements: List<Element<*,*>> = listOf(fork) + node.children.map { Sequence(it as Flow, this) } + listOfNotNull(join)
@@ -59,7 +59,7 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
         fork.diagram.westOf(sequenceDiagram)
 
         branches.subList(1, branches.size).forEach {
-            if ((it.node as? ConditionalFlow)?.isDefault() == true) {
+            if ((it.node as? OptionalFlow)?.isDefault() == true) {
                 it.diagram.northOf(branches.first().diagram)
             } else {
                 sequenceDiagram = sequenceDiagram.northOf(it.diagram) as Container
