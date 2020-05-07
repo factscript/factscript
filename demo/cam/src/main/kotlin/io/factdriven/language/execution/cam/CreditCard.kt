@@ -27,6 +27,7 @@ data class CreditCard (
 
                 on command ChargeCreditCard::class promise {
                     report success CreditCardCharged::class
+                    report failure CreditCardExpired::class
                 }
 
                 await event ConfirmationReceived::class having "reference" match { reference }

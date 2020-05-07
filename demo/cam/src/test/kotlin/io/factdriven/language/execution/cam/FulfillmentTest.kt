@@ -15,7 +15,8 @@ class FulfillmentTest {
     init {
         flows = Flows.initialize(
             Fulfillment::class,
-            Payment::class
+            Payment::class,
+            CreditCard::class
         )
     }
 
