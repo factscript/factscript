@@ -1,12 +1,12 @@
 package io.factdriven.language.impl.definition
 
+import io.factdriven.execution.Message
+import io.factdriven.execution.Receptor
+import io.factdriven.language.*
 import io.factdriven.language.definition.Calling
 import io.factdriven.language.definition.Gateway
 import io.factdriven.language.definition.Node
 import io.factdriven.language.definition.Promising
-import io.factdriven.execution.Message
-import io.factdriven.execution.Receptor
-import io.factdriven.language.*
 import kotlin.reflect.KClass
 
 open class CallingImpl<T: Any>(parent: Node):

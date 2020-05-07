@@ -9,5 +9,8 @@ interface Throwing: Node, Reporting {
 
     val throwing: KClass<out Any>
     val instance: Any.() -> Any
+    val throwingType: FactType
 
 }
+
+enum class FactType { Command, Event }

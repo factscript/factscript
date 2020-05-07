@@ -10,3 +10,10 @@ interface Consuming : Catching {
     val consuming: KClass<*>
 
 }
+
+interface ConsumingEvent: Consuming, Reporting {
+
+    val properties: List<String>
+    val matching: List<Any.() -> Any?>
+
+}
