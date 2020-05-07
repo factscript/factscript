@@ -2,9 +2,7 @@ package io.factdriven.language.execution.aws.translation
 
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
-import com.amazonaws.services.stepfunctions.builder.conditions.BooleanEqualsCondition
-import com.amazonaws.services.stepfunctions.builder.conditions.Condition
-import com.amazonaws.services.stepfunctions.builder.conditions.StringEqualsCondition
+import com.amazonaws.services.stepfunctions.builder.conditions.*
 import com.amazonaws.services.stepfunctions.builder.states.*
 import io.factdriven.language.definition.Branching
 import io.factdriven.language.definition.Gateway.*
@@ -62,14 +60,24 @@ class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
-        val payload = Payload(id = node.id)
+        val payload = InclusivePayload(inclusiveContext = null, id = node.id)
         val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
 
         translationContext.stepFunctionBuilder.state(toStateName(node),
                 StepFunctionBuilder.taskState()
                         .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
-                        .resultPath("$.output.condition")
+                        .resultPath("$.InclusiveContext")
+                        .transition(next("evaluate-${toStateName(node)}")))
+
+        val evaluationPayload = InclusivePayload(id = node.id)
+        val evaluationNodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = evaluationPayload)
+
+        translationContext.stepFunctionBuilder.state("evaluate-${toStateName(node)}",
+                StepFunctionBuilder.taskState()
+                        .resource(translationContext.lambdaFunction.resource)
+                        .parameters(evaluationNodeParameter.prettyJson)
+                        .resultPath("$.InclusiveContext")
                         .transition(next(nameGateway(node))))
 
         val choicesTranslationContext = translationContext.copyWith(transitionStrategy = InclusiveTransitionStrategy(node, node.forward))
@@ -80,8 +88,8 @@ class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
         )
 
         translationContext.stepFunctionBuilder.state("while-${toStateName(node)}", ChoiceState.builder().choices(
-                Choice.builder().condition(BooleanEqualsCondition.builder().variable("$.continue").expectedValue(true)).transition(next(toStateName(node))),
-                Choice.builder().condition(BooleanEqualsCondition.builder().variable("$.continue").expectedValue(false)).transition(translationContext.transitionStrategy.nextTransition(node) as NextStateTransition.Builder)
+                Choice.builder().condition(NumericGreaterThanCondition.builder().variable("$.InclusiveContext.next").expectedValue(-1)).transition(next("evaluate-${toStateName(node)}")),
+                Choice.builder().condition(NumericEqualsCondition.builder().variable("$.InclusiveContext.next").expectedValue(-1)).transition(translationContext.transitionStrategy.nextTransition(node) as NextStateTransition.Builder)
         ))
     }
 
@@ -100,7 +108,7 @@ class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
     }
 
     private fun toCondition(index: Int): Condition.Builder {
-        return BooleanEqualsCondition.builder().variable("$.output.condition.$index").expectedValue(true)
+        return BooleanEqualsCondition.builder().variable("$.InclusiveContext.conditions.$index").expectedValue(true)
     }
 }
 
