@@ -41,4 +41,6 @@ class LoopingFlowImpl<T:Any> (entity: KClass<T>, override val parent: Node? = nu
         return false
     }
 
+    override val description: String get() = find(Conditional::class)!!.description
+
 }

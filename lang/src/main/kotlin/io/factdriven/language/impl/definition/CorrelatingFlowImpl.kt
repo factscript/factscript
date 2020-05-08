@@ -1,7 +1,11 @@
 package io.factdriven.language.impl.definition
 
-import io.factdriven.language.*
-import io.factdriven.language.definition.*
+import io.factdriven.language.Await
+import io.factdriven.language.Catch
+import io.factdriven.language.definition.Consuming
+import io.factdriven.language.definition.Correlating
+import io.factdriven.language.definition.CorrelatingFlow
+import io.factdriven.language.definition.Node
 import kotlin.reflect.KClass
 
 /**
@@ -26,5 +30,7 @@ open class CorrelatingFlowImpl<T:Any>(entity: KClass<T>, override val parent: No
     override val consuming: KClass<*> get() = find(Consuming::class)!!.consuming
     override val matching: List<Any.() -> Any?> get() = find(Correlating::class)!!.matching
     override val properties: List<String> get() = find(Correlating::class)!!.properties
+
+    override val description: String get() = find(Correlating::class)!!.description
 
 }

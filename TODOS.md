@@ -227,7 +227,3 @@ Und die Frage welches den Lebenszyklus steuert.
 
 ##### on failure
 - statt on event in einem but flow
-
-##### Loop label: Auslesen des Until Labels
-
-##### Letzte Condition evaluiert immer auf False ?
