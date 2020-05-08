@@ -50,7 +50,7 @@ open class BranchingImpl<T: Any>(parent: Node):
 
     @Suppress("UNCHECKED_CAST")
     override fun or(path: Catch<T>.() -> Unit): AwaitOr<T> {
-        val flow = ConsumingFlowImpl(
+        val flow = CorrelatingFlowImpl(
             entity as KClass<T>,
             this
         ).apply(path)

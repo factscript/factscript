@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-open class ConsumingFlowImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
+open class CorrelatingFlowImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null):
 
     Catch<T>,
 

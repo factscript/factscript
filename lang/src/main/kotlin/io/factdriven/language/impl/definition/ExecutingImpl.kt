@@ -40,7 +40,7 @@ open class ExecutingImpl<T: Any>(parent: Node):
 
     @Suppress("UNCHECKED_CAST")
     override fun but(path: Catch<T>.() -> Unit): ExecuteBut<T> {
-        val flow = ConsumingFlowImpl(
+        val flow = CorrelatingFlowImpl(
             entity as KClass<T>,
             this
         ).apply(path)

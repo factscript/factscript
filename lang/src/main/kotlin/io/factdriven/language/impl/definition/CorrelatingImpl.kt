@@ -5,7 +5,6 @@ import io.factdriven.execution.Receptor
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.*
-import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Correlating
 import io.factdriven.language.definition.Split
 import io.factdriven.language.definition.Node
@@ -62,7 +61,7 @@ open class CorrelatingImpl<T: Any>(parent: Node):
 
     @Suppress("UNCHECKED_CAST")
     override fun but(path: Catch<T>.() -> Unit): AwaitEventBut<T> {
-        val flow = ConsumingFlowImpl(
+        val flow = CorrelatingFlowImpl(
             entity as KClass<T>,
             this
         )
@@ -77,7 +76,7 @@ open class CorrelatingImpl<T: Any>(parent: Node):
         branch.split = Split.Waiting
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
-        val flow = ConsumingFlowImpl(
+        val flow = CorrelatingFlowImpl(
             entity as KClass<T>,
             branch
         ).apply(path)

@@ -3,9 +3,11 @@ package io.factdriven.language.impl.definition
 import io.factdriven.language.definition.*
 import io.factdriven.execution.*
 import io.factdriven.language.impl.utils.Id
+import io.factdriven.language.impl.utils.asType
 import io.factdriven.language.impl.utils.toSentenceCase
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.isSuperclassOf
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -46,6 +48,29 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
         return id
     }
 
+/*
+    @Suppress("UNCHECKED_CAST")
+    override fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>?): N? = find(nodeOfType, dealingWith, false)
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>?, self: Boolean?): N? =
+        if (self != false && nodeOfType.isInstance(this)
+            && (dealingWith == null || when {
+                nodeOfType.isSubclassOf(Throwing::class) -> (this as Throwing).throwing == dealingWith
+                nodeOfType.isSubclassOf(Promising::class) -> (this as Promising).succeeding == dealingWith || failing.contains(dealingWith)
+                nodeOfType.isSubclassOf(Consuming::class) -> (this as Consuming).consuming == dealingWith
+                else -> false
+            })
+        ) this as N? else if (self != null) (children.find { (it as NodeImpl).find(nodeOfType, dealingWith, true) != null } as NodeImpl).find(nodeOfType, dealingWith, true) else null
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>?): List<N> = filter(nodesOfType, dealingWith, false)
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>?, self: Boolean): List<N> =
+        listOfNotNull(find(nodesOfType, dealingWith, self)) + children.map { (it as NodeImpl).filter(nodesOfType, dealingWith, true) }.flatten()
+
+*/
     @Suppress("UNCHECKED_CAST")
     override fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>?): N? =
         when {
