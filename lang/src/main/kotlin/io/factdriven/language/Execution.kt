@@ -41,6 +41,8 @@ interface Option<T: Any>: Execution<T> {
 
     val given: Given<T>
 
+    val otherwise: Otherwise<T, Unit>
+
 }
 
 @FlowLanguage

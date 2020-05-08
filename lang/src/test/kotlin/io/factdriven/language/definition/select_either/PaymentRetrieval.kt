@@ -21,12 +21,12 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 on command RetrievePayment::class
 
                 select("Payment (partly) uncovered?") either {
-                    given("Yes") condition { covered < total }
+                    given ("Yes") condition { covered < total }
                     execute command ChargeCreditCard::class by {
                         ChargeCreditCard(id, total - covered)
                     }
                 } or {
-                    given("No") // = default path w/o condition
+                    otherwise ("No")
                 }
 
                 emit event PaymentRetrieved::class by {

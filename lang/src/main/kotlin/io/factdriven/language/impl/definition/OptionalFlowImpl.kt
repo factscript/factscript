@@ -2,6 +2,7 @@ package io.factdriven.language.impl.definition
 
 import io.factdriven.language.Given
 import io.factdriven.language.Option
+import io.factdriven.language.Otherwise
 import io.factdriven.language.definition.Conditional
 import io.factdriven.language.definition.Node
 import io.factdriven.language.definition.OptionalFlow
@@ -25,6 +26,15 @@ class OptionalFlowImpl<T:Any> (entity: KClass<T>, override val parent: Node? = n
             val child = ConditionalImpl<T>(this)
             children.add(child)
             return child
+        }
+
+
+    @Suppress("UNCHECKED_CAST")
+    override val otherwise: Otherwise<T, Unit>
+        get() {
+            val child = ConditionalImpl<T>(this)
+            children.add(child)
+            return child as Otherwise<T, Unit>
         }
 
     override val condition: (Any.() -> Boolean)? get() = find(Conditional::class)?.condition

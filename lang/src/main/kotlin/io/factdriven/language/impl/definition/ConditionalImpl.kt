@@ -5,12 +5,14 @@ import io.factdriven.language.definition.Node
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.Given
+import io.factdriven.language.Otherwise
 import io.factdriven.language.Until
 import io.factdriven.language.definition.Optional
 
 open class ConditionalImpl<T: Any>(parent: Node):
 
     Given<T>,
+    Otherwise<T, Given<T>>,
     Until<T>,
 
     Conditional,
