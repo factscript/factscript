@@ -28,9 +28,11 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
     open fun getHandlers(): List<LambdaHandler> {
         return listOf(InitializationHandler(),
                 MergeHandler(),
-                PromisingHandler(),
+                LoopHandler(),
                 InclusiveHandler(),
                 ExclusiveHandler(),
-                ExecutionHandler())
+                ExecutionHandler(),
+                PromisingHandler(),
+                NoopHandler())
     }
 }

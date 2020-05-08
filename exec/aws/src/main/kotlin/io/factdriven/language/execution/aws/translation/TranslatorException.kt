@@ -1,8 +1,9 @@
 package io.factdriven.language.execution.aws.translation
 
+import io.factdriven.language.definition.Node
 import java.lang.RuntimeException
 
-class NoMatchingTranslatorFoundException : RuntimeException() {
+class NoMatchingTranslatorFoundException(node: Node) : RuntimeException("No matching strategy found for node type ${node::class}") {
 }
 
 class MultipleMatchingStrategiesFoundExeption : RuntimeException {

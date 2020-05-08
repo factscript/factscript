@@ -10,7 +10,9 @@ import io.factdriven.language.execution.aws.example.function.RetrievePayment
 import java.util.ArrayList
 import java.util.stream.Collectors
 
-abstract class LambdaContext constructor(definition: Flow) {
+data class ProcessSettings (val maximumLoopCycles: Int = 150)
+
+abstract class LambdaContext constructor(definition: Flow, val processSettings: ProcessSettings = ProcessSettings()) {
     enum class State {
         INITIALIZATION, EXECUTION
     }
