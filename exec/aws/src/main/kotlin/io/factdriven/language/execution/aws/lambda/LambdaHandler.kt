@@ -4,22 +4,27 @@ import com.amazonaws.services.stepfunctions.model.SendTaskSuccessRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
+import io.factdriven.language.Execute
+import io.factdriven.language.Loop
 import io.factdriven.language.definition.*
 import io.factdriven.language.execution.aws.StateMachineService
 import io.factdriven.language.execution.aws.translation.FlowTranslator
 import io.factdriven.language.execution.aws.translation.toStateName
 import io.factdriven.language.impl.utils.compactJson
-import io.factdriven.language.impl.utils.prettyJson
 import java.lang.IllegalArgumentException
 import java.util.stream.Collectors
 
-data class HandlerResult(val output: String){
+data class HandlerResult(val output: Any){
     companion object{
         val OK = HandlerResult("Ok")
     }
 
     override fun toString(): String {
-        return output
+        return if (output is String){
+            output
+        } else {
+            output.compactJson
+        }
     }
 }
 
@@ -88,6 +93,7 @@ abstract class NodeHandler : LambdaHandler (){
     }
 
     final override fun handle(lambdaContext: LambdaContext) : HandlerResult{
+        println("invoking handler " + this.javaClass)
         if(lambdaContext !is ProcessContext) {
             throw IllegalArgumentException("Need a ProcessContext")
         }
@@ -103,7 +109,7 @@ abstract class NodeHandler : LambdaHandler (){
         val client = stateMachineService.createClient()
         val sendTaskSuccessRequest = SendTaskSuccessRequest()
                 .withTaskToken(processContext.token)
-                .withOutput(result.output)
+                .withOutput(result.toString())
         client.sendTaskSuccess(sendTaskSuccessRequest)
     }
 }
@@ -115,13 +121,13 @@ class PromisingHandler : NodeHandler(){
 
     override fun handle(processContext: ProcessContext): HandlerResult {
         val messageList = processContext.messageList
-        return HandlerResult(toStringList(messageList).prettyJson)
+        return HandlerResult(toStringList(messageList))
     }
 }
 
 class ExecutionHandler : NodeHandler(){
     override fun test(processContext: ProcessContext): Boolean {
-        return processContext.node !is Branching
+        return processContext.node is Execute<*>
     }
 
     override fun handle(processContext: ProcessContext) : HandlerResult {
@@ -129,16 +135,11 @@ class ExecutionHandler : NodeHandler(){
         val messageList = processContext.messageList
         val message = createMessage(fact)
         messageList.add(message)
-        return HandlerResult(toStringList(messageList).prettyJson)
+        return HandlerResult(toStringList(messageList))
     }
 }
 
 class InclusiveHandler : NodeHandler() {
-
-    data class InclusiveContext(val conditions: MutableMap<String, Boolean>, val next: Int = 0){
-        constructor() : this(conditions = mutableMapOf())
-    }
-
     override fun test(processContext: ProcessContext): Boolean {
         val node = processContext.node
         return node is Branching && node.split == Split.Inclusive
@@ -146,7 +147,7 @@ class InclusiveHandler : NodeHandler() {
 
     override fun handle(processContext: ProcessContext) : HandlerResult {
         val result = evaluateInclusiveConditions(processContext, processContext.node as Branching)
-        return HandlerResult(result.compactJson)
+        return HandlerResult(result)
     }
 
     private fun evaluateInclusiveConditions(processContext: ProcessContext, branching: Branching) : InclusiveContext{
@@ -161,9 +162,9 @@ class InclusiveHandler : NodeHandler() {
             inclusiveContext.conditions["$index"] = isCurrentIteration && inclusiveContext.conditions["$index"]!!
         }
         return if(inclusiveContext.conditions.values.count { value -> value } > 1) {
-            InclusiveContext(inclusiveContext.conditions, next = inclusiveContext.conditions.values.indexOf(true))
+            InclusiveContext(inclusiveContext.conditions, next = inclusiveContext.conditions.values.indexOf(true), counter = inclusiveContext.counter+1)
         } else {
-            InclusiveContext(inclusiveContext.conditions, next = -1)
+            InclusiveContext(inclusiveContext.conditions, next = -1, counter = inclusiveContext.counter+1)
         }
     }
 
@@ -173,9 +174,30 @@ class InclusiveHandler : NodeHandler() {
             val conditional = conditionalExecution.children[0] as Conditional
             results["$index"] = conditional.condition?.invoke(processContext.processInstance)!!
         }
-        return InclusiveContext(results, next = -1)
+        return InclusiveContext(results, next = -1, counter = 0)
     }
 
+}
+
+class LoopHandler : NodeHandler(){
+    override fun test(processContext: ProcessContext): Boolean {
+        return processContext.node is Loop<*>
+    }
+
+    override fun handle(processContext: ProcessContext): HandlerResult {
+        val loopContext : LoopContext
+        if(processContext.input["LoopContext"] != null){
+            loopContext = ObjectMapper().convertValue(processContext.input["LoopContext"], LoopContext::class.java)
+        } else {
+            return HandlerResult(LoopContext(0, false))
+        }
+
+        EndlessLoopPrevention.check(processContext, loopContext)
+
+        val until = processContext.node!!.children.last() as Conditional
+        val outcome = until.condition?.invoke(processContext.processInstance)!!
+        return HandlerResult(LoopContext(loopContext.counter+1, outcome))
+    }
 }
 
 class ExclusiveHandler : NodeHandler() {
@@ -200,3 +222,14 @@ class ExclusiveHandler : NodeHandler() {
     }
 }
 
+class NoopHandler : NodeHandler() {
+    override fun test(processContext: ProcessContext): Boolean {
+        return true
+    }
+
+    override fun handle(processContext: ProcessContext): HandlerResult {
+        // skip
+        println("WARNING: no handler found for node ${processContext.node!!.javaClass}. Using default handler")
+        return HandlerResult(toStringList(processContext.messageList))
+    }
+}

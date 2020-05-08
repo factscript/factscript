@@ -3,7 +3,9 @@ package io.factdriven.language.execution.aws.translation
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.end
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.states.Transition
+import io.factdriven.execution.type
 import io.factdriven.language.definition.Node
+import kotlin.reflect.KClass
 
 
 abstract class StepFunctionTranslationStrategy(val flowTranslator: FlowTranslator) {
@@ -46,6 +48,18 @@ class ParallelTransitionStrategy(private val nextBranchingSibling: Node?) : Tran
     override fun nextTransition(node: Node): Transition.Builder {
         if(node.forward == nextBranchingSibling){
             return end()
+        }
+        return sequentialStrategy.nextTransition(node)
+    }
+}
+
+class LoopTransitionStrategy(private val lastChild: Node?, private val lastTransition : String) : TransitionStrategy {
+
+    private val sequentialStrategy = SequentialTransitionStrategy()
+
+    override fun nextTransition(node: Node): Transition.Builder {
+        if(node == lastChild){
+            return next(lastTransition)
         }
         return sequentialStrategy.nextTransition(node)
     }

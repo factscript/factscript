@@ -32,15 +32,16 @@ open class FlowTranslator {
 
         when (matchingStrategies.size) {
             1 -> return matchingStrategies[0]
-            0 -> throw NoMatchingTranslatorFoundException()
+            0 -> throw NoMatchingTranslatorFoundException(node)
             else -> throw MultipleMatchingStrategiesFoundExeption(matchingStrategies)
         }
     }
 
     open fun getTranslators() : Array<StepFunctionTranslationStrategy> {
         return arrayOf(
+                LoopTranslationStrategy(this),
                 ParallelTranslationStrategy(this),
-                GivenTranslator(this),
+                SkipTranslationStrategy(this),
                 FlowTranslationStrategy(this),
                 ExclusiveTranslationStrategy(this),
                 InclusiveTranslationStrategy(this),

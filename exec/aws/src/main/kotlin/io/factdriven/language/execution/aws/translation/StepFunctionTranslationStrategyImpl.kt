@@ -4,12 +4,11 @@ import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.conditions.*
 import com.amazonaws.services.stepfunctions.builder.states.*
+import io.factdriven.language.*
 import io.factdriven.language.definition.Branching
 import io.factdriven.language.definition.Split.*
 import io.factdriven.language.definition.Node
 import io.factdriven.language.impl.utils.prettyJson
-import io.factdriven.language.Option
-import io.factdriven.language.Given
 import java.util.stream.Collectors
 
 class ExclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
@@ -163,7 +162,7 @@ class FlowTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTran
 class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
 
     override fun test(node: Node) : Boolean{
-        return node.parent != null && node !is Branching && node !is Given<*>
+        return node.parent != null && (node is Execute<*> || node is Emit<*> || node is On<*>)
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
@@ -188,13 +187,63 @@ class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionT
     }
 }
 
-class GivenTranslator(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
+class LoopTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
     override fun test(node: Node): Boolean {
-        return node is Given<*>
+        return node is Loop<*>
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
-        // empty
+        val first = node.children.first()
+        val last = node.children[node.children.size-2]//node.children.last { node !is Until<*> }
+        val loopTransitionStrategy  = LoopTransitionStrategy(last, "evaluate-${toStateName(node)}")
+
+        val payload = LoopPayload(id = node.id, loopContext = null)
+        val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
+
+        translationContext.stepFunctionBuilder.state(toStateName(node),
+                StepFunctionBuilder.taskState()
+                        .resource(translationContext.lambdaFunction.resource)
+                        .parameters(nodeParameter.prettyJson)
+                        .resultPath("$.LoopContext")
+                        .transition(next(toStateName(first))))
+
+        flowTranslator.translateGraph(translationContext.copyWith(transitionStrategy = loopTransitionStrategy), first)
+
+        val evaluationPayload = LoopPayload(id = node.id)
+        val evaluationNodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = evaluationPayload)
+
+        translationContext.stepFunctionBuilder.state("evaluate-${toStateName(node)}",
+                StepFunctionBuilder.taskState()
+                        .resource(translationContext.lambdaFunction.resource)
+                        .parameters(evaluationNodeParameter.prettyJson)
+                        .resultPath("$.LoopContext")
+                        .transition(next("while-${toStateName(node)}")))
+
+        translationContext.stepFunctionBuilder.state("while-${toStateName(node)}",
+                StepFunctionBuilder.choiceState()
+                        .choices(
+                                Choice.builder()
+                                        .condition(BooleanEqualsCondition.builder()
+                                                .variable("$.LoopContext.continue")
+                                                .expectedValue(true))
+                                        .transition(next(toStateName(first))),
+                                Choice.builder()
+                                        .condition(BooleanEqualsCondition.builder()
+                                                .variable("$.LoopContext.continue")
+                                                .expectedValue(false))
+                                        .transition(translationContext.transitionStrategy.nextTransition(node) as NextStateTransition.Builder)
+                        ))
+
+    }
+}
+
+class SkipTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
+    override fun test(node: Node): Boolean {
+        return node is Given<*> || node is Until <*>
+    }
+
+    override fun translate(translationContext: TranslationContext, node: Node) {
+        //skip
     }
 }
 
