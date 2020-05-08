@@ -178,4 +178,4 @@ gradle-app.setting
 **/build/
 
 # End of https://www.gitignore.io/api/gradle,eclipse,intellij
-!/TODOS.md
+TODOS.md
