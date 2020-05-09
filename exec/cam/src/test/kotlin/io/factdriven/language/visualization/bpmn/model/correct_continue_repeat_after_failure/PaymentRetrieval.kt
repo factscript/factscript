@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.correct_continue_repeat_after_failure
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -22,7 +22,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     report failure PaymentFailed::class
                 }
 
-                execute command WithdrawAmount::class by {
+                execute command {
                     WithdrawAmount(account, payment)
                 }
 
@@ -32,7 +32,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                     loop {
 
-                        execute command ChargeCreditCard::class by {
+                        execute command {
                             ChargeCreditCard(account, payment)
                         } but {
                             on event CreditCardExpired::class
@@ -40,7 +40,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                                 on event CreditCardDetailsUpdated::class having "account" match { account }
                             } or {
                                 on time duration ("14 days") { "PT3M" }
-                                emit event PaymentFailed::class by { PaymentFailed(account, payment) }
+                                emit event { PaymentFailed(account, payment) }
                             }
                         }
 
@@ -52,11 +52,11 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                     given ("Yes")
 
-                    emit event PaymentRetrieved::class by { PaymentRetrieved(account, payment) }
+                    emit event { PaymentRetrieved(account, payment) }
 
                 }
 
-                emit event PaymentRetrieved::class by { PaymentRetrieved(account, payment) }
+                emit event { PaymentRetrieved(account, payment) }
 
             }
 

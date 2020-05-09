@@ -1,5 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.correct_continue_repeat_after_failure
 
+import io.factdriven.language.event
 import io.factdriven.language.flow
 
 /**
@@ -19,23 +20,23 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
         init {
 
-            flow<CreditCardCharge> {
+            flow <CreditCardCharge> {
 
                 on command ChargeCreditCard::class promise {
                     report success CreditCardCharged::class
                     report failure CreditCardExpired::class
                 }
 
-                await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
+                await event CreditCardGatewayConfirmationReceived::class having "reference" match { reference }
 
                 select ("Credit card expired?") either {
                     given ("No")
                 } or {
                     given ("Yes") condition { !successful }
-                    emit event CreditCardExpired::class by { CreditCardExpired(reference) }
+                    emit event { CreditCardExpired(reference) }
                 }
 
-                emit event CreditCardCharged::class by { CreditCardCharged(reference, amount) }
+                emit event { CreditCardCharged(reference, amount) }
 
             }
 
