@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.execute_all
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -18,33 +18,21 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
             flow<PaymentRetrieval> {
 
-                on command RetrievePayment::class
+                on command RetrievePayment::class promise {
+                    report success PaymentRetrieved::class
+                }
 
                 execute all {
-                    execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(
-                            id,
-                            total - covered
-                        )
-                    }
+                    execute command { ChargeCreditCard(id, total - covered) }
                 } and {
-                    execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(
-                            id,
-                            total - covered
-                        )
-                    }
-                    execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(
-                            id,
-                            total - covered
-                        )
-                    }
+                    execute command { ChargeCreditCard(id, total - covered) }
+                    execute command { ChargeCreditCard(id, total - covered) }
+                } and {
+                    execute command { ChargeCreditCard(id, total - covered) }
+                    emit event { PaymentRetrieved(total) }
                 }
 
-                emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(total)
-                }
+                emit event { PaymentRetrieved(total) }
 
             }
 

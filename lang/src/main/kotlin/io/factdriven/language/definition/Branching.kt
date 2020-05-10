@@ -6,7 +6,7 @@ package io.factdriven.language.definition
 interface Branching: Node {
 
     val fork: Junction
-    val join: Junction
+    val join: Junction?
 
 }
 

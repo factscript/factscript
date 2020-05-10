@@ -1,12 +1,11 @@
 package io.factdriven.language.impl.definition
 
-import io.factdriven.language.definition.Branching
-import io.factdriven.language.definition.Node
-import io.factdriven.language.definition.Junction
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.*
-import io.factdriven.language.definition.Continuing
+import io.factdriven.language.definition.*
+import io.factdriven.language.impl.utils.*
+import kotlin.apply
 import kotlin.reflect.KClass
 
 open class BranchingImpl<T: Any>(parent: Node):
@@ -21,11 +20,11 @@ open class BranchingImpl<T: Any>(parent: Node):
 {
 
     override lateinit var fork: Junction
-    override val join get() = when (fork) {
+    override val join get() = if (children.count { (it as Flow).isContinuing() } > 1) when (fork) {
         Junction.First -> Junction.One
-        Junction.All -> if (descendants.any { (it as? Continuing)?.isFinishing() == true }) Junction.Some else Junction.All
+        Junction.All -> if (descendants.any { (it as? Flow)?.isFinishing() == true }) Junction.Some else Junction.All
         else -> fork
-    }
+    } else null
 
     override var description: String = ""; protected set
 

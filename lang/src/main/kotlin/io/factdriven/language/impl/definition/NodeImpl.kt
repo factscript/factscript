@@ -16,7 +16,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
 
     override val children: MutableList<Node> = mutableListOf()
     override val ancestors: List<Node> get() = listOfNotNull(parent) + (parent?.ancestors ?: emptyList())
-    override val descendants: List<Node> get() = children.map { it.descendants }.flatten()
+    override val descendants: List<Node> get() = children.map { listOf(it) +  it.descendants }.flatten()
 
     @Suppress("LeakingThis")
     override val root: Flow get() = (parent?.root ?: this) as Flow

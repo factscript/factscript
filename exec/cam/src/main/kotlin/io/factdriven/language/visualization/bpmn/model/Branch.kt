@@ -9,12 +9,7 @@ import io.factdriven.language.visualization.bpmn.diagram.Container
  */
 class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(node, parent) {
 
-    var fork: GatewaySymbol<*> = when(node.fork) {
-        Junction.One -> ExclusiveGatewaySymbol(node, this)
-        Junction.Some -> InclusiveGatewaySymbol(node, this)
-        Junction.All -> ParallelGatewaySymbol(node, this)
-        Junction.First -> EventBasedGatewaySymbol(node, this)
-    }
+    var fork: GatewaySymbol<*> = map(node.fork)!!
 
     val branches: List<Sequence> get() = elements.filterIsInstance<Sequence>()
 
@@ -24,15 +19,17 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
 
     override val exit: Group<*> get() = branches.find { sequence -> sequence.node.isContinuing() }!!.let { if (hasJoin() && ((it.node as? OptionalFlow)?.isDefault() == true)) branches.first() else it }
 
-    private fun hasJoin() = join != null || node.children.count { it.asType<Flow>()!!.isContinuing() } > 1
+    private fun hasJoin() = join != null || node.join != null
 
-    var join: GatewaySymbol<*>? = if (hasJoin())
-        when(node.fork) {
-            Junction.One -> ExclusiveGatewaySymbol(node, this)
-            Junction.Some -> InclusiveGatewaySymbol(node, this)
-            Junction.All -> ParallelGatewaySymbol(node, this)
-            Junction.First -> ExclusiveGatewaySymbol(node, this)
-        } else null
+    var join: GatewaySymbol<*>? = map(node.join)
+
+    private fun map(junction: Junction?): GatewaySymbol<*>? = when(junction) {
+        Junction.One -> ExclusiveGatewaySymbol(node, this)
+        Junction.Some -> InclusiveGatewaySymbol(node, this)
+        Junction.All -> ParallelGatewaySymbol(node, this)
+        Junction.First -> EventBasedGatewaySymbol(node, this)
+        else -> null
+    }
 
     override val elements: List<Element<*,*>> = listOf(fork) + node.children.map { Sequence(it as Flow, this) } + listOfNotNull(join)
 
