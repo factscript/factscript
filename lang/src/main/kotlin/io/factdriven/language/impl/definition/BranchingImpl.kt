@@ -26,7 +26,7 @@ open class BranchingImpl<T: Any>(parent: Node):
 
     override val join get() = if (flows.count { it.isContinuing() } > 1) when (fork) {
         Junction.First -> Junction.One
-        Junction.All -> if (descendants.any { (it as? Flow)?.isFinishing() == true }) Junction.Some else Junction.All
+        Junction.All -> if (descendants.any { (it as? Flow)?.isSucceeding() == true }) Junction.Some else Junction.All
         else -> fork
     } else null
 

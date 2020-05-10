@@ -32,51 +32,9 @@ class CatchingEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
 
     override val model: CatchEvent = process.model.newInstance((if (node.isStart()) StartEvent::class else IntermediateCatchEvent::class).java)
 
-    override fun initModel() {
-
-        super.initModel()
-
-        when (node) {
-
-            is Waiting -> {
-
-                val timerEventDefinition = process.model.newInstance(TimerEventDefinition::class.java)
-                model.addChildElement(timerEventDefinition)
-                when(node.timer) {
-                    Timer.Limit -> {
-                        timerEventDefinition.timeDate = process.model.newInstance(TimeDate::class.java)
-                        timerEventDefinition.timeDate.textContent = "#{${node.id.asBpmnId()}}"
-                    }
-                    Timer.Duration -> {
-                        timerEventDefinition.timeDuration = process.model.newInstance(TimeDuration::class.java)
-                        timerEventDefinition.timeDuration.textContent = "#{${node.id.asBpmnId()}}"
-                    }
-                }
-
-            }
-
-            else -> {
-
-                val messageEventDefinition = process.model.newInstance(MessageEventDefinition::class.java)
-                model.addChildElement(messageEventDefinition)
-
-                val message = process.model.definitions.getChildElementsByType(Message::class.java).find { it.id == node.id + "-Message" }
-                if (message == null) {
-                    with(process.model.newInstance(Message::class.java)) {
-                        setAttributeValue("id", node.id + "-Message")
-                        val name = if (node.isStart()) { Receptor(node.type).hash } else "#{${node.id.asBpmnId()}}"
-                        setAttributeValue("name", name)
-                        process.model.definitions.addChildElement(this)
-                        model.getChildElementsByType(MessageEventDefinition::class.java).first().message = this
-                    }
-                } else {
-                    model.getChildElementsByType(MessageEventDefinition::class.java).first().message = message
-                }
-
-            }
-
-        }
-
+    override val elements: List<Element<*, *>> = super.elements + when(node) {
+        is Waiting -> TimerEventSymbolDefinition(node, this)
+        else -> MessageEventSymbolDefinition(node, this)
     }
 
 }
@@ -85,30 +43,10 @@ class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>): EventSymbol<
 
     override val model = process.model.newInstance((if (node.isFinish() || !node.isContinuing()) EndEvent::class else IntermediateThrowEvent::class).java)
 
-    override fun initModel() {
-
-        super.initModel()
-
-        if (node.isFailing()) {
-            val errorEventDefinition = process.model.newInstance(ErrorEventDefinition::class.java)
-            model.addChildElement(errorEventDefinition)
-            val error = process.model.definitions.getChildElementsByType(Error::class.java).find { it.id == node.id + "-Error" }
-            if (error == null) {
-                with(process.model.newInstance(Error::class.java)) {
-                    setAttributeValue("id", node.id + "-Error")
-                    setAttributeValue("name", node.id.asBpmnId())
-                    errorCode = Id(node.type)
-                    process.model.definitions.addChildElement(this)
-                    model.getChildElementsByType(ErrorEventDefinition::class.java).first().error = this
-                }
-            } else {
-                model.getChildElementsByType(ErrorEventDefinition::class.java).first().error = error
-            }
-        } else {
-            val messageEventDefinition = process.model.newInstance(MessageEventDefinition::class.java)
-            model.addChildElement(messageEventDefinition)
-        }
-
+    override val elements: List<Element<*, *>> = super.elements + if(node.isFailing()) {
+        ErrorEventSymbolDefinition(node, this)
+    } else {
+        MessageEventSymbolDefinition(node, this)
     }
 
 }
@@ -117,6 +55,23 @@ class BoundaryEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
 
     override val model = process.model.newInstance(BoundaryEvent::class.java)
     override val diagram: Artefact = Artefact(Dimension(36, 36), Dimension(50, 0))
+
+    override val elements: List<Element<*, *>> = super.elements + if (node is Waiting) {
+        TimerEventSymbolDefinition(node, this)
+    } else if (node is Consuming && Flows.find(reporting = node.consuming)?.find(Promising::class)?.failing?.contains(node.consuming) == true) {
+        ErrorEventSymbolDefinition(node, this)
+    } else {
+        MessageEventSymbolDefinition(node, this)
+    }
+
+    override fun initModel() {
+
+        super.initModel()
+
+        model.attachedTo = (parent.parent as Task).task.model
+        model.cancelActivity()
+
+    }
 
     override fun initDiagram() {
         super.initDiagram()
@@ -127,65 +82,7 @@ class BoundaryEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
         )
     }
 
-    override fun initModel() {
-
-        super.initModel()
-
-        model.attachedTo = (parent.parent as Task).task.model
-        model.cancelActivity()
-
-        if (node is Waiting) {
-
-            val timerEventDefinition = process.model.newInstance(TimerEventDefinition::class.java)
-            model.addChildElement(timerEventDefinition)
-            when(node.timer) {
-                Timer.Limit -> {
-                    timerEventDefinition.timeDate.textContent = "#{${node.id.asBpmnId()}}"
-                }
-                Timer.Duration -> {
-                    timerEventDefinition.timeDuration = process.model.newInstance(TimeDuration::class.java)
-                    timerEventDefinition.timeDuration.textContent = "#{${node.id.asBpmnId()}}"
-                }
-            }
-
-        } else if (node is Consuming && Flows.find(reporting = node.consuming)?.find(Promising::class)?.failing?.contains(node.consuming) == true) {
-            val errorEventDefinition = process.model.newInstance(ErrorEventDefinition::class.java)
-            model.addChildElement(errorEventDefinition)
-            val error = process.model.definitions.getChildElementsByType(Error::class.java).find { it.id == node.id + "-Error" }
-            if (error == null) {
-                with(process.model.newInstance(Error::class.java)) {
-                    setAttributeValue("id", node.id + "-Error")
-                    setAttributeValue("name", node.id.asBpmnId())
-                    errorCode = Id(node.type)
-                    process.model.definitions.addChildElement(this)
-                    model.getChildElementsByType(ErrorEventDefinition::class.java).first().error = this
-                }
-            } else {
-                model.getChildElementsByType(ErrorEventDefinition::class.java).first().error = error
-            }
-        } else {
-            val messageEventDefinition = process.model.newInstance(MessageEventDefinition::class.java)
-            model.addChildElement(messageEventDefinition)
-            val message = process.model.definitions.getChildElementsByType(Message::class.java)
-                .find { it.id == node.id + "-Message" }
-            if (message == null) {
-                with(process.model.newInstance(Message::class.java)) {
-                    setAttributeValue("id", node.id + "-Message")
-                    val name = if (node.isStart()) {
-                        Receptor(node.type).hash
-                    } else "#{${node.id.asBpmnId()}}"
-                    setAttributeValue("name", name)
-                    process.model.definitions.addChildElement(this)
-                    model.getChildElementsByType(MessageEventDefinition::class.java).first().message = this
-                }
-            } else {
-                model.getChildElementsByType(MessageEventDefinition::class.java).first().message = message
-            }
-        }
-
-    }
 }
-
 
 fun String.asBpmnId() = replace("-", "_")
 fun String.fromBpmnId() = replace("_", "-")
