@@ -9,6 +9,9 @@ import io.factdriven.language.visualization.bpmn.diagram.Container
  */
 class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
 
+    override fun isSucceeding() = (node as? Throwing)?.isSucceeding() ?: false
+    override fun isFailing() = (node as? Throwing)?.isFailing() ?: false
+
     internal val task: TaskSymbol<out Node, out org.camunda.bpm.model.bpmn.instance.Task>
 
     override val west: Symbol<*, *> get() = task
@@ -19,7 +22,7 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
 
     internal val sequences get() = elements.filterIsInstance<Sequence>()
 
-    override val conditional: Conditional? get() = null
+    override val exitConditional: ConditionalNode? get() = null
 
     private fun hasJoin() = join != null || node.children.count { it.asType<Flow>()?.isContinuing() == true } > 0
 
@@ -41,7 +44,7 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
         if (join != null) {
             Path(task, join, this, null)
             sequences.filter { it.node.asType<Flow>()?.isContinuing() == true }.forEach {
-                Path(it, join, it, it.conditional)
+                Path(it, join, it, it.exitConditional)
             }
         }
 

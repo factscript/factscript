@@ -2,9 +2,7 @@ package io.factdriven.language.impl.definition
 
 import io.factdriven.language.Loop
 import io.factdriven.language.Until
-import io.factdriven.language.definition.Conditional
-import io.factdriven.language.definition.LoopingFlow
-import io.factdriven.language.definition.Node
+import io.factdriven.language.definition.*
 import kotlin.reflect.KClass
 
 /**
@@ -31,7 +29,7 @@ class LoopingFlowImpl<T:Any> (entity: KClass<T>, override val parent: Node? = nu
             return child
         }
 
-    override val condition: (Any.() -> Boolean) get() = find(Conditional::class)!!.condition!!
+    override val condition: (Any.() -> Boolean) get() = (children.last() as Conditional).condition!!
 
     override fun isFailing(): Boolean {
         return false
@@ -41,6 +39,6 @@ class LoopingFlowImpl<T:Any> (entity: KClass<T>, override val parent: Node? = nu
         return false
     }
 
-    override val description: String get() = find(Conditional::class)!!.description
+    override val description: String get() = children.last().description
 
 }

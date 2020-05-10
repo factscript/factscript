@@ -1,9 +1,7 @@
 package io.factdriven.language.visualization.bpmn.model
 
-import io.factdriven.language.definition.Conditional
-import io.factdriven.language.definition.Node
+import io.factdriven.language.definition.*
 import io.factdriven.language.visualization.bpmn.diagram.Container
-import org.camunda.bpm.model.bpmn.instance.Group
 import org.camunda.bpm.model.bpmn.instance.bpmndi.BpmnShape
 import org.camunda.bpm.model.bpmn.instance.dc.Bounds
 
@@ -11,13 +9,13 @@ import org.camunda.bpm.model.bpmn.instance.dc.Bounds
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 @Suppress("LeakingThis")
-abstract class Group<IN: Node>(node: IN, parent: Element<*,*>): Element<IN, Group>(node, parent) {
+abstract class Group<IN: Node>(node: IN, parent: Element<*,*>): Element<IN, org.camunda.bpm.model.bpmn.instance.Group>(node, parent), Continuing {
 
-    override val model: Group = process.model.newInstance(Group::class.java)
-    override val diagram: Container = Container(36)
+    override val model = process.model.newInstance(org.camunda.bpm.model.bpmn.instance.Group::class.java)
+    override val diagram = Container(36)
 
-    abstract val conditional: Conditional?
-    internal open val exit: io.factdriven.language.visualization.bpmn.model.Group<*> = this
+    abstract val exitConditional: ConditionalNode?
+    internal open val exitGroup: Group<*> = this
 
     override fun initModel() {
 

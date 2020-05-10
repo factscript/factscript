@@ -1,7 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.definition.*
-import io.factdriven.language.impl.utils.asType
 import io.factdriven.language.visualization.bpmn.diagram.Container
 
 /**
@@ -9,19 +8,21 @@ import io.factdriven.language.visualization.bpmn.diagram.Container
  */
 class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(node, parent) {
 
+    override fun isSucceeding() = node.isSucceeding()
+    override fun isFailing() = node.isFailing()
+
     var fork: GatewaySymbol<*> = map(node.fork)!!
+    var join: GatewaySymbol<*>? = map(node.join)
 
-    val branches: List<Sequence> get() = elements.filterIsInstance<Sequence>()
+    val sequences: List<Sequence> get() = elements.filterIsInstance<Sequence>()
 
-    override val conditional: Conditional? get() {
-        return if (!hasJoin()) branches.find { it.node.isContinuing() }?.conditional else null
+    override val exitConditional: ConditionalNode? get() {
+        return if (join == null) sequences.find { it.isContinuing() }?.exitConditional else null
     }
 
-    override val exit: Group<*> get() = branches.find { sequence -> sequence.node.isContinuing() }!!.let { if (hasJoin() && ((it.node as? OptionalFlow)?.isDefault() == true)) branches.first() else it }
-
-    private fun hasJoin() = join != null || node.join != null
-
-    var join: GatewaySymbol<*>? = map(node.join)
+    override val exitGroup: Group<*> get() = sequences.find { sequence -> sequence.isContinuing() }!!.let {
+        if (join != null && ((it.node as? OptionalFlow)?.isDefault() == true)) sequences.first() else it
+    }
 
     private fun map(junction: Junction?): GatewaySymbol<*>? = when(junction) {
         Junction.One -> ExclusiveGatewaySymbol(node, this)
@@ -34,36 +35,36 @@ class Branch(node: Branching, parent: Element<out Flow, *>): Group<Branching>(no
     override val elements: List<Element<*,*>> = listOf(fork) + node.children.map { Sequence(it as Flow, this) } + listOfNotNull(join)
 
     override val west: Symbol<*, *> get() = fork
-    override val east: Symbol<*, *> get() = join ?: exit.east
+    override val east: Symbol<*, *> get() = join ?: exitGroup.east
 
     init {
-        this.branches.mapNotNull { sequence ->
+        this.sequences.mapNotNull { sequence ->
             if (sequence.elements.isNotEmpty())
-                Path(fork, sequence, sequence, sequence.node.find(Conditional::class))
+                Path(fork, sequence, sequence, sequence.node.find(ConditionalNode::class))
             else if (join != null)
-                Path(fork, join!!, sequence, sequence.node.find(Conditional::class))
+                Path(fork, join!!, sequence, sequence.node.find(ConditionalNode::class))
             else null
-        } + this.branches.mapNotNull { sequence ->
-            if (sequence.elements.isNotEmpty() && hasJoin() && sequence.node.isContinuing())
-                Path(sequence, join!!, sequence, sequence.conditional) else null
+        } + this.sequences.mapNotNull { sequence ->
+            if (sequence.elements.isNotEmpty() && join != null && sequence.isContinuing())
+                Path(sequence, join!!, sequence, sequence.exitConditional) else null
         }
     }
 
     override fun initDiagram() {
 
         fork.diagram.westEntryOf(diagram)
-        var sequenceDiagram = branches.first().diagram
+        var sequenceDiagram = sequences.first().diagram
         fork.diagram.westOf(sequenceDiagram)
 
-        branches.subList(1, branches.size).forEach {
+        sequences.subList(1, sequences.size).forEach {
             if ((it.node as? OptionalFlow)?.isDefault() == true) {
-                it.diagram.northOf(branches.first().diagram)
+                it.diagram.northOf(sequences.first().diagram)
             } else {
                 sequenceDiagram = sequenceDiagram.northOf(it.diagram) as Container
             }
         }
-        join?.diagram?.eastOf(exit.diagram)
-            ?: exit.diagram.eastEntryOf(diagram)
+        join?.diagram?.eastOf(exitGroup.diagram)
+            ?: exitGroup.diagram.eastEntryOf(diagram)
 
     }
 

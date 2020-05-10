@@ -32,7 +32,7 @@ class Label(node: Node, parent: Element<*, out BaseElement>): Element<Node, Bpmn
 
         val position = if (parent is Path && parent.conditional != null) when {
 
-            parent.from.asType<Group<*>>()?.conditional?.parent is Looping -> (parent.from.diagram as Box).position + (parent.from.diagram as Box).east west 12 north 20
+            parent.from.asType<Group<*>>()?.exitConditional?.parent is Looping -> (parent.from.diagram as Box).position + (parent.from.diagram as Box).east west 12 north 20
             parent.parent?.parent is Loop -> (parent.parent?.parent as Loop).fork.diagram.raw.position + (parent.parent?.parent as Loop).fork.diagram.raw.north east 11 north 19
 
             else -> Position(parent.via.diagram.position.x, parent.diagram.waypoints[1].y) west 12 north ((parent.conditional.description.toLines().size - 1) * 13 + 20)
@@ -79,19 +79,19 @@ fun BoundaryEventSymbol.numberOfBoundaries(): Int {
 }
 
 fun Branch.needsAdaptedLabel(): Boolean {
-    val hasDefaultFlow = branches.find {
+    val hasDefaultFlow = sequences.find {
         it.node.children.isEmpty() ||
                 (it.node.children.first() is Conditional
                         && (it.node.children.first() as Conditional).condition == null )
     } != null
-    val defaultFlowIsFirst = hasDefaultFlow && branches.first().node.children.first() is Conditional && (branches.first().node.children.first() as Conditional).condition == null
+    val defaultFlowIsFirst = hasDefaultFlow && sequences.first().node.children.first() is Conditional && (sequences.first().node.children.first() as Conditional).condition == null
     return hasDefaultFlow && !defaultFlowIsFirst
 }
 
 fun Branch.needsSouthLabel(): Boolean {
-    return needsAdaptedLabel() && branches.size <= 2
+    return needsAdaptedLabel() && sequences.size <= 2
 }
 
 fun Branch.needsNorthWestLabel(): Boolean {
-    return needsAdaptedLabel() && branches.size > 2
+    return needsAdaptedLabel() && sequences.size > 2
 }

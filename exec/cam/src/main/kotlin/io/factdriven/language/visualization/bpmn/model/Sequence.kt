@@ -7,12 +7,17 @@ import io.factdriven.language.visualization.bpmn.diagram.Box
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
+class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent), Optional {
+
+    override fun isSucceeding() = node.isSucceeding()
+    override fun isFailing() = node.isFailing()
+
+    override val condition: (Any.() -> Boolean)? get() = (node as? OptionalFlow)?.condition
 
     override val west: Symbol<*, *> get() = elements.first().west
     override val east: Symbol<*, *> get() = elements.lastOrNull()?.east ?: parent!!.asType<Branch>()!!.fork
 
-    override val conditional: Conditional? get() = elements.lastOrNull()?.asType<Group<*>>()?.conditional ?: if (elements.isEmpty()) node.children.firstOrNull()?.asType<Conditional>() else null
+    override val exitConditional: ConditionalNode? get() = elements.lastOrNull()?.asType<Group<*>>()?.exitConditional ?: if (elements.isEmpty()) node.children.firstOrNull()?.asType<ConditionalNode>() else null
 
     override val elements: List<Element<*,*>> = node.children.mapNotNull {
         when (it) {
@@ -38,7 +43,7 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent) {
                     elements[i].asType<Group<*>>()
                         ?: it.asType<Group<*>>()
                         ?: this,
-                    elements[i].asType<Group<*>>()?.conditional
+                    elements[i].asType<Group<*>>()?.exitConditional
                 )
             } else emptyList()
     }

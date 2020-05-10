@@ -8,7 +8,12 @@ import io.factdriven.language.impl.definition.ConditionalImpl
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class Loop(node: LoopingFlow, parent: Element<*,*>): Group<Flow>(node,parent) {
+class Loop(node: LoopingFlow, parent: Element<*,*>): Group<LoopingFlow>(node, parent), Looping {
+
+    override fun isSucceeding() = node.isSucceeding()
+    override fun isFailing() = node.isFailing()
+
+    override val condition: Any.() -> Boolean get() = node.condition
 
     private var join: GatewaySymbol<*>
     private var forward: Sequence
@@ -21,24 +26,24 @@ class Loop(node: LoopingFlow, parent: Element<*,*>): Group<Flow>(node,parent) {
     override val diagram: Container = Container(36)
     override val elements: List<Element<*, *>>
 
-    override val conditional: Conditional? get() = forward.node.find(Conditional::class)
+    override val exitConditional: ConditionalNode? get() = node.conditional
 
     init {
 
-        join = ExclusiveGatewaySymbol(node.children.last(), this)
+        join = ExclusiveGatewaySymbol(node.conditional, this)
         forward = Sequence(node, this)
         backward = let {
             val execution = OptionalFlowImpl(node.entity, node)
             execution.children.add(ConditionalImpl<Any>(execution)("No") as Node)
             Sequence(execution, this)
         }
-        fork = ExclusiveGatewaySymbol(node.children.last(), this)
+        fork = ExclusiveGatewaySymbol(node.conditional, this)
 
         elements = listOf(join) + forward + backward + fork
 
         Path(join, forward, forward, null)
-        Path(forward, fork, forward, forward.conditional)
-        Path(fork, join, backward, backward.node.find(Conditional::class))
+        Path(forward, fork, forward, forward.exitConditional)
+        Path(fork, join, backward, (backward.node as ConditionalFlow).conditional)
 
     }
 

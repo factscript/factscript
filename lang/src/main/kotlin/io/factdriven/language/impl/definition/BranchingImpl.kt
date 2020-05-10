@@ -14,19 +14,27 @@ open class BranchingImpl<T: Any>(parent: Node):
     SelectOr<T>,
     AwaitOr<T>,
     ExecuteAnd<T>,
+
     Branching,
     NodeImpl(parent)
 
 {
 
+    val flows: List<Flow> = super.children as List<Flow>
+
     override lateinit var fork: Junction
-    override val join get() = if (children.count { (it as Flow).isContinuing() } > 1) when (fork) {
+
+    override val join get() = if (flows.count { it.isContinuing() } > 1) when (fork) {
         Junction.First -> Junction.One
         Junction.All -> if (descendants.any { (it as? Flow)?.isFinishing() == true }) Junction.Some else Junction.All
         else -> fork
     } else null
 
     override var description: String = ""; protected set
+
+    override fun isFinishing(): Boolean = flows.all { it.isFinishing() }
+    override fun isSucceeding(): Boolean = flows.any { it.isSucceeding() }
+    override fun isFailing(): Boolean = flows.any { it.isFailing() }
 
     override val type: Type
         get() = Type(

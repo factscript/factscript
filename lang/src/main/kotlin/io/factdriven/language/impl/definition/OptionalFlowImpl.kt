@@ -3,9 +3,7 @@ package io.factdriven.language.impl.definition
 import io.factdriven.language.Given
 import io.factdriven.language.Option
 import io.factdriven.language.Otherwise
-import io.factdriven.language.definition.Conditional
-import io.factdriven.language.definition.Node
-import io.factdriven.language.definition.OptionalFlow
+import io.factdriven.language.definition.*
 import kotlin.reflect.KClass
 
 /**
@@ -37,8 +35,8 @@ class OptionalFlowImpl<T:Any> (entity: KClass<T>, override val parent: Node? = n
             return child as Otherwise<T, Unit>
         }
 
-    override val condition: (Any.() -> Boolean)? get() = find(Conditional::class)?.condition
+    override val condition: (Any.() -> Boolean)? get() = find(ConditionalNode::class)?.condition
 
-    override val description: String get() = find(Conditional::class)!!.description
+    override val description: String get() = find(ConditionalNode::class)!!.description
 
 }

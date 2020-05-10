@@ -3,7 +3,7 @@ package io.factdriven.language.definition
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-interface Branching: Node {
+interface Branching: Node, Continuing {
 
     val fork: Junction
     val join: Junction?

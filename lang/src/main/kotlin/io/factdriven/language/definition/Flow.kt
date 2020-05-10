@@ -5,7 +5,13 @@ package io.factdriven.language.definition
  */
 interface Flow: Node, Continuing
 
-interface OptionalFlow: Flow, Optional
+interface ConditionalFlow: Flow, ConditionalNode {
+
+    val conditional: ConditionalNode get() = children.first() as ConditionalNode
+
+}
+
+interface OptionalFlow: ConditionalFlow, OptionalNode
 
 interface CatchingFlow: Flow, Catching
 
@@ -17,4 +23,8 @@ interface PromisingFlow: CatchingFlow, Promising
 
 interface WaitingFlow: CatchingFlow, Waiting
 
-interface LoopingFlow: Flow, Looping
+interface LoopingFlow: ConditionalFlow, LoopingNode {
+
+    override val conditional: ConditionalNode get() = children.last() as ConditionalNode
+
+}
