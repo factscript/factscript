@@ -40,7 +40,7 @@ class PaymentRetrievalTest {
         val emit = definition.children[2] as Throwing
         assertEquals(PaymentRetrieval::class, emit.entity)
         assertEquals(PaymentRetrieved::class, emit.throwing)
-        assertEquals(PaymentRetrieved(3F), emit.instance.invoke(instance))
+        assertEquals(PaymentRetrieved(3F), emit.factory.invoke(instance))
         assertEquals(definition, emit.parent)
 
 

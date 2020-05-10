@@ -40,7 +40,7 @@ class CreditCardChargeTest {
         assertEquals(definition.children[1], execute)
         assertEquals(CreditCardCharge::class, execute?.entity)
         assertEquals(ChargeCreditCard::class, execute?.throwing)
-        assertEquals(ChargeCreditCard("reference", 3F), execute?.instance?.invoke(CreditCardCharge(ChargeCreditCard("reference", 3F))))
+        assertEquals(ChargeCreditCard("reference", 3F), execute?.factory?.invoke(CreditCardCharge(ChargeCreditCard("reference", 3F))))
         assertEquals(definition, execute?.parent)
 
         val but = definition.children[1].children[0]
@@ -66,7 +66,7 @@ class CreditCardChargeTest {
         assertEquals(definition.children[3], emit)
         assertEquals(CreditCardCharge::class, emit?.entity)
         assertEquals(CreditCardCharged::class, emit?.throwing)
-        assertEquals(CreditCardCharged("reference", 3F), emit?.instance?.invoke(CreditCardCharge(
+        assertEquals(CreditCardCharged("reference", 3F), emit?.factory?.invoke(CreditCardCharge(
             ChargeCreditCard("reference", 3F)
         )))
         assertEquals(definition, emit?.parent)

@@ -2,10 +2,11 @@ package io.factdriven.language.impl.definition
 
 import io.factdriven.language.definition.Branching
 import io.factdriven.language.definition.Node
-import io.factdriven.language.definition.Split
+import io.factdriven.language.definition.Junction
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.*
+import io.factdriven.language.definition.Continuing
 import kotlin.reflect.KClass
 
 open class BranchingImpl<T: Any>(parent: Node):
@@ -19,22 +20,28 @@ open class BranchingImpl<T: Any>(parent: Node):
 
 {
 
-    override lateinit var split: Split
+    override lateinit var fork: Junction
+    override val join get() = when (fork) {
+        Junction.First -> Junction.One
+        Junction.All -> if (descendants.any { (it as? Continuing)?.isFinishing() == true }) Junction.Some else Junction.All
+        else -> fork
+    }
+
     override var description: String = ""; protected set
 
     override val type: Type
         get() = Type(
             entity.type.context,
-            split.name
+            fork.name
         )
 
     override fun either(path: Option<T>.() -> Unit): SelectOr<T> {
-        split = Split.Exclusive
+        fork = Junction.One
         return or(path)
     }
 
     override fun all(path: Option<T>.() -> Unit): SelectOr<T> {
-        split = Split.Inclusive
+        fork = Junction.Some
         return or(path)
     }
 
@@ -73,7 +80,5 @@ open class BranchingImpl<T: Any>(parent: Node):
         this.description = case
         return this
     }
-
-    override fun isConditional(): Boolean = split == Split.Exclusive || split == Split.Inclusive
 
 }

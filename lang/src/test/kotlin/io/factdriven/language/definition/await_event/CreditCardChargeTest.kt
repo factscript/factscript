@@ -34,7 +34,7 @@ class CreditCardChargeTest {
         Assertions.assertEquals(definition.children[2], emit)
         Assertions.assertEquals(CreditCardCharge::class, emit?.entity)
         Assertions.assertEquals(CreditCardCharged::class, emit?.throwing)
-        Assertions.assertEquals(CreditCardCharged("reference", 3F), emit?.instance?.invoke(CreditCardCharge(
+        Assertions.assertEquals(CreditCardCharged("reference", 3F), emit?.factory?.invoke(CreditCardCharge(
             ChargeCreditCard("reference", 3F)
         )))
         Assertions.assertEquals(definition, emit?.parent)

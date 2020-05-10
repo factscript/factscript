@@ -5,10 +5,19 @@ package io.factdriven.language.definition
  */
 interface Branching: Node {
 
-    val split: Split
-
-    fun isConditional(): Boolean
+    val fork: Junction
+    val join: Junction
 
 }
 
-enum class Split { Exclusive, Inclusive, Parallel, Waiting }
+enum class Junction {
+
+    One, Some, All, First;
+
+    fun isConditional(): Boolean = this == One || this == Some
+    fun isWaiting(): Boolean = this == First
+    fun isNotWaiting(): Boolean = !isWaiting()
+    fun isExclusive(): Boolean = this == One || this == First
+    fun isConcurrent(): Boolean = !isExclusive()
+
+}

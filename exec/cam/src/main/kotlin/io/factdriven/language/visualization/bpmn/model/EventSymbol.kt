@@ -5,7 +5,6 @@ import io.factdriven.language.Flows
 import io.factdriven.language.definition.*
 import io.factdriven.language.impl.utils.Id
 import io.factdriven.language.impl.utils.asLines
-import io.factdriven.language.impl.utils.construct
 import io.factdriven.language.visualization.bpmn.diagram.Artefact
 import io.factdriven.language.visualization.bpmn.diagram.Box
 import io.factdriven.language.visualization.bpmn.diagram.Dimension

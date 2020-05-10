@@ -6,14 +6,14 @@ import com.amazonaws.services.stepfunctions.builder.conditions.*
 import com.amazonaws.services.stepfunctions.builder.states.*
 import io.factdriven.language.*
 import io.factdriven.language.definition.Branching
-import io.factdriven.language.definition.Split.*
+import io.factdriven.language.definition.Junction.*
 import io.factdriven.language.definition.Node
 import io.factdriven.language.impl.utils.prettyJson
 import java.util.stream.Collectors
 
 class ExclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
     override fun test(node: Node): Boolean {
-        return node is Branching && node.split == Exclusive
+        return node is Branching && node.fork == One
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
@@ -55,7 +55,7 @@ class ExclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
 
 class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
     override fun test(node: Node): Boolean {
-        return node is Branching && node.split == Inclusive
+        return node is Branching && node.fork == Some
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
@@ -113,7 +113,7 @@ class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
 
 class ParallelTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
     override fun test(node: Node): Boolean {
-        return node is Branching && node.split == Parallel
+        return node is Branching && node.fork == All
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {

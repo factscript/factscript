@@ -28,8 +28,7 @@ open class CorrelatingFlowImpl<T:Any>(entity: KClass<T>, override val parent: No
         }
 
     override val consuming: KClass<*> get() = find(Consuming::class)!!.consuming
-    override val matching: List<Any.() -> Any?> get() = find(Correlating::class)!!.matching
-    override val properties: List<String> get() = find(Correlating::class)!!.properties
+    override val correlating: Map<String, Any.() -> Any?> get() = find(Correlating::class)!!.correlating
 
     override val description: String get() = find(Correlating::class)!!.description
 

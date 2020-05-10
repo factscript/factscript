@@ -8,9 +8,7 @@ import java.time.LocalDateTime
 interface Waiting: Catching {
 
     val timer: Timer
-
     val limit: (Any.() -> LocalDateTime)?
-
     val period: (Any.() -> String)?
 
 }

@@ -13,7 +13,6 @@ interface Consuming : Catching {
 
 interface Correlating: Consuming {
 
-    val properties: List<String>
-    val matching: List<Any.() -> Any?>
+    val correlating: Map<String, Any.() -> Any?>
 
 }

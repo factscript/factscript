@@ -25,7 +25,7 @@ open class ExecutingImpl<T: Any>(parent: Node):
     @Suppress("UNCHECKED_CAST")
     override fun all(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
         val branch = BranchingImpl<T>(parent!!)
-        branch.split = Split.Parallel
+        branch.fork = Junction.All
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
         val flow = FlowImpl(entity as KClass<T>, branch).apply(path)

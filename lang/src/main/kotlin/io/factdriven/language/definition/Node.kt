@@ -18,6 +18,8 @@ interface Node {
     val root: Flow
     val parent: Node?
     val children: List<Node>
+    val ancestors: List<Node>
+    val descendants: List<Node>
     val position: Int
 
     fun get(id: String): Node?

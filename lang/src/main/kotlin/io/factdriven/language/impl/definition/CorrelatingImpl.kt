@@ -6,7 +6,7 @@ import io.factdriven.execution.Type
 import io.factdriven.execution.type
 import io.factdriven.language.*
 import io.factdriven.language.definition.Correlating
-import io.factdriven.language.definition.Split
+import io.factdriven.language.definition.Junction
 import io.factdriven.language.definition.Node
 import io.factdriven.language.impl.utils.getValue
 import kotlin.reflect.KClass
@@ -24,8 +24,10 @@ open class CorrelatingImpl<T: Any>(parent: Node):
 {
 
     override lateinit var consuming: KClass<out Any>
-    override val properties = mutableListOf<String>()
-    override val matching = mutableListOf<Any.() -> Any?>()
+
+    private val properties = mutableListOf<String>()
+    private val matching = mutableListOf<Any.() -> Any?>()
+    override val correlating: Map<String, Any.() -> Any?> get() = properties.mapIndexed { i, p -> p to matching[i] }.toMap()
 
     override val type: Type get() = consuming.type
 
@@ -36,7 +38,7 @@ open class CorrelatingImpl<T: Any>(parent: Node):
     }
 
     override fun having(property: String): AwaitEventHavingMatch<T> {
-        this.properties.add(property)
+        properties.add(property)
         return this
     }
 
@@ -55,7 +57,7 @@ open class CorrelatingImpl<T: Any>(parent: Node):
 
     override fun match(value: T.() -> Any?): AwaitEventBut<T> {
         @Suppress("UNCHECKED_CAST")
-        this.matching.add(value as (Any.() -> Any?))
+        matching.add(value as (Any.() -> Any?))
         return this
     }
 
@@ -73,7 +75,7 @@ open class CorrelatingImpl<T: Any>(parent: Node):
     @Suppress("UNCHECKED_CAST")
     override fun first(path: Catch<T>.() -> Unit): AwaitOr<T> {
         val branch = BranchingImpl<T>(parent!!)
-        branch.split = Split.Waiting
+        branch.fork = Junction.First
         (parent as NodeImpl).children.remove(this)
         (parent as NodeImpl).children.add(branch)
         val flow = CorrelatingFlowImpl(
@@ -99,12 +101,7 @@ open class CorrelatingImpl<T: Any>(parent: Node):
 
     override fun findReceptorsFor(message: Message): List<Receptor> {
         return if (consuming.isInstance(message.fact.details))
-            listOf(
-                Receptor(
-                    consuming,
-                    properties.map { it to message.fact.details.getValue(it) }.toMap()
-                )
-            )
+            listOf(Receptor(consuming, properties.map { it to message.fact.details.getValue(it) }.toMap()))
         else emptyList()
     }
 

@@ -8,9 +8,8 @@ import kotlin.reflect.KClass
 interface Throwing: Node, Continuing {
 
     val throwing: KClass<out Any>
-
-    val instance: Any.() -> Any
-    val throwingType: FactType
+    val factType: FactType
+    val factory: Any.() -> Any
 
 }
 

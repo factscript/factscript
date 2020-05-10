@@ -3,7 +3,7 @@ package io.factdriven.language.definition.select_either
 import io.factdriven.language.Flows
 import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Branching
-import io.factdriven.language.definition.Split
+import io.factdriven.language.definition.Junction
 import io.factdriven.language.definition.Throwing
 import io.factdriven.language.Option
 import org.junit.jupiter.api.Assertions
@@ -37,7 +37,7 @@ class PaymentRetrievalTest {
 
         val branching = definition.children[1] as Branching
         assertEquals(PaymentRetrieval::class, branching.entity)
-        assertEquals(Split.Exclusive, branching.split)
+        assertEquals(Junction.One, branching.fork)
         assertEquals("Payment (partly) uncovered?", branching.description)
         assertEquals(2, branching.children.size)
         Assertions.assertTrue(Option::class.isInstance(branching.children[0]))
@@ -46,7 +46,7 @@ class PaymentRetrievalTest {
         val emit = definition.children[2] as Throwing
         assertEquals(PaymentRetrieval::class, emit.entity)
         assertEquals(PaymentRetrieved::class, emit.throwing)
-        assertEquals(PaymentRetrieved(3F), emit.instance.invoke(instance))
+        assertEquals(PaymentRetrieved(3F), emit.factory.invoke(instance))
         assertEquals(definition, emit.parent)
 
 

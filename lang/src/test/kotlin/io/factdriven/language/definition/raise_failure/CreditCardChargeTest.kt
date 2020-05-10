@@ -35,15 +35,14 @@ class CreditCardChargeTest {
         val await = definition.children[1] as Correlating
         assertEquals(CreditCardCharge::class, await.entity)
         assertEquals(CreditCardGatewayConfirmationReceived::class, await.consuming)
-        assertEquals(1, await.matching.size)
-        assertEquals("1234432112344321", await.matching.first().invoke(instance))
-        assertEquals(1, await.properties.size)
-        assertEquals("reference", await.properties.first())
+        assertEquals("1234432112344321", await.correlating.values.iterator().next().invoke(instance))
+        assertEquals(1, await.correlating.size)
+        assertEquals("reference", await.correlating.keys.iterator().next())
         assertEquals(definition, await.parent)
 
         val branching = definition.children[2] as Branching
         assertEquals(CreditCardCharge::class, branching.entity)
-        assertEquals(Split.Exclusive, branching.split)
+        assertEquals(Junction.One, branching.fork)
         assertEquals("Credit card expired?", branching.description)
 
         assertEquals(2, branching.children.size)
@@ -66,7 +65,7 @@ class CreditCardChargeTest {
         assertEquals(false, emit.isContinuing())
         assertEquals(false, emit.isFailing())
         assertEquals(true, emit.isSucceeding())
-        assertEquals(CreditCardCharged("1234432112344321", 3F), emit.instance.invoke(instance))
+        assertEquals(CreditCardCharged("1234432112344321", 3F), emit.factory.invoke(instance))
         assertEquals(definition, emit.parent)
 
     }

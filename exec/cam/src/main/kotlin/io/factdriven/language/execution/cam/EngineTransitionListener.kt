@@ -36,14 +36,14 @@ class EngineTransitionListener: ExecutionListener {
 
     private fun Correlating.endpoints(messages: List<Message>): Map<String, String> {
         val instance = Messages.load(messages, entity)
-        val details = properties.mapIndexed { idx, property -> property to matching[idx].invoke(instance) }.toMap()
+        val details = correlating.map { it.key to it.value.invoke(instance) }.toMap()
         val successfulEndpoint = mapOf(id to Receptor(consuming, details).hash)
         return successfulEndpoint + optionalEndpoints(instance)
     }
 
     private fun Executing.endpoints(messages: List<Message>): Map<String, String> {
         val successfulEndpoint = mapOf(id to Receptor(correlating = MessageId.nextAfter(messages.last().id)).hash)
-        return successfulEndpoint + optionalEndpoints(instance)
+        return successfulEndpoint + optionalEndpoints(factory)
     }
 
     private fun Branching.endpoints(messages: List<Message>): Map<String, String> {
@@ -55,9 +55,7 @@ class EngineTransitionListener: ExecutionListener {
         return children.mapNotNull {
             val correlating = it.children.first()
             if (correlating is Correlating) {
-                val details = correlating.properties.mapIndexed { propertyIndex, propertyName ->
-                    propertyName to correlating.matching[propertyIndex].invoke(instance)
-                }.toMap()
+                val details = correlating.correlating.map { it.key to it.value.invoke(instance) }.toMap()
                 correlating.id to Receptor(correlating.consuming, details).hash
             } else if (correlating is Waiting) {
                 val timer = correlating.period?.invoke(instance) // TODO ?: awaiting.limit?.invoke(handlerInstance)

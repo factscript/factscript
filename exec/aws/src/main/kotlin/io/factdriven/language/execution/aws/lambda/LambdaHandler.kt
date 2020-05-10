@@ -131,7 +131,7 @@ class ExecutionHandler : NodeHandler(){
     }
 
     override fun handle(processContext: ProcessContext) : HandlerResult {
-        val fact = (processContext.node as Throwing).instance.invoke(processContext.processInstance)
+        val fact = (processContext.node as Throwing).factory.invoke(processContext.processInstance)
         val messageList = processContext.messageList
         val message = createMessage(fact)
         messageList.add(message)
@@ -142,7 +142,7 @@ class ExecutionHandler : NodeHandler(){
 class InclusiveHandler : NodeHandler() {
     override fun test(processContext: ProcessContext): Boolean {
         val node = processContext.node
-        return node is Branching && node.split == Split.Inclusive
+        return node is Branching && node.fork == Junction.Some
     }
 
     override fun handle(processContext: ProcessContext) : HandlerResult {
@@ -203,7 +203,7 @@ class LoopHandler : NodeHandler(){
 class ExclusiveHandler : NodeHandler() {
     override fun test(processContext: ProcessContext): Boolean {
         val node = processContext.node
-        return node is Branching && node.split == Split.Exclusive
+        return node is Branching && node.fork == Junction.One
     }
 
     override fun handle(processContext: ProcessContext) : HandlerResult {

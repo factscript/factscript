@@ -23,28 +23,28 @@ open class ThrowingImpl<T: Any, F: Any>(parent: Node):
 {
 
     override lateinit var throwing: KClass<*>
-    override lateinit var instance: Any.() -> Any
-    override lateinit var throwingType: FactType
+    override lateinit var factory: Any.() -> Any
+    override lateinit var factType: FactType
 
     override val type: Type get() = throwing.type
 
     @Suppress("UNCHECKED_CAST")
     override fun <M : Any> event(type: KClass<M>): By<T, M> {
-        this.throwingType = FactType.Event
+        this.factType = FactType.Event
         this.throwing = type
         return this as By<T, M>
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun <M : Any> command(type: KClass<M>): By<T, M> {
-        this.throwingType = FactType.Command
+        this.factType = FactType.Command
         this.throwing = type
         return this as By<T, M>
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun by(instance: T.() -> Any): F {
-        this.instance = instance as Any.() -> Any
+        this.factory = instance as Any.() -> Any
         @Suppress("UNCHECKED_CAST")
         return this as F
     }

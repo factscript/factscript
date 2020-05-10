@@ -28,7 +28,7 @@ class PaymentRetrievalTest {
         val emit = definition.find(nodeOfType = Throwing::class, dealingWith = PaymentRetrieved::class)
         Assertions.assertEquals(PaymentRetrieval::class, emit?.entity)
         Assertions.assertEquals(PaymentRetrieved::class, emit?.throwing)
-        Assertions.assertEquals(PaymentRetrieved(3F), emit?.instance?.invoke(PaymentRetrieval(RetrievePayment(3F))))
+        Assertions.assertEquals(PaymentRetrieved(3F), emit?.factory?.invoke(PaymentRetrieval(RetrievePayment(3F))))
         Assertions.assertEquals(definition, emit?.parent)
 
     }
