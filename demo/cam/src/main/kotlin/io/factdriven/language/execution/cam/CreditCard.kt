@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -32,12 +32,7 @@ data class CreditCard (
 
                 await event ConfirmationReceived::class having "reference" match { reference }
 
-                emit event CreditCardCharged::class by {
-                    CreditCardCharged(
-                        reference = reference,
-                        charge = charge
-                    )
-                }
+                emit event { CreditCardCharged(reference = reference,charge = charge) }
 
             }
 

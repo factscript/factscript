@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.loop
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -21,13 +21,13 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 on command RetrievePayment::class
 
                 loop {
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(id, 1F)
                     }
                     until("Payment covered?") condition { covered == total }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 

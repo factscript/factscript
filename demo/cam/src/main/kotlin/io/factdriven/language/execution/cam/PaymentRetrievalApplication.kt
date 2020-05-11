@@ -1,7 +1,7 @@
 package io.factdriven.language.execution.cam
 
 import io.factdriven.execution.Messages
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.camunda.bpm.spring.boot.starter.annotation.EnableProcessApplication

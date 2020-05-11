@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.execute_all
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -16,26 +16,29 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
         init {
 
-            flow<PaymentRetrieval> {
+            flow <PaymentRetrieval> {
 
                 on command RetrievePayment::class
 
                 execute all {
-                    execute command ChargeCreditCard::class by {
+
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
-                    execute command ChargeCreditCard::class by {
+
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
+
                 } and {
-                    execute command ChargeCreditCard::class by {
+
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
+
                 }
 
-                emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(total)
-                }
+                emit failure event { PaymentRetrieved(total) }
 
             }
 

@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.continue_after_failure
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -22,21 +22,21 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     report failure PaymentFailed::class
                 }
 
-                execute command ChargeCreditCard::class by {
+                execute command {
                     ChargeCreditCard(id, total)
                 } but {
                     on event CreditCardGatewayConfirmationReceived::class
                 } but {
                     on event CreditCardExpired::class
-                    execute command ChargeCreditCard::class by { ChargeCreditCard(id, total) }
-                    emit event PaymentFailed::class by { PaymentFailed() }
+                    execute command { ChargeCreditCard(id, total) }
+                    emit event { PaymentFailed() }
                 } but {
                     on time duration ("Two weeks") { "PT5S" }
-                    execute command ChargeCreditCard::class by { ChargeCreditCard(id, total) }
-                    emit event PaymentFailed::class by { PaymentFailed() }
+                    execute command { ChargeCreditCard(id, total) }
+                    emit event { PaymentFailed() }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 

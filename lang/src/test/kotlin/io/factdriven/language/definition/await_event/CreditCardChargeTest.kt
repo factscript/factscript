@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.await_event
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Throwing
 import org.junit.jupiter.api.Assertions

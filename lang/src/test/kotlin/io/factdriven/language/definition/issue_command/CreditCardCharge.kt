@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.issue_command
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -25,7 +25,7 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
                 await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
 
-                emit event CreditCardCharged::class by {
+                emit event {
                     CreditCardCharged(reference, amount)
                 }
 

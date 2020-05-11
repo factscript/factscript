@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.start_and_end_event
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -19,7 +19,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
         init {
             flow<PaymentRetrieval> {
                 on command RetrievePayment::class
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(amount)
                 }
             }

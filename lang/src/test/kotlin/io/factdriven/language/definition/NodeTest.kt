@@ -1,7 +1,6 @@
 package io.factdriven.language.definition
 
-import io.factdriven.language.Flows
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -157,19 +156,19 @@ class NodeTestFlow(fact: RetrievePayment) {
                 on command RetrievePayment::class
 
                 execute all {
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
                 } and {
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 
@@ -216,7 +215,7 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
                 await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
 
-                emit event CreditCardCharged::class by {
+                emit event {
                     CreditCardCharged(reference, amount)
                 }
 

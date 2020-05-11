@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.execute_command
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -23,11 +23,11 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 on command RetrievePayment::class
 
-                execute command ChargeCreditCard::class by {
+                execute command {
                     ChargeCreditCard(reference, amount)
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(amount)
                 }
 

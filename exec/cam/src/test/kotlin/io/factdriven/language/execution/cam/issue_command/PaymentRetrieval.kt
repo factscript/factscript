@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.issue_command
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -23,7 +23,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 on command RetrievePayment::class
 
-                issue command ChargeCreditCard::class by {
+                issue command {
                     ChargeCreditCard(
                         reference,
                         amount
@@ -32,7 +32,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 await event CreditCardCharged::class having "reference" match { reference }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(amount)
                 }
 

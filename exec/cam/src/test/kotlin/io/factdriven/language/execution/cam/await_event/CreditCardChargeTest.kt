@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.await_event
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.execution.cam.TestHelper
 import io.factdriven.execution.load
 import io.factdriven.language.visualization.bpmn.model.BpmnModel

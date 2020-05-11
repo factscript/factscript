@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.await_first
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -22,20 +22,20 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 await first {
                     on event PaymentRetrieved::class
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
                 } or {
                     on event PaymentFailed::class
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 

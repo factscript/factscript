@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.await_event
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -16,7 +16,7 @@ class CreditCardCharge(fact: ChargeCreditCard) {
             flow<CreditCardCharge> {
                 on command ChargeCreditCard::class
                 await event ConfirmationReceived::class having "reference" match { reference }
-                emit event CreditCardCharged::class by {
+                emit event {
                     CreditCardCharged(reference = reference, charge = charge)
                 }
             }

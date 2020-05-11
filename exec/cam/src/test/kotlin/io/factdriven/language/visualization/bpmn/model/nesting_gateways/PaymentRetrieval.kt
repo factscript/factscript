@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.nesting_gateways
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -23,7 +23,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 select("Traffic light?") either {
                     given("Green")
                     execute all {
-                        execute command ChargeCreditCard::class by {
+                        execute command {
                             ChargeCreditCard(
                                 id,
                                 total - covered
@@ -32,7 +32,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     } and {
                         loop {
                             loop {
-                                execute command ChargeCreditCard::class by {
+                                execute command {
                                     ChargeCreditCard(
                                         id,
                                         total - covered
@@ -40,7 +40,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                                 }
                                 select all {
                                     given("A") condition { true }
-                                    execute command ChargeCreditCard::class by {
+                                    execute command {
                                         ChargeCreditCard(
                                             id,
                                             total - covered
@@ -48,13 +48,13 @@ class PaymentRetrieval(fact: RetrievePayment) {
                                     }
                                 } or {
                                     given("B") condition { true }
-                                    execute command ChargeCreditCard::class by {
+                                    execute command {
                                         ChargeCreditCard(
                                             id,
                                             total - covered
                                         )
                                     }
-                                    execute command ChargeCreditCard::class by {
+                                    execute command {
                                         ChargeCreditCard(
                                             id,
                                             total - covered
@@ -63,7 +63,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                                 }
                                 await first {
                                     on event CreditCardUnvalidated::class
-                                    execute command io.factdriven.language.visualization.bpmn.model.await_first.ChargeCreditCard::class by {
+                                    execute command {
                                         io.factdriven.language.visualization.bpmn.model.await_first.ChargeCreditCard(
                                             id,
                                             1F
@@ -77,14 +77,14 @@ class PaymentRetrieval(fact: RetrievePayment) {
                             until("The world is flat?") condition { true }
                         }
                     } and {
-                        execute command ChargeCreditCard::class by {
+                        execute command {
                             ChargeCreditCard(
                                 id,
                                 total - covered
                             )
                         }
                     }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             id,
                             total - covered
@@ -92,7 +92,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     }
                 } or {
                     given("Red") condition { true }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             id,
                             total - covered
@@ -100,7 +100,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     }
                     select("End game?") either {
                         given("Yes") condition { true }
-                        execute command ChargeCreditCard::class by {
+                        execute command {
                             ChargeCreditCard(
                                 id,
                                 total - covered
@@ -108,20 +108,20 @@ class PaymentRetrieval(fact: RetrievePayment) {
                         }
                     } or {
                         given("No")
-                        execute command ChargeCreditCard::class by {
+                        execute command {
                             ChargeCreditCard(
                                 id,
                                 total - covered
                             )
                         }
-                        execute command ChargeCreditCard::class by {
+                        execute command {
                             ChargeCreditCard(
                                 id,
                                 total - covered
                             )
                         }
                     }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             id,
                             total - covered
@@ -129,7 +129,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 

@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.execute_command
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Executing
 import io.factdriven.language.definition.Throwing

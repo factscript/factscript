@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -19,7 +19,7 @@ data class Shipment(val fact: ShipGoods) {
                     report success ShipGoods::class
                 }
 
-                emit event GoodsShipped::class by {
+                emit event {
                     GoodsShipped(orderId)
                 }
 

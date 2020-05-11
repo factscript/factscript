@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.await_time
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.time.LocalDate
 import java.time.LocalDateTime.now
 
@@ -24,18 +24,18 @@ class CreditCardCharge(fact: ChargeCreditCard) {
                     report failure ChargingProcessFailed::class
                 }
 
-                execute command ChargeCreditCard::class by {
+                execute command {
                     ChargeCreditCard(reference, charge)
                 } but {
                     on time duration ("30 seconds") { "PT30S" }
-                    emit event ChargingProcessFailed::class by {
+                    emit event {
                         ChargingProcessFailed()
                     }
                 }
 
                 await time limit ("Nikolaus 2030") { nikolaus2030 }
 
-                emit event CreditCardCharged::class by {
+                emit event {
                     CreditCardCharged(reference, charge)
                 }
 

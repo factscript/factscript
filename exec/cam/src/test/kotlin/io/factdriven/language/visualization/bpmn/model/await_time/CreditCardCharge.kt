@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.await_time
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -18,14 +18,14 @@ class CreditCardCharge {
                     report failure CreditCardFailed::class
                 }
 
-                execute command ChargeCreditCard::class by {
+                execute command {
                     ChargeCreditCard(reference = "1234432112344321", charge = 3F)
                 } but {
                     on time duration ("30 seconds") { "PT30S" }
                     emit event CreditCardFailed::class
                 }
 
-                emit event CreditCardCharged::class by {
+                emit event {
                     CreditCardCharged(reference = "abc", charge = 3F)
                 }
 

@@ -12,7 +12,6 @@ interface Issue<T: Any>: IssueCommand<T>
 @FlowLanguage
 interface IssueCommand<T: Any> {
 
-    @Deprecated("Replaced by command(instance: T.() -> M)")
     infix fun <M: Any> command(type: KClass<M>): By<T, M>
 
 }

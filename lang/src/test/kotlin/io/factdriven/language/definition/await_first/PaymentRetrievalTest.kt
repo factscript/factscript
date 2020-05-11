@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.await_first
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.definition.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

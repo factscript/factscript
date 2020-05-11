@@ -1,7 +1,7 @@
 package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.execution.Receptor
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.definition.*
 import io.factdriven.language.impl.utils.Id
 import io.factdriven.language.impl.utils.asLines

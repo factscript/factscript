@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.handle_failure
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -33,13 +33,13 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
                     given ("No")
                 } or {
                     given ("Yes") condition { !successful }
-                    emit event CreditCardExpired::class by { CreditCardExpired(reference) }
+                    emit event { CreditCardExpired(reference) }
                 } or {
                     given ("Amount too high") condition { amount >= 1000 }
-                    emit event PaymentAmountTooHigh::class by { PaymentAmountTooHigh(reference) }
+                    emit event { PaymentAmountTooHigh(reference) }
                 }
 
-                emit event CreditCardCharged::class by { CreditCardCharged(reference, amount) }
+                emit event { CreditCardCharged(reference, amount) }
 
             }
 

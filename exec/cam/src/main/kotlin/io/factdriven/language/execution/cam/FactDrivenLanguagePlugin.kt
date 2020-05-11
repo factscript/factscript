@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.visualization.bpmn.model.BpmnModel
 import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl

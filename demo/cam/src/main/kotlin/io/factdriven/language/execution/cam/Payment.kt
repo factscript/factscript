@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -35,7 +35,7 @@ data class Payment(
                     report failure PaymentFailed::class
                 }
 
-                execute command WithdrawAmountFromCustomerAccount::class by {
+                execute command {
                     WithdrawAmountFromCustomerAccount(
                         name = accountId,
                         maximum = total
@@ -45,40 +45,25 @@ data class Payment(
                     select("Payment fully covered?") either {
                         given ("No") condition { covered == total }
                         loop {
-                            execute command ChargeCreditCard::class by {
-                                ChargeCreditCard(
-                                    orderId,
-                                    total - covered
-                                )
+                            execute command {
+                                ChargeCreditCard(orderId,total - covered)
                             } but {
                                 on event CreditCardExpired::class
                                 await first {
                                     on event CreditCardDetailsUpdated::class having "accountId" match { accountId }
                                 } or {
                                     on time duration ("Two weeks") { "P14D" }
-                                    emit event PaymentFailed::class by {
-                                        PaymentFailed(
-                                            orderId
-                                        )
-                                    }
+                                    emit event { PaymentFailed(orderId) }
                                 }
                             }
                             until ("Payment fully covered?") condition { covered == total }
                         }
                     } or {
                         given ("Yes")
-                        emit event PaymentRetrieved::class by {
-                            PaymentRetrieved(
-                                orderId
-                            )
-                        }
+                        emit event { PaymentRetrieved(orderId) }
                     }
 
-                emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(
-                        orderId
-                    )
-                }
+                emit event { PaymentRetrieved(orderId) }
 
             }
 

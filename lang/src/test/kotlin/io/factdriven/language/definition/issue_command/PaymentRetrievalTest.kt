@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.issue_command
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.definition.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

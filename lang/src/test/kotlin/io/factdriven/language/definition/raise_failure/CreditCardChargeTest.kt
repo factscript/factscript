@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.raise_failure
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.definition.*
 import io.factdriven.language.impl.utils.asType
 import org.junit.jupiter.api.Assertions.*

@@ -1,7 +1,7 @@
 package io.factdriven.language.visualization.bpmn.model.raise_failure
 
-import io.factdriven.language.Flows
-import io.factdriven.language.flow
+import io.factdriven.language.*
+import io.factdriven.language.*
 import io.factdriven.language.visualization.bpmn.model.BpmnModel
 import org.junit.jupiter.api.Test
 
@@ -37,7 +37,7 @@ class ThreeFlows_ThirdIsDefaultFlow_SecondIsSucceeding_NoneAreEmpty {
                         given ("No") condition { true }
                         execute command ChargeCreditCard::class
                         execute command ChargeCreditCard::class
-                        emit event CreditCardExpired::class by { CreditCardExpired(reference) }
+                        emit event { CreditCardExpired(reference) }
                     } or {
                         given ("Yes") condition { true }
                         execute command ChargeCreditCard::class
@@ -45,10 +45,10 @@ class ThreeFlows_ThirdIsDefaultFlow_SecondIsSucceeding_NoneAreEmpty {
                         given ("Other")
                         execute command ChargeCreditCard::class
                         execute command ChargeCreditCard::class
-                        emit event CreditCardExpired::class by { CreditCardExpired(reference) }
+                        emit event { CreditCardExpired(reference) }
                     }
 
-                    emit event CreditCardCharged::class by {
+                    emit event {
                         CreditCardCharged(
                             reference,
                             amount

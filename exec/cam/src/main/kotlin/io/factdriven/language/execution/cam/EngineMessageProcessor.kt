@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.execution.Messages
 import io.factdriven.execution.*
 import io.factdriven.language.definition.Promising

@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.await_event
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -13,16 +13,13 @@ class CreditCardCharge(fact: ChargeCreditCard) {
     companion object {
 
         init {
+
             flow<CreditCardCharge> {
                 on command ChargeCreditCard::class
                 await event ConfirmationReceived::class having "reference" match { reference }
-                emit event CreditCardCharged::class by {
-                    CreditCardCharged(
-                        reference = reference,
-                        charge = charge
-                    )
-                }
+                emit event { CreditCardCharged(reference, charge) }
             }
+
         }
 
     }

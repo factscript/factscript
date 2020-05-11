@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.select_all
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -22,7 +22,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 select all {
                     given("A") condition { covered < total }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             id,
                             total - covered
@@ -30,7 +30,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     }
                 } or {
                     given("B") condition { covered < total }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             id,
                             total - covered
@@ -38,7 +38,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     }
                 } or {
                     given("C") // = default path w/o condition
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             id,
                             total - covered
@@ -46,7 +46,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 

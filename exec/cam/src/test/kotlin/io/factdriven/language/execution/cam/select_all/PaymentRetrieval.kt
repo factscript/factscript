@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.select_all
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import kotlin.math.min
 
 /**
@@ -31,7 +31,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 select all {
                     given(">0") condition { amount > 0 }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             reference,
                             min(amount, 10F)
@@ -39,7 +39,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     }
                 } or {
                     given(">10") condition { amount > 10 }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             reference,
                             amount - 10
@@ -49,7 +49,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     given("0")
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(amount)
                 }
 

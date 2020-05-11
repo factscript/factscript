@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -23,32 +23,28 @@ data class Fulfillment(val incoming: FulfillOrder) {
                     report failure OrderNotFulfilled::class
                 }
 
-                emit event OrderFulfillmentStarted::class by {
-                    OrderFulfillmentStarted(orderId, accountId, total)
-                }
+                emit event { OrderFulfillmentStarted(orderId, accountId, total) }
 
                 execute all {
 
-                    execute command FetchGoodsFromInventory::class by { FetchGoodsFromInventory (orderId) }
+                    execute command { FetchGoodsFromInventory (orderId) }
 
                 } and {
 
-                    execute command RetrievePayment::class by {
+                    execute command {
                         RetrievePayment(orderId, accountId, total)
                     } but {
                         on event PaymentFailed::class
-                        emit event OrderNotFulfilled::class by { OrderNotFulfilled(orderId) }
+                        emit event { OrderNotFulfilled(orderId) }
                     }
 
                 }
 
-                emit event OrderReadyToShip::class by {
-                    OrderReadyToShip(orderId)
-                }
+                emit event { OrderReadyToShip(orderId) }
 
-                execute command ShipGoods::class by { ShipGoods(orderId) }
+                execute command { ShipGoods(orderId) }
 
-                emit event OrderFulfilled::class by { OrderFulfilled(orderId) }
+                emit event { OrderFulfilled(orderId) }
 
             }
 

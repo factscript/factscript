@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.await_first
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -22,20 +22,14 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 await first {
                     on event CreditCardUnvalidated::class
-                    execute command ChargeCreditCard::class by {
-                        ChargeCreditCard(id, 1F)
-                    }
+                    execute command { ChargeCreditCard(id, 1F) }
                 } or {
                     on event CreditCardValidated::class
                 }
 
-                execute command ChargeCreditCard::class by {
-                    ChargeCreditCard(id, total - 1F)
-                }
+                execute command { ChargeCreditCard(id, total - 1F) }
 
-                emit event PaymentRetrieved::class by {
-                    PaymentRetrieved(total)
-                }
+                emit event { PaymentRetrieved(total) }
 
             }
 

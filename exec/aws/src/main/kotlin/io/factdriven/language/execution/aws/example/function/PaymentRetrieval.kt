@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.aws.example.function
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -33,75 +33,75 @@ data class PaymentRetrieval(
 //                select all {
 //                    given ("Yes") condition { true }
 //
-//                    execute command PaymentRetrievalAccepted::class by {
+//                    execute command {
 //                        PaymentRetrievalAccepted("1", 25f)
 //                    }
 //                } or {
 //                    given ("Yes") condition { true }
 //
-//                    execute command PaymentRetrievalAccepted3::class by {
+//                    execute command {
 //                        PaymentRetrievalAccepted3("1", 25f)
 //                    }
 //                }
 
 //                execute all {
-//                    execute command PaymentRetrievalAccepted::class by {
+//                    execute command {
 //                        PaymentRetrievalAccepted("1", 25f)
 //                    }
 //
 //                } and {
-//                    execute command PaymentRetrievalAccepted2::class by {
+//                    execute command {
 //                        PaymentRetrievalAccepted2("1", 25f)
 //                    }
 //
 //                    execute all {
-//                        execute command PaymentRetrievalAccepted3::class by {
+//                        execute command {
 //                            PaymentRetrievalAccepted3("1", 25f)
 //                        }
 //
 //                    } and {
-//                        execute command PaymentRetrievalAccepted4::class by {
+//                        execute command {
 //                            PaymentRetrievalAccepted4("1", 25f)
 //                        }
 //                    } and {
-//                        execute command PaymentRetrievalAccepted5::class by {
+//                        execute command {
 //                            PaymentRetrievalAccepted5("1", 25f)
 //                        }
 //
 //                        execute all {
-//                            execute command PaymentRetrievalAccepted3::class by {
+//                            execute command {
 //                                PaymentRetrievalAccepted3("1", 25f)
 //                            }
 //
 //                        } and {
-//                            execute command PaymentRetrievalAccepted4::class by {
+//                            execute command {
 //                                PaymentRetrievalAccepted4("1", 25f)
 //                            }
 //                        } and {
-//                            execute command PaymentRetrievalAccepted5::class by {
+//                            execute command {
 //                                PaymentRetrievalAccepted5("1", 25f)
 //                            }
 //
 //                            select either {
 //                                given("Yes") condition { true }
 //
-//                                execute command PaymentRetrievalAccepted::class by {
+//                                execute command {
 //                                    PaymentRetrievalAccepted("1", 25f)
 //                                }
 //                            } or {
 //                                given("Yes") condition { true }
 //
-//                                execute command PaymentRetrievalAccepted3::class by {
+//                                execute command {
 //                                    PaymentRetrievalAccepted3("1", 25f)
 //                                }
 //
 //                                execute all {
-//                                    execute command PaymentRetrievalAccepted3::class by {
+//                                    execute command {
 //                                        PaymentRetrievalAccepted3("1", 25f)
 //                                    }
 //
 //                                } and {
-//                                    execute command PaymentRetrievalAccepted4::class by {
+//                                    execute command {
 //                                        PaymentRetrievalAccepted4("1", 25f)
 //                                    }
 //                                }
@@ -110,11 +110,11 @@ data class PaymentRetrieval(
 //                    }
 //                }
 
-                execute command PaymentRetrievalAccepted6::class by {
+                execute command {
                     PaymentRetrievalAccepted6("1", 25f)
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(paymentId = paymentId, payment = 10000f)
                 }
 

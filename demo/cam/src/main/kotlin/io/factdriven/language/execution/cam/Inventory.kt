@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -19,7 +19,7 @@ data class Inventory(val fact: FetchGoodsFromInventory) {
                     report success GoodsFetchedFromInventory::class
                 }
 
-                emit event GoodsFetchedFromInventory::class by {
+                emit event {
                     GoodsFetchedFromInventory(orderId)
                 }
 
@@ -31,9 +31,7 @@ data class Inventory(val fact: FetchGoodsFromInventory) {
                     report success GoodsReturnedToInventory::class
                 }
 
-                emit event GoodsReturnedToInventory::class by {
-                    GoodsReturnedToInventory(orderId)
-                }
+                emit event { GoodsReturnedToInventory(orderId) }
 
             }
 

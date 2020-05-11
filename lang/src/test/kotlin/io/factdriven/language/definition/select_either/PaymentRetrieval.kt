@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.select_either
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -22,14 +22,14 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 select("Payment (partly) uncovered?") either {
                     given ("Yes") condition { covered < total }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(id, total - covered)
                     }
                 } or {
                     otherwise ("No")
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 

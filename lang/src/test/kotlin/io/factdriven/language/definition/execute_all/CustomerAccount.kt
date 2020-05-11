@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.execute_all
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -30,7 +30,7 @@ data class CustomerAccount(val fact: CreateAccount) {
                     report success AmountWithdrawn::class
                 }
 
-                emit event AmountWithdrawn::class by {
+                emit event {
                     AmountWithdrawn(name, pending)
                 }
 

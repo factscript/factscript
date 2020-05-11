@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.await_first
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -25,7 +25,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 await first {
                     on event CreditCardUnvalidated::class
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             reference,
                             1F
@@ -35,14 +35,14 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     on event CreditCardValidated::class
                 }
 
-                execute command ChargeCreditCard::class by {
+                execute command {
                     ChargeCreditCard(
                         reference,
                         amount - 1F
                     )
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(amount)
                 }
 

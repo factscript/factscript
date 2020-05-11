@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.loop
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -29,13 +29,13 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 on command RetrievePayment::class
 
                 loop {
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(reference, 1F)
                     }
                     until("Payment charged?") condition { charged == amount }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(amount)
                 }
 

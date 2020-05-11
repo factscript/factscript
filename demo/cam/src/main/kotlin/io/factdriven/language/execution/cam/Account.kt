@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import kotlin.math.max
 
 /**
@@ -31,12 +31,7 @@ data class Account(val fact: WithdrawAmountFromCustomerAccount) {
                     report success AmountWithdrawnFromCustomerAccount::class
                 }
 
-                emit event AmountWithdrawnFromCustomerAccount::class by {
-                    AmountWithdrawnFromCustomerAccount(
-                        name,
-                        max(pending, 10F)
-                    )
-                }
+                emit event { AmountWithdrawnFromCustomerAccount(name, max(pending, 10F)) }
 
             }
 
@@ -46,12 +41,7 @@ data class Account(val fact: WithdrawAmountFromCustomerAccount) {
                     report success AmountCreditedToCustomerAccount::class
                 }
 
-                emit event AmountCreditedToCustomerAccount::class by {
-                    AmountCreditedToCustomerAccount(
-                        name,
-                        max(pending, 10F)
-                    )
-                }
+                emit event { AmountCreditedToCustomerAccount(name, max(pending, 10F)) }
 
             }
 

@@ -1,7 +1,7 @@
 package io.factdriven.language.execution.cam
 
 import io.factdriven.execution.Message
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.execution.Messages
 import io.factdriven.execution.MessageId
 import io.factdriven.execution.Receptor

@@ -1,9 +1,8 @@
 package io.factdriven.language.definition
 
-import io.factdriven.language.Flows
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -44,9 +43,9 @@ class FlowTestFlow(fact: RetrievePayment) {
     companion object {
 
         init {
-            flow<FlowTestFlow> {
+            flow <FlowTestFlow> {
                 on command RetrievePayment::class
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(amount)
                 }
             }

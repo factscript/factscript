@@ -2,13 +2,8 @@ package io.factdriven.language.impl.definition
 
 import io.factdriven.execution.Type
 import io.factdriven.execution.type
-import io.factdriven.language.By
-import io.factdriven.language.Emit
-import io.factdriven.language.Issue
-import io.factdriven.language.definition.FactType
-import io.factdriven.language.definition.Node
-import io.factdriven.language.definition.Promising
-import io.factdriven.language.definition.Throwing
+import io.factdriven.language.*
+import io.factdriven.language.definition.*
 import kotlin.reflect.KClass
 
 open class ThrowingImpl<T: Any, F: Any>(parent: Node):
@@ -25,6 +20,7 @@ open class ThrowingImpl<T: Any, F: Any>(parent: Node):
     override lateinit var throwing: KClass<*>
     override lateinit var factory: Any.() -> Any
     override lateinit var factType: FactType
+    override var factQuality: FactQuality? = null
 
     override val type: Type get() = throwing.type
 
@@ -55,6 +51,18 @@ open class ThrowingImpl<T: Any, F: Any>(parent: Node):
 
     override fun isFailing(): Boolean {
         return root.find(nodeOfType = Promising::class)?.failing?.contains(throwing) == true
+    }
+
+    override fun success(event: EmitEventFactory) {
+        factQuality = FactQuality.Success
+        @Suppress("UNCHECKED_CAST")
+        (event(event.throwing) as By<T, Any>).by(event.factory)
+    }
+
+    override fun failure(event: EmitEventFactory) {
+        factQuality = FactQuality.Failure
+        @Suppress("UNCHECKED_CAST")
+        (event(event.throwing) as By<T, Any>).by(event.factory)
     }
 
 }

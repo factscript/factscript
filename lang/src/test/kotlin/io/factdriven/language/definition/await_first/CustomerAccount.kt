@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.await_first
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -24,13 +24,13 @@ data class CustomerAccount(val fact: CreateAccount) {
 
         init {
 
-            flow<CustomerAccount> {
+            flow <CustomerAccount> {
 
                 on command WithdrawAmount::class promise {
                     report success AmountWithdrawn::class
                 }
 
-                emit event AmountWithdrawn::class by {
+                emit event {
                     AmountWithdrawn(name, pending)
                 }
 

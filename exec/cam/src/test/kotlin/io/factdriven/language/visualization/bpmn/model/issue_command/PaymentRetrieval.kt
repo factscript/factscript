@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.issue_command
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -19,13 +19,13 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 on command RetrievePayment::class
 
-                issue command ChargeCreditCard::class by {
+                issue command {
                     ChargeCreditCard(id, total)
                 }
 
                 await event CreditCardCharged::class having "id" match { id }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 

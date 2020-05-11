@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.select_all
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Branching
 import io.factdriven.language.definition.Junction

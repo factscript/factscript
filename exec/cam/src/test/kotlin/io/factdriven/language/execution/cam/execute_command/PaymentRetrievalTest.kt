@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.execute_command
 
-import io.factdriven.language.Flows
+import io.factdriven.language.*
 import io.factdriven.language.execution.cam.TestHelper
 import io.factdriven.execution.load
 import org.junit.jupiter.api.Assertions

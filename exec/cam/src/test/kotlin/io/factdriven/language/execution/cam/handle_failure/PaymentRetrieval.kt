@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.handle_failure
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import io.factdriven.language.impl.utils.Id
 import java.util.*
 
@@ -41,17 +41,17 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     report failure PaymentFailed::class
                 }
 
-                execute command ChargeCreditCard::class by {
+                execute command {
                     ChargeCreditCard(id, total)
                 } but {
                     on event CreditCardExpired::class
-                    emit event PaymentFailed::class by { PaymentFailed() }
+                    emit event { PaymentFailed() }
                 } but {
                     on event PaymentAmountTooHigh::class
-                    emit event PaymentFailed::class by { PaymentFailed() }
+                    emit event { PaymentFailed() }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 

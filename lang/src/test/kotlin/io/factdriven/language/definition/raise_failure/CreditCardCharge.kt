@@ -1,6 +1,6 @@
 package io.factdriven.language.definition.raise_failure
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -32,10 +32,10 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
                     given ("No")
                 } or {
                     given ("Yes") condition { !successful }
-                    emit event CreditCardExpired::class by { CreditCardExpired(reference) }
+                    emit event { CreditCardExpired(reference) }
                 }
 
-                emit event CreditCardCharged::class by { CreditCardCharged(reference, amount) }
+                emit event { CreditCardCharged(reference, amount) }
 
             }
 

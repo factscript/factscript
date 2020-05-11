@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.await_time
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -35,10 +35,10 @@ class CreditCardCharge(fact: ChargeCreditCard) {
 
                 await event ConfirmationReceived::class having ConfirmationReceived::reference match { reference } but {
                     on time duration ("3 seconds") { "PT3S" }
-                    emit event CreditCardFailed::class by { CreditCardFailed(reference)}
+                    emit event { CreditCardFailed(reference)}
                 }
 
-                emit event CreditCardCharged::class by {
+                emit event {
                     CreditCardCharged(
                         reference = reference,
                         charge = charge

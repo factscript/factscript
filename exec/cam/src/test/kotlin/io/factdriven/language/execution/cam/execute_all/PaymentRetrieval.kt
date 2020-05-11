@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.execute_all
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -31,14 +31,14 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 on command RetrievePayment::class
 
                 execute all {
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             reference,
                             min(amount, 10F)
                         )
                     }
                 } and {
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(
                             reference,
                             max(amount - 10, 0F)
@@ -46,7 +46,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(amount)
                 }
 

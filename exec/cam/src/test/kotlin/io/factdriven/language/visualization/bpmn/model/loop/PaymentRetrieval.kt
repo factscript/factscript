@@ -1,6 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.loop
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 import java.util.*
 
 /**
@@ -23,7 +23,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 loop {
                     loop {
                         loop {
-                            execute command ChargeCreditCard::class by {
+                            execute command {
                                 ChargeCreditCard(
                                     id,
                                     1F
@@ -31,7 +31,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                             }
                             until("ABC") condition { covered == total }
                         }
-                        execute command ChargeCreditCard::class by {
+                        execute command {
                             ChargeCreditCard(
                                 id,
                                 1F
@@ -42,7 +42,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     until("Payment covered?") condition { covered == total }
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(total)
                 }
 

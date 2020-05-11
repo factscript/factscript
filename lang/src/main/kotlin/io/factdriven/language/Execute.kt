@@ -1,7 +1,6 @@
 package io.factdriven.language
 
 import io.factdriven.language.impl.definition.ExecutingImpl
-import io.factdriven.language.impl.definition.ThrowingImpl
 import kotlin.reflect.KClass
 
 /**
@@ -13,7 +12,6 @@ interface Execute<T: Any>: ExecuteCommand<T>, ExecuteAll<T>
 @FlowLanguage
 interface ExecuteCommand<T: Any> {
 
-    @Deprecated("Replaced by command(instance: T.() -> M)")
     infix fun <M: Any> command(type: KClass<M>): ExecuteBy<T, M>
 
 }

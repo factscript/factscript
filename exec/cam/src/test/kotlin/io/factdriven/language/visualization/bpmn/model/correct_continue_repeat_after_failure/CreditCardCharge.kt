@@ -1,7 +1,7 @@
 package io.factdriven.language.visualization.bpmn.model.correct_continue_repeat_after_failure
 
 import io.factdriven.language.event
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>

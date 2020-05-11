@@ -1,6 +1,6 @@
 package io.factdriven.language.execution.cam.select_either
 
-import io.factdriven.language.flow
+import io.factdriven.language.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -25,14 +25,14 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 select("Payment (partly) uncovered?") either {
                     given("Yes") condition { amount > 0 }
-                    execute command ChargeCreditCard::class by {
+                    execute command {
                         ChargeCreditCard(reference, amount)
                     }
                 } or {
                     given("No") // = default path w/o condition
                 }
 
-                emit event PaymentRetrieved::class by {
+                emit event {
                     PaymentRetrieved(amount)
                 }
 
