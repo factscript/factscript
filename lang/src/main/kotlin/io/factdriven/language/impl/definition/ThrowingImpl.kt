@@ -10,7 +10,6 @@ open class ThrowingImpl<T: Any, F: Any>(parent: Node):
 
     Emit<T>,
     Issue<T>,
-    By<T, Any>,
 
     Throwing,
     NodeImpl(parent)
@@ -25,24 +24,10 @@ open class ThrowingImpl<T: Any, F: Any>(parent: Node):
     override val type: Type get() = throwing.type
 
     @Suppress("UNCHECKED_CAST")
-    override fun <M : Any> event(type: KClass<M>): By<T, M> {
+    fun <M : Any> event(type: KClass<M>, factory: Any.() -> Any) {
         this.factType = FactType.Event
         this.throwing = type
-        return this as By<T, M>
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <M : Any> command(type: KClass<M>): By<T, M> {
-        this.factType = FactType.Command
-        this.throwing = type
-        return this as By<T, M>
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun by(instance: T.() -> Any): F {
-        this.factory = instance as Any.() -> Any
-        @Suppress("UNCHECKED_CAST")
-        return this as F
+        this.factory = factory
     }
 
     override fun isSucceeding(): Boolean {
@@ -53,16 +38,23 @@ open class ThrowingImpl<T: Any, F: Any>(parent: Node):
         return root.find(nodeOfType = Promising::class)?.failureTypes?.contains(throwing) == true
     }
 
+    open fun command(type: KClass<*>, factory: Any.() -> Any): Any {
+        this.factType = FactType.Command
+        this.throwing = type
+        this.factory = factory
+        return this
+    }
+
     override fun success(event: EmitEventFactory) {
-        factQuality = FactQuality.Success
-        @Suppress("UNCHECKED_CAST")
-        (event(event.throwing) as By<T, Any>).by(event.factory)
+        this.throwing = event.throwing
+        this.factory = event.factory
+        this.factType = FactType.Event
+        this.factQuality = FactQuality.Success
     }
 
     override fun failure(event: EmitEventFactory) {
+        success(event)
         factQuality = FactQuality.Failure
-        @Suppress("UNCHECKED_CAST")
-        (event(event.throwing) as By<T, Any>).by(event.factory)
     }
 
 }

@@ -10,14 +10,11 @@ import kotlin.reflect.KClass
 interface Execute<T: Any>: ExecuteCommand<T>, ExecuteAll<T>, ExecuteLoop<T>
 
 @FlowLanguage
-interface ExecuteCommand<T: Any> {
-
-    infix fun <M: Any> command(type: KClass<M>): ExecuteBy<T, M>
-
-}
+interface ExecuteCommand<T: Any>
 
 inline infix fun <T: Any, reified M: Any> ExecuteCommand<T>.command(noinline instance: T.() -> M): ExecuteBut<T> {
-    return (this as ExecutingImpl<T>).command(M::class).by(instance)
+    @Suppress("UNCHECKED_CAST")
+    return (this as ExecutingImpl<T>).command(M::class, instance as Any.() -> Any)
 }
 
 @FlowLanguage
@@ -38,13 +35,6 @@ interface ExecuteLoop<T: Any> {
 interface ExecuteAnd<T: Any> {
 
     infix fun and(path: Execution<T>.() -> Unit): ExecuteAnd<T>
-
-}
-
-@FlowLanguage
-interface ExecuteBy<T: Any, M: Any>: By<T, M> {
-
-    override fun by(instance: T.() -> M): ExecuteBut<T>
 
 }
 

@@ -34,7 +34,7 @@ class TwoFlows_NoDefaultFlow_SecondIsSucceeding_SecondIsEmpty {
 
                     select ("Credit card expired?") either {
                         given ("No") condition { true }
-                        execute command ChargeCreditCard::class
+                        execute command { ChargeCreditCard(reference, amount) }
                         emit event { CreditCardExpired(reference) }
                     } or {
                         given ("Yes") condition { true }

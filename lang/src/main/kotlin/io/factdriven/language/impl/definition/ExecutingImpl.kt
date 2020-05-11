@@ -11,7 +11,6 @@ open class ExecutingImpl<T: Any>(parent: Node):
 
     Execute<T>,
     ExecuteBut<T>,
-    ExecuteBy<T, Any>,
 
     Executing,
     ThrowingImpl<T, ExecuteBut<T>>(parent)
@@ -21,6 +20,13 @@ open class ExecutingImpl<T: Any>(parent: Node):
     override val consuming: KClass<*> get() = successType
     override val successType: KClass<*> get() = Flows.find(handling = throwing)!!.asType<PromisingFlow>()!!.successType!!
     override val failureTypes: List<KClass<*>> get() = Flows.find(handling = throwing)!!.asType<PromisingFlow>()!!.failureTypes
+
+    override fun command(type: KClass<*>, factory: Any.() -> Any): ExecuteBut<T> {
+        this.factType = FactType.Command
+        this.throwing = type
+        this.factory = factory
+        return this
+    }
 
     @Suppress("UNCHECKED_CAST")
     override fun all(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
@@ -39,11 +45,6 @@ open class ExecutingImpl<T: Any>(parent: Node):
         (parent as NodeImpl).children.remove(this)
         loop.apply(path)
         (parent as NodeImpl).children.add(loop)
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <M : Any> command(type: KClass<M>): ExecuteBy<T, M> {
-        return super.command(type) as ExecuteBy<T, M>
     }
 
     @Suppress("UNCHECKED_CAST")

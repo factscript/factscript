@@ -34,13 +34,13 @@ class ThreeFlows_FirstIsDefaultFlow_SecondIsSucceeding_SecondIsEmpty {
 
                     select ("Credit card expired?") either {
                         given ("No")
-                        execute command ChargeCreditCard::class
+                        execute command { ChargeCreditCard(reference, amount) }
                         emit event { CreditCardExpired(reference) }
                     } or {
                         given ("Yes") condition { true }
                     } or {
                         given ("Other") condition { true }
-                        execute command ChargeCreditCard::class
+                        execute command { ChargeCreditCard(reference, amount) }
                         emit event { CreditCardExpired(reference) }
                     }
 
