@@ -55,14 +55,6 @@ open class FlowImpl<T:Any>(entity: KClass<T>, override val parent: Node? = null)
             return child
         }
 
-    override val loop: Loop<T>
-        get() {
-            @Suppress("UNCHECKED_CAST")
-            val child = LoopingFlowImpl<T>(entity as KClass<T>, this)
-            children.add(child)
-            return child
-        }
-
     override val forward: Node? get() = if (parent is Branching) parent?.forward else nextSibling ?: parent?.forward
     override val backward: Node? get() = if (parent is Branching) parent?.backward else previousSibling ?: parent?.backward
 

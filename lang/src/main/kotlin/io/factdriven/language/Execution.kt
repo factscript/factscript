@@ -18,8 +18,6 @@ interface Execution<T: Any>: Flow, Time<T> {
 
     val select: Select<T>
 
-    val loop: Loop<T>
-
 }
 
 @FlowLanguage
@@ -49,7 +47,5 @@ interface Option<T: Any>: Execution<T> {
 interface Loop<T: Any>: Execution<T> {
 
     val until: Until<T>
-
-    operator fun invoke(path: Loop<T>.() -> Unit)
 
 }

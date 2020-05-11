@@ -39,7 +39,7 @@ data class Payment(
 
                 select("Payment fully covered?") either {
                     given ("No") condition { covered == total }
-                    loop {
+                    execute loop {
                         execute command {
                             ChargeCreditCard(orderId,total - covered)
                         } but {

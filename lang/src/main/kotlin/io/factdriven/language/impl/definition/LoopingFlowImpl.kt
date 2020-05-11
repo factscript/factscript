@@ -18,10 +18,6 @@ class LoopingFlowImpl<T:Any> (entity: KClass<T>, override val parent: Node? = nu
 
 {
 
-    override fun invoke(path: Loop<T>.() -> Unit) {
-        apply(path)
-    }
-
     override val until: Until<T>
         get() {
             val child = ConditionalImpl<T>(this)
