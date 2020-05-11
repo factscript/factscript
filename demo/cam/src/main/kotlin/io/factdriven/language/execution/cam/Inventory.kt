@@ -31,7 +31,7 @@ data class Inventory(val fact: FetchGoodsFromInventory) {
                     report success GoodsReturnedToInventory::class
                 }
 
-                emit event { GoodsReturnedToInventory(orderId) }
+                emit success event { GoodsReturnedToInventory(orderId) }
 
             }
 

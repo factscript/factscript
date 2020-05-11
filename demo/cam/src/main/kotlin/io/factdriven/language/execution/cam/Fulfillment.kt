@@ -34,8 +34,8 @@ data class Fulfillment(val incoming: FulfillOrder) {
                     execute command {
                         RetrievePayment(orderId, accountId, total)
                     } but {
-                        on event PaymentFailed::class
-                        emit event { OrderNotFulfilled(orderId) }
+                        on failure PaymentFailed::class
+                        emit failure event { OrderNotFulfilled(orderId) }
                     }
 
                 }
@@ -44,7 +44,7 @@ data class Fulfillment(val incoming: FulfillOrder) {
 
                 execute command { ShipGoods(orderId) }
 
-                emit event { OrderFulfilled(orderId) }
+                emit success event { OrderFulfilled(orderId) }
 
             }
 

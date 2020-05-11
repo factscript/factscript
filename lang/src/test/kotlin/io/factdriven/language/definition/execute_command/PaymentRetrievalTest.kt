@@ -34,7 +34,7 @@ class PaymentRetrievalTest {
         val execute = definition.find(nodeOfType = Executing::class, dealingWith = ChargeCreditCard::class)
         Assertions.assertEquals(PaymentRetrieval::class, execute?.entity)
         Assertions.assertEquals(ChargeCreditCard::class, execute?.throwing)
-        Assertions.assertEquals(CreditCardCharged::class, execute?.succeeding)
+        Assertions.assertEquals(CreditCardCharged::class, execute?.success)
         Assertions.assertEquals(ChargeCreditCard(instance.id, instance.total), execute?.factory?.invoke(instance))
         Assertions.assertEquals(definition, execute?.parent)
 

@@ -1,6 +1,8 @@
 package io.factdriven.language.visualization.bpmn.model.handle_failure
 
 import io.factdriven.language.*
+import java.time.*
+import java.time.LocalDateTime.now
 import java.util.*
 
 /**
@@ -25,7 +27,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 execute command {
                     ChargeCreditCard(id, total)
                 } but {
-                    on event CreditCardExpired::class
+                    on failure CreditCardExpired::class
                     emit event { PaymentFailed() }
                 }
 

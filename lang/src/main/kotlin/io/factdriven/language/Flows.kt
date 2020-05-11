@@ -1,10 +1,8 @@
 package io.factdriven.language
 
 import io.factdriven.execution.*
-import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Flow
 import io.factdriven.language.definition.Promising
-import io.factdriven.language.definition.Throwing
 import io.factdriven.language.impl.definition.PromisingFlowImpl
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
@@ -53,7 +51,7 @@ object Flows {
                 (definition.children.any {
                     it is Promising && definition.children.indexOf(it) == 0
                         && (it.consuming == handling || handling == null)
-                        && (it.succeeding == reporting || it.failing.contains(reporting) || reporting == null)
+                        && (it.success == reporting || it.failure.contains(reporting) || reporting == null)
                 }))
         }
         return result.firstOrNull()

@@ -1,5 +1,6 @@
 package io.factdriven.language
 
+import io.factdriven.language.impl.definition.*
 import kotlin.reflect.KClass
 
 /**
@@ -9,10 +10,10 @@ import kotlin.reflect.KClass
 interface On<T: Any>: OnCommand<T>, Await<T>
 
 @FlowLanguage
-interface OnCommand<T: Any> {
+interface OnCommand<T: Any>
 
-    infix fun <M: Any> command(type: KClass<M>): OnCommandPromise<T>
-
+infix fun <T: Any, M: Any> OnCommand<T>.command(type: KClass<M>): OnCommandPromise<T> {
+    return (this as PromisingImpl<T>).command(type)
 }
 
 @FlowLanguage

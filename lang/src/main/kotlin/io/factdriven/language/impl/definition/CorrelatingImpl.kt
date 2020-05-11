@@ -31,10 +31,18 @@ open class CorrelatingImpl<T: Any>(parent: Node):
 
     override val type: Type get() = consuming.type
 
-    override fun <M : Any> event(type: KClass<M>): AwaitEventHaving<T, M> {
+    fun <M : Any> event(type: KClass<M>): AwaitEventHaving<T, M> {
         this.consuming = type
         @Suppress("UNCHECKED_CAST")
         return this as AwaitEventHaving<T, M>
+    }
+
+    override fun <M : Any> success(event: KClass<M>) {
+        event(event)
+    }
+
+    override fun <M : Any> failure(event: KClass<M>) {
+        event(event)
     }
 
     override fun having(property: String): AwaitEventHavingMatch<T> {

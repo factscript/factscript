@@ -1,9 +1,7 @@
 package io.factdriven.language.visualization.bpmn.model
 
-import io.factdriven.execution.Receptor
 import io.factdriven.language.*
 import io.factdriven.language.definition.*
-import io.factdriven.language.impl.utils.Id
 import io.factdriven.language.impl.utils.asLines
 import io.factdriven.language.visualization.bpmn.diagram.Artefact
 import io.factdriven.language.visualization.bpmn.diagram.Box
@@ -58,7 +56,7 @@ class BoundaryEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
 
     override val elements: List<Element<*, *>> = super.elements + if (node is Waiting) {
         TimerEventSymbolDefinition(node, this)
-    } else if (node is Consuming && Flows.find(reporting = node.consuming)?.find(Promising::class)?.failing?.contains(node.consuming) == true) {
+    } else if (node is Consuming && Flows.find(reporting = node.consuming)?.find(Promising::class)?.failure?.contains(node.consuming) == true) {
         ErrorEventSymbolDefinition(node, this)
     } else {
         MessageEventSymbolDefinition(node, this)

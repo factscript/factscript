@@ -19,10 +19,10 @@ open class PromisingImpl<T: Any>(parent: Node):
 
 {
 
-    override var succeeding: KClass<*>? = null
-    override val failing: MutableList<KClass<*>> = mutableListOf()
+    override var success: KClass<*>? = null
+    override val failure: MutableList<KClass<*>> = mutableListOf()
 
-    override fun <M : Any> command(type: KClass<M>): OnCommandPromise<T> {
+    fun <M : Any> command(type: KClass<M>): OnCommandPromise<T> {
         this.consuming = type
         return this
     }
@@ -35,11 +35,11 @@ open class PromisingImpl<T: Any>(parent: Node):
     override val report: Report<T> = this
 
     override fun <M : Any> success(type: KClass<M>) {
-        this.succeeding = type
+        this.success = type
     }
 
     override fun <M : Any> failure(type: KClass<M>) {
-        this.failing.add(type)
+        this.failure.add(type)
     }
 
 }

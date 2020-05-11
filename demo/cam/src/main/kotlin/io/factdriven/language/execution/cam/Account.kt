@@ -31,7 +31,7 @@ data class Account(val fact: WithdrawAmountFromCustomerAccount) {
                     report success AmountWithdrawnFromCustomerAccount::class
                 }
 
-                emit event { AmountWithdrawnFromCustomerAccount(name, max(pending, 10F)) }
+                emit success event { AmountWithdrawnFromCustomerAccount(name, max(pending, 10F)) }
 
             }
 
@@ -41,7 +41,7 @@ data class Account(val fact: WithdrawAmountFromCustomerAccount) {
                     report success AmountCreditedToCustomerAccount::class
                 }
 
-                emit event { AmountCreditedToCustomerAccount(name, max(pending, 10F)) }
+                emit success event { AmountCreditedToCustomerAccount(name, max(pending, 10F)) }
 
             }
 

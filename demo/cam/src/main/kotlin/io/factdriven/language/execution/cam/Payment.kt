@@ -35,12 +35,7 @@ data class Payment(
                     report failure PaymentFailed::class
                 }
 
-                execute command {
-                    WithdrawAmountFromCustomerAccount(
-                        name = accountId,
-                        maximum = total
-                    )
-                }
+                execute command { WithdrawAmountFromCustomerAccount(name = accountId, maximum = total) }
 
                     select("Payment fully covered?") either {
                         given ("No") condition { covered == total }
@@ -48,22 +43,22 @@ data class Payment(
                             execute command {
                                 ChargeCreditCard(orderId,total - covered)
                             } but {
-                                on event CreditCardExpired::class
+                                on failure CreditCardExpired::class
                                 await first {
                                     on event CreditCardDetailsUpdated::class having "accountId" match { accountId }
                                 } or {
                                     on time duration ("Two weeks") { "P14D" }
-                                    emit event { PaymentFailed(orderId) }
+                                    emit failure event { PaymentFailed(orderId) }
                                 }
                             }
                             until ("Payment fully covered?") condition { covered == total }
                         }
                     } or {
-                        given ("Yes")
-                        emit event { PaymentRetrieved(orderId) }
+                        otherwise ("Yes")
+                        emit success event { PaymentRetrieved(orderId) }
                     }
 
-                emit event { PaymentRetrieved(orderId) }
+                emit success event { PaymentRetrieved(orderId) }
 
             }
 

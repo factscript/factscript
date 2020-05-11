@@ -27,7 +27,7 @@ open class PromisingFlowImpl<T:Any>(entity: KClass<T>, override val parent: Node
         }
 
     override val consuming: KClass<*> get() = find(Consuming::class)!!.consuming
-    override val succeeding: KClass<*>? get() = find(Promising::class)!!.succeeding
-    override val failing: List<KClass<*>> get() = find(Promising::class)!!.failing
+    override val success: KClass<*>? get() = find(Promising::class)!!.success
+    override val failure: List<KClass<*>> get() = find(Promising::class)!!.failure
 
 }

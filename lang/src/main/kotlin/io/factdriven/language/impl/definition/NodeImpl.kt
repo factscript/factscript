@@ -3,11 +3,9 @@ package io.factdriven.language.impl.definition
 import io.factdriven.language.definition.*
 import io.factdriven.execution.*
 import io.factdriven.language.impl.utils.Id
-import io.factdriven.language.impl.utils.asType
 import io.factdriven.language.impl.utils.toSentenceCase
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.full.isSuperclassOf
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -80,7 +78,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
                 children.find { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
             }
             nodeOfType.isSubclassOf(Promising::class) -> {
-                children.find { it is Promising && ((it.succeeding == dealingWith || it.failing.contains(dealingWith) || dealingWith == null)) }
+                children.find { it is Promising && ((it.success == dealingWith || it.failure.contains(dealingWith) || dealingWith == null)) }
             }
             nodeOfType.isSubclassOf(Consuming::class) -> {
                 children.find { it is Consuming && (it.consuming == dealingWith || dealingWith == null) }
@@ -95,7 +93,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
                 children.filter { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
             }
             nodesOfType.isSubclassOf(Promising::class) -> {
-                children.filter { it is Promising && (it.succeeding == dealingWith || dealingWith == null) }
+                children.filter { it is Promising && (it.success == dealingWith || dealingWith == null) }
             }
             nodesOfType.isSubclassOf(Consuming::class) -> {
                 children.filter { it is Consuming && (it.consuming == dealingWith || dealingWith == null) }

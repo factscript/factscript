@@ -32,7 +32,7 @@ data class CreditCard (
 
                 await event ConfirmationReceived::class having "reference" match { reference }
 
-                emit event { CreditCardCharged(reference = reference,charge = charge) }
+                emit success event { CreditCardCharged(reference, charge) }
 
             }
 

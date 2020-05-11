@@ -19,9 +19,7 @@ data class Shipment(val fact: ShipGoods) {
                     report success ShipGoods::class
                 }
 
-                emit event {
-                    GoodsShipped(orderId)
-                }
+                emit success event { GoodsShipped(orderId) }
 
             }
 
