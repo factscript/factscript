@@ -27,8 +27,8 @@ data class Account(val fact: WithdrawAmountFromCustomerAccount) {
 
             flow <Account> {
 
-                on command WithdrawAmountFromCustomerAccount::class promise {
-                    report success AmountWithdrawnFromCustomerAccount::class
+                on command WithdrawAmountFromCustomerAccount::class emit {
+                    success event AmountWithdrawnFromCustomerAccount::class
                 }
 
                 emit success event { AmountWithdrawnFromCustomerAccount(name, max(pending, 10F)) }
@@ -37,8 +37,8 @@ data class Account(val fact: WithdrawAmountFromCustomerAccount) {
 
             flow <Account> {
 
-                on command CreditAmountToCustomerAccount::class promise {
-                    report success AmountCreditedToCustomerAccount::class
+                on command CreditAmountToCustomerAccount::class emit {
+                    success event AmountCreditedToCustomerAccount::class
                 }
 
                 emit success event { AmountCreditedToCustomerAccount(name, max(pending, 10F)) }

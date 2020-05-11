@@ -15,8 +15,8 @@ data class Inventory(val fact: FetchGoodsFromInventory) {
 
             flow <Inventory> {
 
-                on command FetchGoodsFromInventory::class promise {
-                    report success GoodsFetchedFromInventory::class
+                on command FetchGoodsFromInventory::class emit {
+                    success event GoodsFetchedFromInventory::class
                 }
 
                 emit event {
@@ -27,8 +27,8 @@ data class Inventory(val fact: FetchGoodsFromInventory) {
 
             flow <Inventory> {
 
-                on command ReturnGoodsToInventory::class promise {
-                    report success GoodsReturnedToInventory::class
+                on command ReturnGoodsToInventory::class emit {
+                    success event GoodsReturnedToInventory::class
                 }
 
                 emit success event { GoodsReturnedToInventory(orderId) }

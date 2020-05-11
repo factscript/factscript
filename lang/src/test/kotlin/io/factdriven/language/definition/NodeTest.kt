@@ -196,8 +196,8 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
             flow<CreditCardCharge> {
 
-                on command ChargeCreditCard::class promise {
-                    report success CreditCardCharged::class
+                on command ChargeCreditCard::class emit {
+                    success event CreditCardCharged::class
                 }
 
                 execute all {

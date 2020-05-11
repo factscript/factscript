@@ -26,13 +26,8 @@ data class CustomerAccount(val fact: CreateAccount) {
 
             flow<CustomerAccount> {
 
-                on command WithdrawAmount::class promise {
-                    report success AmountWithdrawn::class
-                }
-
-                emit event {
-                    AmountWithdrawn(name, pending)
-                }
+                on command WithdrawAmount::class emit { success event AmountWithdrawn::class }
+                emit event { AmountWithdrawn(name, pending) }
 
             }
 

@@ -51,7 +51,7 @@ object Flows {
                 (definition.children.any {
                     it is Promising && definition.children.indexOf(it) == 0
                         && (it.consuming == handling || handling == null)
-                        && (it.success == reporting || it.failure.contains(reporting) || reporting == null)
+                        && (it.successType == reporting || it.failureTypes.contains(reporting) || reporting == null)
                 }))
         }
         return result.firstOrNull()

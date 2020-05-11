@@ -18,9 +18,9 @@ data class Fulfillment(val incoming: FulfillOrder) {
 
             flow <Fulfillment> {
 
-                on command FulfillOrder::class promise {
-                    report success OrderFulfilled::class
-                    report failure OrderNotFulfilled::class
+                on command FulfillOrder::class emit {
+                    success event OrderFulfilled::class
+                    failure event OrderNotFulfilled::class
                 }
 
                 emit event { OrderFulfillmentStarted(orderId, accountId, total) }

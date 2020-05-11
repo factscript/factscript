@@ -15,8 +15,8 @@ data class Shipment(val fact: ShipGoods) {
 
             flow <Shipment> {
 
-                on command ShipGoods::class promise {
-                    report success ShipGoods::class
+                on command ShipGoods::class emit {
+                    success event ShipGoods::class
                 }
 
                 emit success event { GoodsShipped(orderId) }

@@ -25,9 +25,7 @@ data class CreditCardCharge(val fact: ChargeCreditCard) {
 
                 await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }
 
-                emit event {
-                    CreditCardCharged(reference, amount)
-                }
+                emit event { CreditCardCharged(reference, amount) }
 
             }
 

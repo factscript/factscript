@@ -56,7 +56,7 @@ class BoundaryEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
 
     override val elements: List<Element<*, *>> = super.elements + if (node is Waiting) {
         TimerEventSymbolDefinition(node, this)
-    } else if (node is Consuming && Flows.find(reporting = node.consuming)?.find(Promising::class)?.failure?.contains(node.consuming) == true) {
+    } else if (node is Consuming && Flows.find(reporting = node.consuming)?.find(Promising::class)?.failureTypes?.contains(node.consuming) == true) {
         ErrorEventSymbolDefinition(node, this)
     } else {
         MessageEventSymbolDefinition(node, this)

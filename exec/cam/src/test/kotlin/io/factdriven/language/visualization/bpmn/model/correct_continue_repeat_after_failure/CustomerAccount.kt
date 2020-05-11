@@ -16,8 +16,8 @@ class CustomerAccount(fact: WithdrawAmount) {
 
             flow <CustomerAccount> {
 
-                on command WithdrawAmount::class promise {
-                    report success AmountWithdrawn::class
+                on command WithdrawAmount::class emit {
+                    success event AmountWithdrawn::class
                 }
 
                 emit event { AmountWithdrawn(account, amount) }

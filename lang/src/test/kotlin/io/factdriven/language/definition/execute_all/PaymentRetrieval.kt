@@ -22,19 +22,12 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 execute all {
 
-                    execute command {
-                        ChargeCreditCard(id, total - covered)
-                    }
-
-                    execute command {
-                        ChargeCreditCard(id, total - covered)
-                    }
+                    execute command { ChargeCreditCard(id, total - covered) }
+                    execute command { ChargeCreditCard(id, total - covered) }
 
                 } and {
 
-                    execute command {
-                        ChargeCreditCard(id, total - covered)
-                    }
+                    execute command { ChargeCreditCard(id, total - covered) }
 
                 }
 

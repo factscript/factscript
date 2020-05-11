@@ -22,22 +22,14 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 await first {
                     on event PaymentRetrieved::class
-                    execute command {
-                        ChargeCreditCard(id, total - covered)
-                    }
-                    execute command {
-                        ChargeCreditCard(id, total - covered)
-                    }
+                    execute command { ChargeCreditCard(id, total - covered) }
+                    execute command { ChargeCreditCard(id, total - covered) }
                 } or {
                     on event PaymentFailed::class
-                    execute command {
-                        ChargeCreditCard(id, total - covered)
-                    }
+                    execute command { ChargeCreditCard(id, total - covered) }
                 }
 
-                emit event {
-                    PaymentRetrieved(total)
-                }
+                emit event { PaymentRetrieved(total) }
 
             }
 

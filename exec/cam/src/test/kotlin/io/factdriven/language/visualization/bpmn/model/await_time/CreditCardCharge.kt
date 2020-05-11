@@ -13,9 +13,9 @@ class CreditCardCharge {
 
             flow <CreditCardCharge> {
 
-                on command ChargeCreditCard::class promise {
-                    report success CreditCardCharged::class
-                    report failure CreditCardFailed::class
+                on command ChargeCreditCard::class emit {
+                    success event CreditCardCharged::class
+                    failure event CreditCardFailed::class
                 }
 
                 execute command {

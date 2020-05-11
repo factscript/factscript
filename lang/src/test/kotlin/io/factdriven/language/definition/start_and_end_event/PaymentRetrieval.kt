@@ -14,9 +14,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
         init {
             flow<PaymentRetrieval> {
                 on command RetrievePayment::class
-                emit event {
-                    PaymentRetrieved(amount)
-                }
+                emit event { PaymentRetrieved(amount) }
             }
         }
 

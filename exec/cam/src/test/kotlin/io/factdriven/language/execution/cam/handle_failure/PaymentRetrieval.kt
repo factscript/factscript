@@ -2,7 +2,6 @@ package io.factdriven.language.execution.cam.handle_failure
 
 import io.factdriven.language.*
 import io.factdriven.language.impl.utils.Id
-import java.util.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -36,9 +35,9 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
             flow <PaymentRetrieval> {
 
-                on command RetrievePayment::class promise {
-                    report success PaymentRetrieved::class
-                    report failure PaymentFailed::class
+                on command RetrievePayment::class emit {
+                    success event PaymentRetrieved::class
+                    failure event PaymentFailed::class
                 }
 
                 execute command {

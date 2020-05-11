@@ -30,33 +30,33 @@ data class Payment(
 
             flow <Payment> {
 
-                on command RetrievePayment::class promise {
-                    report success PaymentRetrieved::class
-                    report failure PaymentFailed::class
+                on command RetrievePayment::class emit {
+                    success event PaymentRetrieved::class
+                    failure event PaymentFailed::class
                 }
 
                 execute command { WithdrawAmountFromCustomerAccount(name = accountId, maximum = total) }
 
-                    select("Payment fully covered?") either {
-                        given ("No") condition { covered == total }
-                        loop {
-                            execute command {
-                                ChargeCreditCard(orderId,total - covered)
-                            } but {
-                                on failure CreditCardExpired::class
-                                await first {
-                                    on event CreditCardDetailsUpdated::class having "accountId" match { accountId }
-                                } or {
-                                    on time duration ("Two weeks") { "P14D" }
-                                    emit failure event { PaymentFailed(orderId) }
-                                }
+                select("Payment fully covered?") either {
+                    given ("No") condition { covered == total }
+                    loop {
+                        execute command {
+                            ChargeCreditCard(orderId,total - covered)
+                        } but {
+                            on failure CreditCardExpired::class
+                            await first {
+                                on event CreditCardDetailsUpdated::class having "accountId" match { accountId }
+                            } or {
+                                on time duration ("Two weeks") { "P14D" }
+                                emit failure event { PaymentFailed(orderId) }
                             }
-                            until ("Payment fully covered?") condition { covered == total }
                         }
-                    } or {
-                        otherwise ("Yes")
-                        emit success event { PaymentRetrieved(orderId) }
+                        until ("Payment fully covered?") condition { covered == total }
                     }
+                } or {
+                    otherwise ("Yes")
+                    emit success event { PaymentRetrieved(orderId) }
+                }
 
                 emit success event { PaymentRetrieved(orderId) }
 

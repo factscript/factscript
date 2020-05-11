@@ -18,9 +18,9 @@ open class ExecutingImpl<T: Any>(parent: Node):
 
 {
 
-    override val consuming: KClass<*> get() = success
-    override val success: KClass<*> get() = Flows.find(handling = throwing)!!.asType<PromisingFlow>()!!.success!!
-    override val failure: List<KClass<*>> get() = Flows.find(handling = throwing)!!.asType<PromisingFlow>()!!.failure
+    override val consuming: KClass<*> get() = successType
+    override val successType: KClass<*> get() = Flows.find(handling = throwing)!!.asType<PromisingFlow>()!!.successType!!
+    override val failureTypes: List<KClass<*>> get() = Flows.find(handling = throwing)!!.asType<PromisingFlow>()!!.failureTypes
 
     @Suppress("UNCHECKED_CAST")
     override fun all(path: Execution<T>.() -> Unit): ExecuteAnd<T> {
@@ -49,7 +49,7 @@ open class ExecutingImpl<T: Any>(parent: Node):
     }
 
     override fun findReceptorsFor(message: Message): List<Receptor> {
-        return if (success.isInstance(message.fact.details) || failure.contains(message.fact.details::class) && message.correlating != null)
+        return if (successType.isInstance(message.fact.details) || failureTypes.contains(message.fact.details::class) && message.correlating != null)
             listOf(Receptor(correlating = message.correlating))
         else emptyList()
     }

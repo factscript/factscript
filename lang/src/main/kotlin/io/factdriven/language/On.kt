@@ -12,20 +12,35 @@ interface On<T: Any>: OnCommand<T>, Await<T>
 @FlowLanguage
 interface OnCommand<T: Any>
 
-infix fun <T: Any, M: Any> OnCommand<T>.command(type: KClass<M>): OnCommandPromise<T> {
+infix fun <T: Any, M: Any> OnCommand<T>.command(type: KClass<M>): OnCommandEmit<T> {
     return (this as PromisingImpl<T>).command(type)
 }
 
 @FlowLanguage
-interface OnCommandPromise<T: Any> {
+interface OnCommandEmit<T: Any> {
 
-    infix fun promise(promise: OnCommandPromiseReport<T>.() -> Unit): OnCommandPromiseReport<T>
+    infix fun emit(emit: OnCommandEmitEvent<T>.() -> Unit): OnCommandEmitEvent<T>
 
 }
 
 @FlowLanguage
-interface OnCommandPromiseReport<T: Any> {
+interface OnCommandEmitEvent<T: Any>: OnCommandEmitEventSuccess<T>, OnCommandEmitEventFailure<T>
 
-    val report: Report<T>
+@FlowLanguage
+interface OnCommandEmitEventSuccess<T: Any> {
+
+    val success: OnCommandEmitEventType<T>
 
 }
+
+@FlowLanguage
+interface OnCommandEmitEventFailure<T: Any> {
+
+    val failure: OnCommandEmitEventType<T>
+
+}
+
+@FlowLanguage
+interface OnCommandEmitEventType<T: Any>
+
+infix fun <T: Any, M: Any> OnCommandEmitEventType<T>.event(type: KClass<M>) = (this as PromisingImpl<T>).emit(type)

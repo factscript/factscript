@@ -27,9 +27,9 @@ class CreditCardChargeTest {
         val on = definition.children[0] as Promising
         assertEquals(CreditCardCharge::class, on.entity)
         assertEquals(ChargeCreditCard::class, (on as Consuming).consuming)
-        assertEquals(CreditCardCharged::class, on.success)
-        assertEquals(1, on.failure.size)
-        assertEquals(CreditCardExpired::class, on.failure.first())
+        assertEquals(CreditCardCharged::class, on.successType)
+        assertEquals(1, on.failureTypes.size)
+        assertEquals(CreditCardExpired::class, on.failureTypes.first())
         assertEquals(definition, on.parent)
 
         val await = definition.children[1] as Correlating

@@ -22,19 +22,13 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 select all {
                     given("A") condition { covered < total }
-                    execute command {
-                        ChargeCreditCard(id, total - covered)
-                    }
+                    execute command { ChargeCreditCard(id, total - covered) }
                 } or {
                     given("B")
-                    execute command {
-                        ChargeCreditCard(id, total - covered)
-                    }
+                    execute command { ChargeCreditCard(id, total - covered) }
                 }
 
-                emit event {
-                    PaymentRetrieved(total)
-                }
+                emit event { PaymentRetrieved(total) }
 
             }
 

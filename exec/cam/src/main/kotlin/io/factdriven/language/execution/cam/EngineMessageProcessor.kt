@@ -122,7 +122,7 @@ class EngineMessageProcessor: MessageProcessor {
                 .singleResult()
 
             if (externalTask != null) {
-                val succeeding = Flows.find(reporting = message.fact.details::class)?.find(Promising::class, message.fact.details::class)?.success == message.fact.details::class
+                val succeeding = Flows.find(reporting = message.fact.details::class)?.find(Promising::class, message.fact.details::class)?.successType == message.fact.details::class
                 if (succeeding) {
                     engine.externalTaskService.complete(
                         externalTask.id,

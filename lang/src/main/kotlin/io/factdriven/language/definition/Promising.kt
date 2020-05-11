@@ -4,7 +4,7 @@ import kotlin.reflect.KClass
 
 interface Promising: Consuming {
 
-    val success: KClass<*>?
-    val failure: List<KClass<*>>
+    val successType: KClass<*>?
+    val failureTypes: List<KClass<*>>
 
 }

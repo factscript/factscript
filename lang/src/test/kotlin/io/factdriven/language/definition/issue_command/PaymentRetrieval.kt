@@ -19,15 +19,11 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 on command RetrievePayment::class
 
-                issue command {
-                    ChargeCreditCard(id, total)
-                }
+                issue command { ChargeCreditCard(id, total) }
 
                 await event CreditCardCharged::class having "id" match { id }
 
-                emit event {
-                    PaymentRetrieved(total)
-                }
+                emit success event { PaymentRetrieved(total) }
 
             }
 

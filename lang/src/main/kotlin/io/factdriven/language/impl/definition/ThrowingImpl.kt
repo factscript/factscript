@@ -46,11 +46,11 @@ open class ThrowingImpl<T: Any, F: Any>(parent: Node):
     }
 
     override fun isSucceeding(): Boolean {
-        return root.find(nodeOfType = Promising::class)?.success == throwing
+        return root.find(nodeOfType = Promising::class)?.successType == throwing
     }
 
     override fun isFailing(): Boolean {
-        return root.find(nodeOfType = Promising::class)?.failure?.contains(throwing) == true
+        return root.find(nodeOfType = Promising::class)?.failureTypes?.contains(throwing) == true
     }
 
     override fun success(event: EmitEventFactory) {

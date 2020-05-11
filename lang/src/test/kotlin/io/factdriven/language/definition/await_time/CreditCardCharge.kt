@@ -2,7 +2,6 @@ package io.factdriven.language.definition.await_time
 
 import io.factdriven.language.*
 import java.time.LocalDate
-import java.time.LocalDateTime.now
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -19,25 +18,21 @@ class CreditCardCharge(fact: ChargeCreditCard) {
 
             flow <CreditCardCharge> {
 
-                on command ChargeCreditCard::class promise {
-                    report success CreditCardCharged::class
-                    report failure ChargingProcessFailed::class
+                on command ChargeCreditCard::class emit {
+                    success event CreditCardCharged::class
+                    failure event ChargingProcessFailed::class
                 }
 
                 execute command {
                     ChargeCreditCard(reference, charge)
                 } but {
                     on time duration ("30 seconds") { "PT30S" }
-                    emit event {
-                        ChargingProcessFailed()
-                    }
+                    emit failure event { ChargingProcessFailed() }
                 }
 
                 await time limit ("Nikolaus 2030") { nikolaus2030 }
 
-                emit event {
-                    CreditCardCharged(reference, charge)
-                }
+                emit success event { CreditCardCharged(reference, charge) }
 
             }
 

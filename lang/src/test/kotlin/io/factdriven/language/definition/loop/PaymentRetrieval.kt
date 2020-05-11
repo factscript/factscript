@@ -21,15 +21,11 @@ class PaymentRetrieval(fact: RetrievePayment) {
                 on command RetrievePayment::class
 
                 loop {
-                    execute command {
-                        ChargeCreditCard(id, 1F)
-                    }
+                    execute command { ChargeCreditCard(id, 1F) }
                     until("Payment covered?") condition { covered == total }
                 }
 
-                emit event {
-                    PaymentRetrieved(total)
-                }
+                emit success event { PaymentRetrieved(total) }
 
             }
 

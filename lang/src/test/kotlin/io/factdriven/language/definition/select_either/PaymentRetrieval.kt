@@ -22,16 +22,12 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 select("Payment (partly) uncovered?") either {
                     given ("Yes") condition { covered < total }
-                    execute command {
-                        ChargeCreditCard(id, total - covered)
-                    }
+                    execute command { ChargeCreditCard(id, total - covered) }
                 } or {
                     otherwise ("No")
                 }
 
-                emit event {
-                    PaymentRetrieved(total)
-                }
+                emit event { PaymentRetrieved(total) }
 
             }
 

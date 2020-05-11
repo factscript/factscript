@@ -33,17 +33,17 @@ class PaymentRetrievalTest {
         val on = definition.children[0] as Promising
         assertEquals(PaymentRetrieval::class, on.entity)
         assertEquals(RetrievePayment::class, (on as Consuming).consuming)
-        assertEquals(PaymentRetrieved::class, on.success)
-        assertEquals(1, on.failure.size)
-        assertEquals(PaymentFailed::class, on.failure.first())
+        assertEquals(PaymentRetrieved::class, on.successType)
+        assertEquals(1, on.failureTypes.size)
+        assertEquals(PaymentFailed::class, on.failureTypes.first())
         assertEquals(definition, on.parent)
 
         val execute = definition.find(nodeOfType = Executing::class, dealingWith = ChargeCreditCard::class)
         assertEquals(PaymentRetrieval::class, execute?.entity)
         assertEquals(ChargeCreditCard::class, execute?.throwing)
-        assertEquals(CreditCardCharged::class, execute?.success)
-        assertEquals(1, execute?.failure?.size)
-        assertEquals(CreditCardExpired::class, execute?.failure?.first())
+        assertEquals(CreditCardCharged::class, execute?.successType)
+        assertEquals(1, execute?.failureTypes?.size)
+        assertEquals(CreditCardExpired::class, execute?.failureTypes?.first())
         assertEquals(ChargeCreditCard(instance.id, instance.total), execute?.factory?.invoke(instance))
         assertEquals(definition, execute?.parent)
 

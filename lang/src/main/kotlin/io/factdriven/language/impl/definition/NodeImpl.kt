@@ -78,7 +78,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
                 children.find { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
             }
             nodeOfType.isSubclassOf(Promising::class) -> {
-                children.find { it is Promising && ((it.success == dealingWith || it.failure.contains(dealingWith) || dealingWith == null)) }
+                children.find { it is Promising && ((it.successType == dealingWith || it.failureTypes.contains(dealingWith) || dealingWith == null)) }
             }
             nodeOfType.isSubclassOf(Consuming::class) -> {
                 children.find { it is Consuming && (it.consuming == dealingWith || dealingWith == null) }
@@ -93,7 +93,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
                 children.filter { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
             }
             nodesOfType.isSubclassOf(Promising::class) -> {
-                children.filter { it is Promising && (it.success == dealingWith || dealingWith == null) }
+                children.filter { it is Promising && (it.successType == dealingWith || dealingWith == null) }
             }
             nodesOfType.isSubclassOf(Consuming::class) -> {
                 children.filter { it is Consuming && (it.consuming == dealingWith || dealingWith == null) }

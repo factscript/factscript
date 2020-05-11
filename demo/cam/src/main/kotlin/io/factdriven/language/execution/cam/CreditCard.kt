@@ -25,9 +25,9 @@ data class CreditCard (
 
             flow <CreditCard> {
 
-                on command ChargeCreditCard::class promise {
-                    report success CreditCardCharged::class
-                    report failure CreditCardExpired::class
+                on command ChargeCreditCard::class emit {
+                    success event CreditCardCharged::class
+                    failure event CreditCardExpired::class
                 }
 
                 await event ConfirmationReceived::class having "reference" match { reference }

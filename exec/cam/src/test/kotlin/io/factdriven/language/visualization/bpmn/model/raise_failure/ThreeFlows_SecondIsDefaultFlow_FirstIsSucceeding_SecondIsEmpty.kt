@@ -1,7 +1,6 @@
 package io.factdriven.language.visualization.bpmn.model.raise_failure
 
 import io.factdriven.language.*
-import io.factdriven.language.*
 import io.factdriven.language.visualization.bpmn.model.BpmnModel
 import org.junit.jupiter.api.Test
 
@@ -26,9 +25,9 @@ class ThreeFlows_SecondIsDefaultFlow_FirstIsSucceeding_SecondIsEmpty {
 
                 flow <CreditCardCharge> {
 
-                    on command ChargeCreditCard::class promise {
-                        report success CreditCardCharged::class
-                        report failure CreditCardExpired::class
+                    on command ChargeCreditCard::class emit {
+                        success event CreditCardCharged::class
+                        failure event CreditCardExpired::class
                     }
 
                     await event (CreditCardGatewayConfirmationReceived::class) having "reference" match { reference }

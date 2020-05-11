@@ -17,19 +17,19 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
             flow <PaymentRetrieval> {
 
-                on command RetrievePayment::class promise {
-                    report success PaymentRetrieved::class
-                    report failure PaymentFailed::class
+                on command RetrievePayment::class emit {
+                    success event PaymentRetrieved::class
+                    failure event PaymentFailed::class
                 }
 
                 execute command {
                     ChargeCreditCard(id, total)
                 } but {
                     on event CreditCardExpired::class
-                    emit event { PaymentFailed(total) }
+                    emit failure event { PaymentFailed(total) }
                 }
 
-                emit event { PaymentRetrieved(total) }
+                emit success event { PaymentRetrieved(total) }
 
             }
 
