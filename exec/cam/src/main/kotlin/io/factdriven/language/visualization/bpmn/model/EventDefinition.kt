@@ -94,3 +94,17 @@ class ErrorEventSymbolDefinition(node: Node, parent: EventSymbol<*, *>): EventSy
     }
 
 }
+
+class CompensateEventSymbolDefinition(node: Node, parent: EventSymbol<*, *>): EventSymbolDefinition<Node, CompensateEventDefinition>(node, parent) {
+
+    override val model = process.model.newInstance(CompensateEventDefinition::class.java)
+
+    override fun initModel() {
+
+        super.initModel()
+
+        model.isWaitForCompletion = true
+
+    }
+
+}

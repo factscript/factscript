@@ -27,7 +27,14 @@ data class Fulfillment(val incoming: FulfillOrder) {
 
                 execute all {
 
-                    execute command { FetchGoodsFromInventory (orderId) }
+                    execute command {
+                        FetchGoodsFromInventory (orderId)
+                    } but {
+                        on failure OrderNotFulfilled::class
+                        execute command {
+                            ReturnGoodsToInventory(orderId)
+                        }
+                    }
 
                 } and {
 

@@ -2,6 +2,7 @@ package io.factdriven.language.visualization.bpmn.model
 
 import io.factdriven.language.*
 import io.factdriven.language.definition.*
+import io.factdriven.language.impl.definition.*
 import io.factdriven.language.impl.utils.asLines
 import io.factdriven.language.visualization.bpmn.diagram.Artefact
 import io.factdriven.language.visualization.bpmn.diagram.Box
@@ -20,7 +21,7 @@ abstract class EventSymbol<IN: Node, OUT: Event>(node: IN, parent: Group<out Flo
 
         super.initModel()
 
-        model.setAttributeValue("name", node.description.asLines(), false)
+        model.setAttributeValue("name", description.asLines(), false)
 
     }
 
@@ -37,12 +38,19 @@ class CatchingEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
 
 }
 
-class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>): EventSymbol<Throwing, ThrowEvent>(node, parent) {
+class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>, val isCompensating: Boolean = false): EventSymbol<Throwing, ThrowEvent>(node, parent) {
 
-    override val model = process.model.newInstance((if (node.isFinish() || !node.isContinuing()) EndEvent::class else IntermediateThrowEvent::class).java)
+    override val model = process.model.newInstance((if (node.isFinish() || (!node.isContinuing() && !isCompensating)) EndEvent::class else IntermediateThrowEvent::class).java)
+
+    override val id: String get() = "${super.id}${if (isCompensating) "$positionSeparator.Compensate" else ""}"
+    override val description: String get() = if (isCompensating) "" else node.description
 
     override val elements: List<Element<*, *>> = super.elements + if(node.isFailing()) {
-        ErrorEventSymbolDefinition(node, this)
+        if (isCompensating) {
+            CompensateEventSymbolDefinition(node, this)
+        } else {
+            ErrorEventSymbolDefinition(node, this)
+        }
     } else {
         MessageEventSymbolDefinition(node, this)
     }
@@ -57,7 +65,11 @@ class BoundaryEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
     override val elements: List<Element<*, *>> = super.elements + if (node is Waiting) {
         TimerEventSymbolDefinition(node, this)
     } else if (node is Consuming && Flows.find(reporting = node.consuming)?.find(Promising::class)?.failureTypes?.contains(node.consuming) == true) {
-        ErrorEventSymbolDefinition(node, this)
+        if (node.promise.failureTypes.contains(node.consuming)) {
+            CompensateEventSymbolDefinition(node, this)
+        } else {
+            ErrorEventSymbolDefinition(node, this)
+        }
     } else {
         MessageEventSymbolDefinition(node, this)
     }

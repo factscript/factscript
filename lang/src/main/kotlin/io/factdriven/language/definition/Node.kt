@@ -16,6 +16,7 @@ interface Node {
     val description: String
 
     val root: Flow
+    val promise: Promising
     val parent: Node?
     val children: List<Node>
     val ancestors: List<Node>

@@ -25,6 +25,7 @@ abstract class Symbol<IN: Node, OUT: FlowNode>(node: IN, override val parent: Gr
     override fun initDiagram() {}
 
     open val id: String get() = node.id
+    open val description: String get() = node.description
 
     override fun initModel() {
 

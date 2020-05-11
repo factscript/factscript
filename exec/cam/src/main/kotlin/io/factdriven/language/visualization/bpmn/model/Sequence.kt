@@ -19,32 +19,37 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent), Opti
 
     override val exitConditional: ConditionalNode? get() = elements.lastOrNull()?.asType<Group<*>>()?.exitConditional ?: if (elements.isEmpty()) node.children.firstOrNull()?.asType<ConditionalNode>() else null
 
-    override val elements: List<Element<*,*>> = node.children.mapNotNull {
-        when (it) {
-            is Executing -> Task(it, this)
-            is Throwing -> if (it.factType == FactType.Event || it.isFinish() || !it.isContinuing()) ThrowingEventSymbol(it, this) else Task(it, this)
-            is Promising -> CatchingEventSymbol(it, this)
-            is Consuming -> if (parent is Task && node.children.indexOf(it) == 0) BoundaryEventSymbol(it, this) else if ((parent is Branch && parent.node.fork == Junction.First) && node.children.indexOf(it) == 0) CatchingEventSymbol(it, this) else Task(it, this)
-            is Catching -> if (parent is Task && node.children.indexOf(it) == 0) BoundaryEventSymbol(it, this) else CatchingEventSymbol(it, this)
-            is Branching -> Branch(it, this)
-            is LoopingFlow -> Loop(it, this)
-            is Flow -> Sequence(it, this)
+    override val elements: List<Element<*,*>> = node.children.mapNotNull { child ->
+        when (child) {
+            is Executing -> listOf(Task(child, this))
+            is Throwing -> if (child.factType == FactType.Event || child.isFinish() || !child.isContinuing()) {
+                if (node.isFailing() && node.root.descendants.any { (it as? CorrelatingFlow)?.isCompensating() == true && (it as? CorrelatingFlow)?.consuming == child.throwing }) {
+                    listOf(ThrowingEventSymbol(child, this, true), ThrowingEventSymbol(child, this))
+                } else {
+                    listOf(ThrowingEventSymbol(child, this))
+                }
+            } else {
+                listOf(Task(child, this))
+            }
+            is Promising -> listOf(CatchingEventSymbol(child, this))
+            is Consuming -> listOf(if (parent is Task && node.children.indexOf(child) == 0) BoundaryEventSymbol(child, this) else if ((parent is Branch && parent.node.fork == Junction.First) && node.children.indexOf(child) == 0) CatchingEventSymbol(child, this) else Task(child, this))
+            is Catching -> listOf(if (parent is Task && node.children.indexOf(child) == 0) BoundaryEventSymbol(child, this) else CatchingEventSymbol(child, this))
+            is Branching -> listOf(Branch(child, this))
+            is LoopingFlow -> listOf(Loop(child, this))
+            is Flow -> listOf(Sequence(child, this))
             is Conditional -> null
             else -> throw IllegalStateException()
         }
-    }
+    }.flatten()
 
     init {
         if (elements.size > 1)
             elements.subList(1, elements.size).mapIndexed { i, it ->
-                Path(
-                    elements[i],
-                    it,
-                    elements[i].asType<Group<*>>()
-                        ?: it.asType<Group<*>>()
-                        ?: this,
-                    elements[i].asType<Group<*>>()?.exitConditional
-                )
+                if ((node as? CorrelatingFlow)?.isCompensating() == true) {
+                    Association(elements[i], it, elements[i].asType<Group<*>>() ?: it.asType<Group<*>>() ?: this)
+                } else {
+                    Path(elements[i], it, elements[i].asType<Group<*>>() ?: it.asType<Group<*>>() ?: this, elements[i].asType<Group<*>>()?.exitConditional)
+                }
             } else emptyList()
     }
 

@@ -28,6 +28,8 @@ class Task(node: Node, parent: Element<*,*>): Group<Node>(node, parent) {
 
     private val join: GatewaySymbol<*>?
 
+    override fun isCompensating(): Boolean = (parent?.node as? CorrelatingFlow)?.isCompensating() == true
+
     init {
 
         task = when (node) {

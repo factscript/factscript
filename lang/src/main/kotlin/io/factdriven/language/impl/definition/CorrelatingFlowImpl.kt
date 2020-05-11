@@ -32,4 +32,12 @@ open class CorrelatingFlowImpl<T:Any>(entity: KClass<T>, override val parent: No
 
     override val description: String get() = find(Correlating::class)!!.description
 
+    override fun isCompensating(): Boolean {
+        return if (find(Consuming::class) != null) promise.failureTypes.contains(consuming) else false
+    }
+
+    override fun isSucceeding(): Boolean {
+        return !isCompensating() && super.isSucceeding()
+    }
+
 }

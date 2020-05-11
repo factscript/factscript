@@ -16,7 +16,7 @@ class BpmnModel(node: Flow): Element<Flow, BpmnModelInstance>(node) {
 
     override val model: BpmnModelInstance = Bpmn.createEmptyModel()
     override val diagram: Box = Container()
-    internal val paths: MutableList<Path> = mutableListOf()
+    internal val paths: MutableList<Element<*,*>> = mutableListOf()
     override val elements: List<Element<*,*>> = listOf(Sequence(node, this))
 
     override val east: Symbol<*, *> get() = elements.first().east

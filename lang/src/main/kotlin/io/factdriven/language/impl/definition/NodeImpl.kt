@@ -19,6 +19,8 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
     @Suppress("LeakingThis")
     override val root: Flow get() = (parent?.root ?: this) as Flow
 
+    override val promise: Promising get() = root.find(Promising::class)!!
+
     override val id: String get() = Id(id())
 
     override val type: Type get() = entity.type

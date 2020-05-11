@@ -17,7 +17,7 @@ data class Payment(
     constructor(fact: RetrievePayment): this(fact.orderId, fact.accountId, fact.payment)
 
     fun apply(fact: AmountWithdrawnFromCustomerAccount) {
-        covered += fact.maximum
+        covered += fact.withdrawn
     }
 
     fun apply(fact: CreditCardCharged) {
@@ -35,10 +35,19 @@ data class Payment(
                     failure event PaymentFailed::class
                 }
 
-                execute command { WithdrawAmountFromCustomerAccount(name = accountId, maximum = total) }
+                execute command {
+                    WithdrawAmountFromCustomerAccount(name = accountId, withdraw = total)
+                } but {
+                    on failure PaymentFailed::class
+                    execute command {
+                        CreditAmountToCustomerAccount(name = accountId, credit = covered)
+                    }
+                }
 
                 select("Payment fully covered?") either {
+
                     given ("No") condition { covered == total }
+
                     execute loop {
                         execute command {
                             ChargeCreditCard(orderId,total - covered)
@@ -53,9 +62,12 @@ data class Payment(
                         }
                         until ("Payment fully covered?") condition { covered == total }
                     }
+
                 } or {
+
                     otherwise ("Yes")
                     emit success event { PaymentRetrieved(orderId) }
+
                 }
 
                 emit success event { PaymentRetrieved(orderId) }

@@ -17,6 +17,10 @@ abstract class TaskSymbol<IN: Node, OUT: org.camunda.bpm.model.bpmn.instance.Tas
 
         model.setAttributeValue("name", node.description, false)
 
+        if ((parent as? Task)?.isCompensating() == true) {
+            model.isForCompensation = true
+        }
+
     }
 
 }
