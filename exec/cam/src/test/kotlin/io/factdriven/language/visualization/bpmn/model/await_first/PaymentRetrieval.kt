@@ -29,7 +29,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 execute command { ChargeCreditCard(id, total - 1F) }
 
-                emit event { PaymentRetrieved(total) }
+                emit success event { PaymentRetrieved(total) }
 
             }
 

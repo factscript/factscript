@@ -22,9 +22,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                     failure event PaymentFailed::class
                 }
 
-                execute command {
-                    WithdrawAmount(account, payment)
-                }
+                execute command { WithdrawAmount(account, payment) }
 
                 select ("Payment completely covered?") either {
 
@@ -40,7 +38,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
                                 on event CreditCardDetailsUpdated::class having "account" match { account }
                             } or {
                                 on time duration ("14 days") { "PT3M" }
-                                emit event { PaymentFailed(account, payment) }
+                                emit failure event { PaymentFailed(account, payment) }
                             }
                         }
 
@@ -52,11 +50,11 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                     given ("Yes")
 
-                    emit event { PaymentRetrieved(account, payment) }
+                    emit success event { PaymentRetrieved(account, payment) }
 
                 }
 
-                emit event { PaymentRetrieved(account, payment) }
+                emit success event { PaymentRetrieved(account, payment) }
 
             }
 
