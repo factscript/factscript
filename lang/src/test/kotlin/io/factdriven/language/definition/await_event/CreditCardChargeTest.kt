@@ -1,6 +1,7 @@
 package io.factdriven.language.definition.await_event
 
 import io.factdriven.language.*
+import io.factdriven.language.Flows.activate
 import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Throwing
 import org.junit.jupiter.api.Assertions
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.Test
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 class CreditCardChargeTest {
+
+    init { activate(CreditCardCharge::class) }
 
     @Test
     fun testDefinition() {

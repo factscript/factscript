@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 class CreditCardChargeTest {
 
     init {
-        Flows.initialize(CreditCardCharge::class)
+        Flows.activate(CreditCardCharge::class)
     }
 
     @Test

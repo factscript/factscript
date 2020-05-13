@@ -12,10 +12,10 @@ import org.junit.jupiter.api.Test
 class PaymentRetrievalTest: TestHelper() {
 
     init {
-        Flows.initialize(
+        Flows.activate(
             PaymentRetrieval::class,
             CreditCardCharge::class
-        )
+                      )
     }
 
     @Test

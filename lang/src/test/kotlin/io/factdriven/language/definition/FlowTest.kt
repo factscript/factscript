@@ -14,7 +14,7 @@ import java.lang.IllegalArgumentException
 class FlowTest {
 
     init {
-        Flows.initialize(FlowTestFlow::class)
+        Flows.activate(FlowTestFlow::class)
     }
 
     @Test

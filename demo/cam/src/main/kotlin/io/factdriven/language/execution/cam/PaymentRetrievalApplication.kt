@@ -28,14 +28,14 @@ fun main(args: Array<String>) {
         Messages.register(EngineMessageProcessor())
         Messages.register(EngineMessagePublisher())
         Messages.register(EngineMessageStore())
-        Flows.initialize(
+        Flows.activate(
             Fulfillment::class,
             Shipment::class,
             Inventory::class,
             Payment::class,
             Account::class,
             CreditCard::class
-        )
+                      )
     }
 }
 

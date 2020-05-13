@@ -4,7 +4,6 @@ import io.factdriven.language.*
 import io.factdriven.execution.Messages
 import io.factdriven.execution.*
 import io.factdriven.language.definition.Promising
-import io.factdriven.language.impl.definition.idSeparator
 import io.factdriven.language.impl.utils.Id
 import io.factdriven.language.impl.utils.prettyJson
 import org.camunda.bpm.engine.ProcessEngine
@@ -29,49 +28,32 @@ class EngineMessageProcessor: MessageProcessor {
         val messages = Flows.handling(message).map { handling ->
 
             fun messagesHandledByExternalTasks() : List<Message> {
-                val externalTasksHandlingMessage =  engine.externalTaskService
+                val externalTasksHandlingMessage = engine.externalTaskService
                     .fetchAndLock(Int.MAX_VALUE, handling.hash)
-                    .topic(handling.hash, Long.MAX_VALUE)
-                    .execute()
+                    .topic(handling.hash, Long.MAX_VALUE).execute()
                 return externalTasksHandlingMessage.map { task ->
-                    Message(
-                        message, Receiver(
-                            EntityId(
-                                Flows.get(task.processDefinitionKey).type,
-                                task.businessKey
-                            ), handling
-                        )
-                    )
+                    Message(message, Receiver(EntityId(Flows.get(task.processDefinitionKey).type, task.businessKey), handling))
                 }
             }
 
             fun messagesHandledByEventSubscriptions() : List<Message> {
 
                 val eventSubscriptionsHandlingMessage = engine.runtimeService.createEventSubscriptionQuery()
-                    .eventType(EventType.MESSAGE.name())
-                    .eventName(handling.hash)
-                    .list()
+                    .eventType(EventType.MESSAGE.name()).eventName(handling.hash).list()
 
-                val businessKeysOfRunningProcessInstances = eventSubscriptionsHandlingMessage.map { subscription ->
-                    subscription.processInstanceId?.let {
-                        engine.runtimeService.createProcessInstanceQuery()
-                            .processInstanceId(subscription.processInstanceId)
-                            .singleResult().businessKey
+                val keys = eventSubscriptionsHandlingMessage.map { subscription ->
+                    val keys = subscription.processInstanceId?.let { val processInstance = engine.historyService.createHistoricProcessInstanceQuery()
+                        .processInstanceId(subscription.processInstanceId).singleResult()
+                        return@let processInstance.processDefinitionKey to processInstance.businessKey
                     }
+                    val processDefinitionKey = keys?.first ?: engine.repositoryService.createProcessDefinitionQuery()
+                        .messageEventSubscriptionName(subscription.eventName).singleResult().key
+                    val businessKey = keys?.second
+                    return@map processDefinitionKey to businessKey
                 }
 
                 return eventSubscriptionsHandlingMessage.mapIndexed { index, subscription ->
-                    val processDefinitionKey = subscription.activityId.split(idSeparator)
-                    Message(
-                        message, Receiver(
-                            EntityId(
-                                Type(
-                                    processDefinitionKey[0],
-                                    processDefinitionKey[1]
-                                ), businessKeysOfRunningProcessInstances[index]
-                            ), handling
-                        )
-                    )
+                    Message(message, Receiver(EntityId(Flows.get(keys[index].first).type, keys[index].second), handling))
                 }
 
             }

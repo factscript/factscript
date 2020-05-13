@@ -1,6 +1,7 @@
 package io.factdriven.language.definition
 
 import io.factdriven.language.*
+import io.factdriven.language.Flows.activate
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -10,9 +11,7 @@ import java.util.*
  */
 class NodeTest {
 
-    init {
-        Flows.initialize(NodeTestFlow::class)
-    }
+    init { activate(NodeTestFlow::class, CreditCardCharge::class) }
 
     @Test
     fun testLevel1Forward() {

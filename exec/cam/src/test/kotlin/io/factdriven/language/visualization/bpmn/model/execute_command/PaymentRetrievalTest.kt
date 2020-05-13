@@ -11,7 +11,7 @@ class PaymentRetrievalTest {
 
     @Test
     fun testView() {
-        BpmnModel(Flows.initialize(CreditCardCharge::class, PaymentRetrieval::class)[1]).toTempFile(true)
+        BpmnModel(Flows.activate(CreditCardCharge::class, PaymentRetrieval::class)[1]).toTempFile(true)
     }
 
 }

@@ -10,6 +10,10 @@ import org.junit.jupiter.api.Test
  */
 class PaymentRetrievalTest {
 
+    init {
+        Flows.activate(PaymentRetrieval::class)
+    }
+
     @Test
     fun testDefinition() {
 

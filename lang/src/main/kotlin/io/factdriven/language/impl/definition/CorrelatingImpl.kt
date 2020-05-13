@@ -50,12 +50,8 @@ open class CorrelatingImpl<T: Any>(parent: Node):
         return this
     }
 
-    override fun having(property: KProperty1<Any, *>): AwaitEventHavingMatch<T> {
-        return having(property.name)
-    }
-
     override fun having(map: AwaitEventHavingMatches<T, Any>.() -> Unit): AwaitEventBut<T> {
-        val matches = AwaitEventHavingMatchesImpl<T>()
+        val matches = HavingMatchesImpl<T>()
         matches.apply(map)
         properties.addAll(matches.properties)
         @Suppress("UNCHECKED_CAST")
@@ -115,7 +111,7 @@ open class CorrelatingImpl<T: Any>(parent: Node):
 
 }
 
-class AwaitEventHavingMatchesImpl<T: Any>: AwaitEventHavingMatches<T, Any> {
+class HavingMatchesImpl<T: Any>: AwaitEventHavingMatches<T, Any>, OnCommandHavingMatches<T, Any> {
 
     val properties: MutableList<String> = mutableListOf()
     val matching: MutableList<T.() -> Any?> = mutableListOf()
@@ -123,10 +119,6 @@ class AwaitEventHavingMatchesImpl<T: Any>: AwaitEventHavingMatches<T, Any> {
     override fun String.match(match: T.() -> Any?) {
         properties.add(this)
         matching.add(match)
-    }
-
-    override fun KProperty1<Any, *>.match(match: T.() -> Any?) {
-        name.match(match)
     }
 
 }

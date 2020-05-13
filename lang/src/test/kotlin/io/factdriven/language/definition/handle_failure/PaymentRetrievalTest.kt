@@ -1,6 +1,7 @@
 package io.factdriven.language.definition.handle_failure
 
 import io.factdriven.language.*
+import io.factdriven.language.Flows.activate
 import io.factdriven.language.definition.Executing
 import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Promising
@@ -13,10 +14,7 @@ import org.junit.jupiter.api.Test
  */
 class PaymentRetrievalTest {
 
-    init {
-        Flows.initialize(PaymentRetrieval::class)
-        Flows.initialize(CreditCardCharge::class)
-    }
+    init { activate(PaymentRetrieval::class, CreditCardCharge::class) }
 
     @Test
     fun testDefinition() {

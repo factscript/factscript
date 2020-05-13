@@ -40,9 +40,9 @@ class CatchingEventSymbol(node: Catching, parent: Group<out Flow>): EventSymbol<
 
 class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>, val isCompensating: Boolean = false): EventSymbol<Throwing, ThrowEvent>(node, parent) {
 
-    override val model = process.model.newInstance((if (node.isFinish() || (!node.isContinuing() && !isCompensating)) EndEvent::class else IntermediateThrowEvent::class).java)
+    override val model = process.model.newInstance((if (node.isFinish() || (node.isLastSibling() && !node.isContinuing() && !isCompensating)) EndEvent::class else IntermediateThrowEvent::class).java)
 
-    override val id: String get() = "${super.id}${if (isCompensating) "$positionSeparator.Compensate" else ""}"
+    override val id: String get() = "${super.id}${if (isCompensating) "${positionSeparator}Compensate" else ""}"
     override val description: String get() = if (isCompensating) "" else node.description
 
     override val elements: List<Element<*, *>> = super.elements + if(node.isFailing()) {

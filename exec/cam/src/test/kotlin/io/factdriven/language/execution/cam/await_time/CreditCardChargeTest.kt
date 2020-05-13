@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 class CreditCardChargeTest: TestHelper() {
 
     init {
-        Flows.initialize(CreditCardCharge::class).forEach {
+        Flows.activate(CreditCardCharge::class).forEach {
             BpmnModel(it).toTempFile(true)
         }
     }

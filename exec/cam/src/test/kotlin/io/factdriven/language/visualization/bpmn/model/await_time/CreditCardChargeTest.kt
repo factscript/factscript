@@ -9,6 +9,10 @@ import org.junit.jupiter.api.Test
  */
 class CreditCardChargeTest {
 
+    init {
+        Flows.activate(CreditCardCharge::class)
+    }
+
     @Test
     fun testDefinition() {
         BpmnModel(Flows.get(CreditCardCharge::class)).toTempFile(true)

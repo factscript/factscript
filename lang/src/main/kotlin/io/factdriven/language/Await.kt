@@ -2,7 +2,6 @@ package io.factdriven.language
 
 import io.factdriven.language.impl.definition.*
 import kotlin.reflect.KClass
-import kotlin.reflect.KProperty1
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -49,7 +48,6 @@ interface AwaitOr<T: Any> {
 interface AwaitEventHaving<T: Any, M: Any>: AwaitEventBut<T> {
 
     infix fun having(property: String): AwaitEventHavingMatch<T>
-    infix fun having(property: KProperty1<M, *>): AwaitEventHavingMatch<T>
     infix fun having(map: AwaitEventHavingMatches<T, M>.() -> Unit): AwaitEventBut<T>
 
 }
@@ -58,7 +56,6 @@ interface AwaitEventHaving<T: Any, M: Any>: AwaitEventBut<T> {
 interface AwaitEventHavingMatches<T: Any, M: Any> {
 
     infix fun String.match (match: T.() -> Any?)
-    infix fun KProperty1<M, *>.match(match: T.() -> Any?)
 
 }
 

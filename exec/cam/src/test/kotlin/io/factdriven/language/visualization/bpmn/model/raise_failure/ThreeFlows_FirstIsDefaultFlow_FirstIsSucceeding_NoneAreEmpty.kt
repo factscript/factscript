@@ -69,7 +69,7 @@ class ThreeFlows_FirstIsDefaultFlow_FirstIsSucceeding_NoneAreEmpty {
 
     @Test
     fun testView() {
-        Flows.initialize(CreditCardCharge::class)
+        Flows.activate(CreditCardCharge::class)
         BpmnModel(Flows.get(CreditCardCharge::class)).toTempFile(true)
     }
 

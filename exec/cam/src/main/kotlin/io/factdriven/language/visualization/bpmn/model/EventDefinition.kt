@@ -103,7 +103,8 @@ class CompensateEventSymbolDefinition(node: Node, parent: EventSymbol<*, *>): Ev
 
         super.initModel()
 
-        model.isWaitForCompletion = true
+        if (node is Throwing)
+            model.isWaitForCompletion = true
 
     }
 
