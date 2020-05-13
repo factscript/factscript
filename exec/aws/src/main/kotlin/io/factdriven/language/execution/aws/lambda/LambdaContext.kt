@@ -10,9 +10,9 @@ import io.factdriven.language.execution.aws.example.function.RetrievePayment
 import java.util.ArrayList
 import java.util.stream.Collectors
 
-data class ProcessSettings (val maximumLoopCycles: Int = 150)
+data class ProcessSettings (val maximumLoopCycles: Int = 5)
 
-abstract class LambdaContext constructor(definition: Flow, val processSettings: ProcessSettings = ProcessSettings()) {
+abstract class LambdaContext constructor(definition: Flow, val context: Context, val processSettings: ProcessSettings = ProcessSettings()) {
     enum class State {
         INITIALIZATION, EXECUTION
     }
@@ -43,13 +43,13 @@ abstract class LambdaContext constructor(definition: Flow, val processSettings: 
     }
 }
 
-class LambdaInitializationContext(definition: Flow, context: Context) : LambdaContext(definition){
+class LambdaInitializationContext(definition: Flow, context: Context) : LambdaContext(definition, context){
     override val state: State
         get() = State.INITIALIZATION
 
 }
 
-class ProcessContext(definition: Flow, val input: Map<String, *>, context: Context): LambdaContext(definition) {
+class ProcessContext(definition: Flow, val input: Map<String, *>, context: Context): LambdaContext(definition, context) {
 
     val token : String
     val node : Node?
