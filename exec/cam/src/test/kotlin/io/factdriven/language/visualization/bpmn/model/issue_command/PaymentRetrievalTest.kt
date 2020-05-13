@@ -9,6 +9,10 @@ import org.junit.jupiter.api.Test
  */
 class PaymentRetrievalTest {
 
+    init {
+        Flows.activate(PaymentRetrieval::class)
+    }
+
     @Test
     fun testView() {
         BpmnModel(Flows.get(PaymentRetrieval::class)).toTempFile(true)

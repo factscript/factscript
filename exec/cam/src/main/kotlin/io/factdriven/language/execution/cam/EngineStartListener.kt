@@ -1,12 +1,9 @@
 package io.factdriven.language.execution.cam
 
-import io.factdriven.execution.Messages
+import io.factdriven.execution.*
 import io.factdriven.language.definition.Node
 import io.factdriven.language.definition.Promising
 import io.factdriven.language.definition.Throwing
-import io.factdriven.execution.Fact
-import io.factdriven.execution.Message
-import io.factdriven.execution.newInstance
 import io.factdriven.language.impl.utils.Json
 import io.factdriven.language.impl.utils.prettyJson
 import org.camunda.bpm.engine.delegate.DelegateExecution
@@ -33,11 +30,11 @@ class EngineStartListener: ExecutionListener {
             return when(node) {
                 is Throwing -> {
                     val fact = node.factory.invoke(aggregate())
-                    val correlating = execution.flow.find(nodeOfType = Promising::class, dealingWith = fact::class) != null
+                    val correlating = execution.flow.find(nodeOfType = Promising::class, dealingWith = fact::class)
                     Message(
                         messages,
                         Fact(fact),
-                        if (correlating) messages.first().id else null
+                        if (correlating != null) messages.findLast { it.fact.type.kClass == correlating.consuming }!!.id else null
                     )
                 }
                 else -> null

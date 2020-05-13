@@ -1,16 +1,16 @@
 package io.factdriven.language.impl.definition
 
-import io.factdriven.language.On
-import io.factdriven.language.OnCommandEmit
-import io.factdriven.language.OnCommandEmitEvent
-import io.factdriven.language.OnCommandEmitEventType
+import io.factdriven.language.*
 import io.factdriven.language.definition.*
 import kotlin.reflect.KClass
 
 open class PromisingImpl<T: Any>(parent: Node):
 
     On<T>,
-    OnCommandEmitEvent<T>, OnCommandEmit<T>,
+    OnCommandHaving<T, Any>,
+    OnCommandHavingMatch<T>,
+    OnCommandEmit<T>,
+    OnCommandEmitEvent<T>,
     OnCommandEmitEventType<T>,
 
     Promising,
@@ -22,12 +22,27 @@ open class PromisingImpl<T: Any>(parent: Node):
     override var successType: KClass<*>? = null
     override val failureTypes: MutableList<KClass<*>> = mutableListOf()
 
-    fun <M : Any> command(type: KClass<M>): OnCommandEmit<T> {
+    fun <M : Any> command(type: KClass<M>): OnCommandHaving<T, M> {
         this.consuming = type
+        @Suppress("UNCHECKED_CAST")
+        return this as OnCommandHaving<T, M>
+    }
+
+    override fun having(property: String): OnCommandHavingMatch<T> {
+        return super.having(property) as OnCommandHavingMatch<T>
+    }
+
+    override fun having(map: OnCommandHavingMatches<T, Any>.() -> Unit): OnCommandEmit<T> {
+        @Suppress("UNCHECKED_CAST")
+        super.having(map as AwaitEventHavingMatches<T, Any>.() -> Unit)
         return this
     }
 
-    override fun emit(emit: OnCommandEmitEvent<T>.() -> Unit): OnCommandEmitEvent<T> {
+    override fun match(value: T.() -> Any?): OnCommandEmit<T> {
+        return super.match(value) as OnCommandEmit<T>
+    }
+
+    override fun emit(emit: OnCommandEmitEvent<T>.() -> Unit): AwaitEventBut<T> {
         this.apply(emit)
         return this
     }

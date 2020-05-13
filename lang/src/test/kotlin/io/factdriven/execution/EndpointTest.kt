@@ -62,6 +62,8 @@ class EndpointTest {
 
 class MessageReceptorTest {
 
+    init { Flows.activate(PaymentRetrieval::class) }
+
     @Test
     fun testHandling() {
 

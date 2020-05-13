@@ -1,6 +1,7 @@
 package io.factdriven.language.definition.loop
 
 import io.factdriven.language.*
+import io.factdriven.language.Flows.activate
 import io.factdriven.language.definition.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -10,11 +11,7 @@ import org.junit.jupiter.api.Test
  */
 class PaymentRetrievalTest {
 
-    init {
-        Flows.initialize(PaymentRetrieval::class)
-        Flows.initialize(CustomerAccount::class)
-        Flows.initialize(CreditCardCharge::class)
-    }
+    init { activate(PaymentRetrieval::class, CustomerAccount::class, CreditCardCharge::class) }
 
     @Test
     fun testDefinition() {

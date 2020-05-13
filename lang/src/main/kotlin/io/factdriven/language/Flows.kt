@@ -3,23 +3,28 @@ package io.factdriven.language
 import io.factdriven.execution.*
 import io.factdriven.language.definition.Flow
 import io.factdriven.language.definition.Promising
-import io.factdriven.language.impl.definition.PromisingFlowImpl
+import io.factdriven.language.impl.definition.*
 import java.lang.IllegalArgumentException
 import kotlin.reflect.KClass
 import kotlin.reflect.full.companionObjectInstance
 
 object Flows {
 
-    private val flows: MutableMap<KClass<*>, Flow> = mutableMapOf()
+    private val active: MutableMap<KClass<*>, Flow> = mutableMapOf()
+    private val cached: MutableMap<KClass<*>, Flow> = mutableMapOf()
 
-    fun initialize(type: KClass<*>, vararg types: KClass<*>): List<Flow> {
-        val result = mutableListOf(get(type))
-        types.forEach { result.add(get(it)) }
-        return result
+    fun activate(vararg types: KClass<*>): List<Flow> {
+        types.forEach {
+            it.companionObjectInstance
+            active[it] = cached[it]!!
+        }
+        active.keys.filter { !(types.contains(it)) }.forEach { active.remove(it) }
+        return active.values.toList()
     }
 
     fun <T: Any> register(flow: Promise<T>): Flow {
-        flows[flow.entity] = flow
+        cached[flow.entity] = flow
+        active[flow.entity] = flow
         return flow
     }
 
@@ -30,11 +35,11 @@ object Flows {
     }
 
     fun get(id: String): Flow {
-        return flows.values.find { it.get(id) != null }?.root ?: throw IllegalArgumentException()
+        return active.values.find { it.get(id) != null }?.root ?: throw IllegalArgumentException()
     }
 
     fun get(type: Type): Flow {
-        val entityType = flows.keys.find { it.type == type }
+        val entityType = active.keys.find { it.type == type }
         return if (entityType != null) get(entityType) else throw IllegalArgumentException("Flow '${type}' is not defined!")
     }
 
@@ -43,13 +48,12 @@ object Flows {
     }
 
     fun find(type: KClass<*>? = null, handling: KClass<*>? = null, reporting: KClass<*>? = null): Flow? {
-        type?.companionObjectInstance
-        val flows = flows
+        val flows = active
         val result =  flows.values.filter { definition ->
             (definition.entity == type || type == null) && (
                 (handling == null && reporting == null) ||
                 (definition.children.any {
-                    it is Promising && definition.children.indexOf(it) == 0
+                    it is PromisingImpl<*>
                         && (it.consuming == handling || handling == null)
                         && (it.successType == reporting || it.failureTypes.contains(reporting) || reporting == null)
                 }))
@@ -58,7 +62,7 @@ object Flows {
     }
 
     fun all(): Iterable<Flow> {
-        return flows.values.asIterable()
+        return active.values.asIterable()
     }
 
     fun handling(message: Message): List<Receptor> {

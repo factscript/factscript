@@ -12,14 +12,32 @@ interface On<T: Any>: OnCommand<T>, Await<T>
 @FlowLanguage
 interface OnCommand<T: Any>
 
-infix fun <T: Any, M: Any> OnCommand<T>.command(type: KClass<M>): OnCommandEmit<T> {
+infix fun <T: Any, M: Any> OnCommand<T>.command(type: KClass<M>): OnCommandHaving<T, M> {
     return (this as PromisingImpl<T>).command(type)
 }
 
 @FlowLanguage
-interface OnCommandEmit<T: Any> {
+interface OnCommandHaving<T: Any, M: Any>: OnCommandEmit<T>, AwaitEventHaving<T, M> {
 
-    infix fun emit(emit: OnCommandEmitEvent<T>.() -> Unit): OnCommandEmitEvent<T>
+    override infix fun having(property: String): OnCommandHavingMatch<T>
+    infix fun having(map: OnCommandHavingMatches<T, M>.() -> Unit): OnCommandEmit<T>
+
+}
+
+@FlowLanguage
+interface OnCommandHavingMatches<T: Any, M: Any>: AwaitEventHavingMatches<T, M>
+
+@FlowLanguage
+interface OnCommandHavingMatch<T: Any>: AwaitEventHavingMatch<T> {
+
+    override infix fun match(value: T.() -> Any?): OnCommandEmit<T>
+
+}
+
+@FlowLanguage
+interface OnCommandEmit<T: Any>: AwaitEventBut<T> {
+
+    infix fun emit(emit: OnCommandEmitEvent<T>.() -> Unit): AwaitEventBut<T>
 
 }
 

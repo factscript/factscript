@@ -136,7 +136,7 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
     override fun isFinish() = isChild() && parent!!.isRoot() && isLastSibling()
 
     override fun findReceptorsFor(message: Message): List<Receptor> {
-        return children.map { it.findReceptorsFor(message) }.flatten()
+        return descendants.map { it.findReceptorsFor(message) }.flatten()
     }
 
 }

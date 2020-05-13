@@ -42,24 +42,15 @@ open class TestHelper {
 
     protected fun send(type: KClass<*>, fact: Any): String {
 
-        plugin.postProcessEngineBuild(
-            engine
-        )
+        plugin.postProcessEngineBuild(engine)
 
         val message = when(fact) {
-            is Fact<*> -> Message(
-                type,
-                fact
-            )
+            is Fact<*> -> Message(type, fact)
             is Message -> fact
-            else -> Message(
-                type,
-                Fact(fact)
-            )
+            else -> Message(type, Fact(fact))
         }
 
         Messages.publish(message)
-
         sleep(60)
 
         return message.fact.id
@@ -67,11 +58,7 @@ open class TestHelper {
     }
 
     protected fun sleep(seconds: Long, interval: Long = 250) {
-        TestHelper.waitForJobExecutorToProcessAllJobs(
-            engine.processEngineConfiguration as ProcessEngineConfigurationImpl,
-            seconds * 1000,
-            interval
-        )
+        TestHelper.waitForJobExecutorToProcessAllJobs(engine.processEngineConfiguration as ProcessEngineConfigurationImpl, seconds * 1000, interval)
     }
 
 }

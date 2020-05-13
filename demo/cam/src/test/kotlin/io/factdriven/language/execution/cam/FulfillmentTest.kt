@@ -13,11 +13,11 @@ class FulfillmentTest {
     val flows: List<Flow>
 
     init {
-        flows = Flows.initialize(
+        flows = Flows.activate(
             Fulfillment::class,
             Payment::class,
             CreditCard::class
-        )
+                              )
     }
 
     @Test

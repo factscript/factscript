@@ -6,6 +6,7 @@ import io.factdriven.language.definition.Branching
 import io.factdriven.language.definition.Junction
 import io.factdriven.language.definition.Throwing
 import io.factdriven.language.Execution
+import io.factdriven.language.Flows.activate
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -14,11 +15,7 @@ import org.junit.jupiter.api.Test
  */
 class PaymentRetrievalTest {
 
-    init {
-        Flows.initialize(PaymentRetrieval::class)
-        Flows.initialize(CustomerAccount::class)
-        Flows.initialize(CreditCardCharge::class)
-    }
+    init { activate(PaymentRetrieval::class, CustomerAccount::class, CreditCardCharge::class) }
 
     @Test
     fun testDefinition() {

@@ -1,6 +1,7 @@
 package io.factdriven.language.definition.await_time
 
 import io.factdriven.language.*
+import io.factdriven.language.Flows.activate
 import io.factdriven.language.definition.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -10,6 +11,8 @@ import java.time.LocalDate
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
 class CreditCardChargeTest {
+
+    init { activate(CreditCardCharge::class) }
 
     @Test
     fun testDefinition() {

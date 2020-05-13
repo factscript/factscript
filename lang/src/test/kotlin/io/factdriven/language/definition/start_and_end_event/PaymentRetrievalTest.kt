@@ -14,7 +14,7 @@ class PaymentRetrievalTest {
     @Test
     fun testDefinition() {
 
-        Flows.initialize(PaymentRetrieval::class)
+        Flows.activate(PaymentRetrieval::class)
 
         val definition = Flows.get(PaymentRetrieval::class)
         Assertions.assertEquals(PaymentRetrieval::class, definition.entity)

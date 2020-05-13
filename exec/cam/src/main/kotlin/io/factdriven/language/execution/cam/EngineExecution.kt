@@ -28,7 +28,10 @@ val DelegateExecution.node: Node get() {
 }
 
 val DelegateExecution.nodeId: String get() {
-    return currentActivityId.replace("${positionSeparator}Fork", "").replace("${positionSeparator}Join", "")
+    return currentActivityId
+        .replace("${positionSeparator}Fork", "")
+        .replace("${positionSeparator}Join", "")
+        .replace("${positionSeparator}Compensate", "")
 }
 
 fun <N: Node> DelegateExecution.node(id: String): N {

@@ -1,6 +1,7 @@
 package io.factdriven.language.definition.await_first
 
 import io.factdriven.language.*
+import io.factdriven.language.Flows.activate
 import io.factdriven.language.definition.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -11,11 +12,7 @@ import org.junit.jupiter.api.Test
  */
 class PaymentRetrievalTest {
 
-    init {
-        Flows.initialize(PaymentRetrieval::class)
-        Flows.initialize(CustomerAccount::class)
-        Flows.initialize(CreditCardCharge::class)
-    }
+    init { activate(PaymentRetrieval::class, CustomerAccount::class, CreditCardCharge::class) }
 
     @Test
     fun testDefinition() {
@@ -44,7 +41,6 @@ class PaymentRetrievalTest {
         assertEquals(PaymentRetrieved::class, emit.throwing)
         assertEquals(PaymentRetrieved(3F), emit.factory.invoke(instance))
         assertEquals(definition, emit.parent)
-
 
     }
 
