@@ -10,12 +10,10 @@ import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.impl.event.EventType
 import org.camunda.spin.plugin.variable.SpinValues
-import org.slf4j.*
 
 class EngineMessageProcessor: MessageProcessor {
 
     private val engine: ProcessEngine get() = ProcessEngines.getProcessEngines().values.first()
-    private val log: Logger = LoggerFactory.getLogger(Messages::class.java)
 
     override fun process(message: Message) {
         if (message.receiver != null) {

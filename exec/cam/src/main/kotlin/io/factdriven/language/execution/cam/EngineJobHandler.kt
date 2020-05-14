@@ -7,8 +7,7 @@ import org.camunda.bpm.engine.impl.jobexecutor.JobHandler
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity
 import org.camunda.bpm.engine.impl.persistence.entity.JobEntity
 
-class EngineJobHandler:
-    JobHandler<EngineJobHandlerConfiguration> {
+class EngineJobHandler: JobHandler<EngineJobHandlerConfiguration> {
 
     override fun getType(): String {
         return TYPE
@@ -20,17 +19,11 @@ class EngineJobHandler:
         commandContext: CommandContext?,
         tenantId: String?
     ) {
-        Messages.process(
-            Message.fromJson(
-                configuration!!.message
-            )
-        )
+        Messages.process(Message.fromJson(configuration!!.message))
     }
 
     override fun newConfiguration(canonicalString: String?): EngineJobHandlerConfiguration {
-        return EngineJobHandlerConfiguration(
-            canonicalString!!
-        )
+        return EngineJobHandlerConfiguration(canonicalString!!)
     }
 
     override fun onDelete(configuration: EngineJobHandlerConfiguration?, jobEntity: JobEntity?) {

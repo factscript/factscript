@@ -1,24 +1,29 @@
 package io.factdriven.language.execution.cam
 
 import io.factdriven.language.*
-import kotlin.math.max
+import kotlin.math.*
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-data class Account(val fact: WithdrawAmountFromCustomerAccount) {
+class Account(fact: WithdrawAmountFromCustomerAccount) {
 
-    private val name: String = fact.name
-    private var balance: Float = 0F
-    private var pending: Float = 0F
-
-    init {
-        pending = fact.withdraw
-    }
+    val customer: String = fact.customer
+    var balance: Float = 5F
+    var pending: Float = min(fact.withdraw, balance)
 
     fun apply(fact: AmountWithdrawnFromCustomerAccount) {
         pending = 0F
-        balance += fact.withdrawn
+        balance -= fact.withdrawn
+    }
+
+    fun apply(fact: CreditAmountToCustomerAccount) {
+        pending = fact.credit
+    }
+
+    fun apply(fact: AmountCreditedToCustomerAccount) {
+        pending = 0F
+        balance += fact.credited
     }
 
     companion object {
@@ -31,17 +36,13 @@ data class Account(val fact: WithdrawAmountFromCustomerAccount) {
                     success event AmountWithdrawnFromCustomerAccount::class
                 }
 
-                emit success event { AmountWithdrawnFromCustomerAccount(name, max(pending, 10F)) }
+                emit success event { AmountWithdrawnFromCustomerAccount(customer, pending) }
 
-            }
-
-            flow <Account> {
-
-                on command CreditAmountToCustomerAccount::class emit {
+                on command CreditAmountToCustomerAccount::class having "customer" match { customer } emit {
                     success event AmountCreditedToCustomerAccount::class
                 }
 
-                emit success event { AmountCreditedToCustomerAccount(name, max(pending, 10F)) }
+                emit success event { AmountCreditedToCustomerAccount(customer, pending) }
 
             }
 
@@ -51,7 +52,7 @@ data class Account(val fact: WithdrawAmountFromCustomerAccount) {
 
 }
 
-data class WithdrawAmountFromCustomerAccount(val name: String, val withdraw: Float)
-data class AmountWithdrawnFromCustomerAccount(val name: String, val withdrawn: Float)
-data class CreditAmountToCustomerAccount(val name: String, val credit: Float)
-data class AmountCreditedToCustomerAccount(val name: String, val maximum: Float)
+data class WithdrawAmountFromCustomerAccount(val customer: String, val withdraw: Float)
+data class AmountWithdrawnFromCustomerAccount(val customer: String, val withdrawn: Float)
+data class CreditAmountToCustomerAccount(val customer: String, val credit: Float)
+data class AmountCreditedToCustomerAccount(val customer: String, val credited: Float)

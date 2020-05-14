@@ -12,6 +12,22 @@ data class Fulfillment(val incoming: FulfillOrder) {
 
     val total = incoming.total
 
+    var started = false
+    var fetched = false
+    var paid = false
+    var readyToShip = false
+    var shipped = false
+    var fulfilled = false
+
+    fun apply(fact: OrderFulfillmentStarted) { started = true }
+    fun apply(fact: GoodsFetchedFromInventory) { fetched = true }
+    fun apply(fact: GoodsReturnedToInventory) { fetched = false }
+    fun apply(fact: PaymentRetrieved) { paid = true }
+    fun apply(fact: PaymentFailed) { paid = false }
+    fun apply(fact: OrderReadyToShip) { readyToShip = true }
+    fun apply(fact: GoodsShipped) { shipped = true }
+    fun apply(fact: OrderFulfilled) { fulfilled = true }
+
     companion object {
 
         init {
@@ -31,9 +47,7 @@ data class Fulfillment(val incoming: FulfillOrder) {
                         FetchGoodsFromInventory (orderId)
                     } but {
                         on failure OrderNotFulfilled::class
-                        execute command {
-                            ReturnGoodsToInventory(orderId)
-                        }
+                        execute command { ReturnGoodsToInventory(orderId) }
                     }
 
                 } and {

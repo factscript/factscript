@@ -9,11 +9,16 @@ data class CreditCard (
 
     val reference: String,
     val charge: Float,
+    var confirmed: Boolean = false,
     var successful: Boolean = false
 
 ){
 
     constructor(fact: ChargeCreditCard): this(fact.reference, fact.charge)
+
+    fun apply(fact: ConfirmationReceived) {
+        confirmed = fact.valid
+    }
 
     fun apply(fact: CreditCardCharged) {
         successful = true
@@ -32,6 +37,13 @@ data class CreditCard (
 
                 await event ConfirmationReceived::class having "reference" match { reference }
 
+                select either {
+                    given ("Yes") condition { confirmed }
+                } or {
+                    otherwise ("No")
+                    emit failure event { CreditCardExpired(reference, charge)}
+                }
+
                 emit success event { CreditCardCharged(reference, charge) }
 
             }
@@ -43,6 +55,5 @@ data class CreditCard (
 
 data class ChargeCreditCard(val reference: String, val charge: Float)
 data class CreditCardExpired(val reference: String, val charge: Float)
-data class CreditCardDetailsUpdated(val reference: String, val charge: Float)
-data class ConfirmationReceived(val reference: String)
+data class ConfirmationReceived(val reference: String, val valid: Boolean)
 data class CreditCardCharged(val reference: String, val charge: Float)

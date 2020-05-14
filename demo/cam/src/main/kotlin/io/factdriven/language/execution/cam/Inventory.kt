@@ -5,9 +5,18 @@ import io.factdriven.language.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-data class Inventory(val fact: FetchGoodsFromInventory) {
+class Inventory(fact: FetchGoodsFromInventory) {
 
     val orderId = fact.orderId
+    var fetched = false
+
+    fun load(fact: GoodsFetchedFromInventory) {
+        fetched = true
+    }
+
+    fun load(fact: GoodsReturnedToInventory) {
+        fetched = false
+    }
 
     companion object {
 
@@ -19,15 +28,9 @@ data class Inventory(val fact: FetchGoodsFromInventory) {
                     success event GoodsFetchedFromInventory::class
                 }
 
-                emit event {
-                    GoodsFetchedFromInventory(orderId)
-                }
+                emit success event { GoodsFetchedFromInventory(orderId) }
 
-            }
-
-            flow <Inventory> {
-
-                on command ReturnGoodsToInventory::class emit {
+                on command ReturnGoodsToInventory::class having "orderId" match { orderId } emit {
                     success event GoodsReturnedToInventory::class
                 }
 

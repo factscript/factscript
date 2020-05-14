@@ -2,7 +2,7 @@ package io.factdriven.language.execution.cam
 
 import io.factdriven.execution.Message
 import io.factdriven.execution.MessagePublisher
-import io.factdriven.language.impl.utils.prettyJson
+import io.factdriven.language.impl.utils.*
 import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.impl.ProcessEngineImpl
 import org.camunda.bpm.engine.impl.context.Context
@@ -14,31 +14,20 @@ class EngineMessagePublisher: MessagePublisher {
 
     private val engine: ProcessEngineImpl get() = ProcessEngines.getProcessEngines().values.first() as ProcessEngineImpl
 
-    override fun publish(vararg messages: Message) {
-        messages.forEach { message ->
-            engine.processEngineConfiguration.commandExecutorTxRequired.execute(
-                CreateCamundaBpmFlowJob(
-                    message
-                )
-            )
+    override fun publish(vararg message: Message) {
+        message.forEach { m ->
+            engine.processEngineConfiguration.commandExecutorTxRequired.execute(CreateCamundaBpmFlowJob(m))
         }
     }
 
-    class CreateCamundaBpmFlowJob(private val message: Message) :
-        Command<String> {
+    class CreateCamundaBpmFlowJob(private val message: Message) : Command<String> {
 
         override fun execute(commandContext: CommandContext): String {
-
             val job = MessageEntity()
-            job.jobHandlerType =
-                EngineJobHandler.TYPE
-            job.jobHandlerConfiguration =
-                EngineJobHandlerConfiguration(
-                    message.prettyJson
-                )
+            job.jobHandlerType = EngineJobHandler.TYPE
+            job.jobHandlerConfiguration = EngineJobHandlerConfiguration(message.compactJson)
             Context.getCommandContext().jobManager.send(job)
             return job.id
-
         }
 
     }

@@ -8,6 +8,11 @@ import io.factdriven.language.*
 data class Shipment(val fact: ShipGoods) {
 
     val orderId = fact.orderId
+    var shipped = false
+
+    fun apply( fact: GoodsShipped) {
+        shipped = true
+    }
 
     companion object {
 
@@ -16,7 +21,7 @@ data class Shipment(val fact: ShipGoods) {
             flow <Shipment> {
 
                 on command ShipGoods::class emit {
-                    success event ShipGoods::class
+                    success event GoodsShipped::class
                 }
 
                 emit success event { GoodsShipped(orderId) }

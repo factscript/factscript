@@ -37,7 +37,7 @@ object Messages {
     }
 
     fun publish(vararg messages: Message) {
-        messages.forEach { message ->  if (message.receiver != null) message.log("SEND") else message.log("EMIT") }
+        messages.forEach { message -> if (message.receiver != null) message.log("SEND") else message.log("EMIT") }
         messagePublisher.publish(*messages)
     }
 
