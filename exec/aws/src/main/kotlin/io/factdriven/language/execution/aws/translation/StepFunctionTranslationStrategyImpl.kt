@@ -187,6 +187,36 @@ class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionT
     }
 }
 
+class OnTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
+    override fun test(node: Node): Boolean {
+        return node is On<*>
+    }
+
+    override fun translate(translationContext: TranslationContext, node: Node) {
+
+    }
+}
+
+class AwaitTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
+    override fun test(node: Node): Boolean {
+       return node is Await<*>
+    }
+
+    override fun translate(translationContext: TranslationContext, node: Node) {
+        TODO("Not yet implemented")
+    }
+}
+
+class EmitTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
+
+    override fun test(node: Node): Boolean {
+        return false //node is Emit<*>
+    }
+
+    override fun translate(translationContext: TranslationContext, node: Node) {
+
+    }
+}
 class LoopTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
     override fun test(node: Node): Boolean {
         return node is Loop<*>

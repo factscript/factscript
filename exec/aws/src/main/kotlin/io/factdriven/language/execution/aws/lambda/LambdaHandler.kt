@@ -1,5 +1,7 @@
 package io.factdriven.language.execution.aws.lambda
 
+import com.amazonaws.services.sns.model.CreateTopicRequest
+import com.amazonaws.services.sns.model.SubscribeRequest
 import com.amazonaws.services.stepfunctions.model.SendTaskSuccessRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.factdriven.execution.Fact
@@ -7,6 +9,7 @@ import io.factdriven.execution.Message
 import io.factdriven.language.Execute
 import io.factdriven.language.Loop
 import io.factdriven.language.definition.*
+import io.factdriven.language.execution.aws.SnsService
 import io.factdriven.language.execution.aws.StateMachineService
 import io.factdriven.language.execution.aws.translation.FlowTranslator
 import io.factdriven.language.execution.aws.translation.toStateName
@@ -43,6 +46,7 @@ abstract class LambdaHandler {
 
 class InitializationHandler : LambdaHandler(){
     private val stateMachineService = StateMachineService()
+    private val snsService = SnsService()
 
     override fun test(lambdaContext: LambdaContext): Boolean {
         return lambdaContext.state == LambdaContext.State.INITIALIZATION
@@ -52,6 +56,14 @@ class InitializationHandler : LambdaHandler(){
         val context = lambdaContext as LambdaInitializationContext
         stateMachineService.createOrUpdateStateMachine(context,
                 FlowTranslator.translate(context.definition))
+        val invokedFunctionArn = lambdaContext.context.invokedFunctionArn
+        val snsClient = snsService.createClient()
+
+        val createTopicRequest = CreateTopicRequest("TestTopic")
+        val createTopic = snsClient.createTopic(createTopicRequest)
+        val subscribeRequest = SubscribeRequest(createTopic.topicArn, "lambda", invokedFunctionArn)
+        snsClient.subscribe(subscribeRequest)
+
         return HandlerResult.OK
     }
 }
