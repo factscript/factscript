@@ -103,10 +103,10 @@ open class CorrelatingImpl<T: Any>(parent: Node):
         limit.parent = parent
     }
 
-    override fun findReceptorsFor(message: Message): List<Receptor> {
-        return if (consuming.isInstance(message.fact.details))
+    override fun findReceptorsFor(message: Message): Set<Receptor> {
+        return (if (consuming.isInstance(message.fact.details))
             listOf(Receptor(consuming, properties.map { it to message.fact.details.getValue(it) }.toMap()))
-        else emptyList()
+        else emptyList()).toSet()
     }
 
 }

@@ -27,7 +27,7 @@ class EngineMessageProcessor: MessageProcessor {
 
     private fun route(message: Message) {
 
-        val messages = Flows.handling(message).map { handling ->
+        val messages = Flows.findReceptorsFor(message).map { handling ->
 
             fun messagesHandledByExternalTasks() : List<Message> {
                 val externalTasksHandlingMessage = engine.externalTaskService

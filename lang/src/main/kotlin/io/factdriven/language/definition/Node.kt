@@ -52,6 +52,6 @@ interface Node {
     fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>? = null): N?
     fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>? = null): List<N>
 
-    fun findReceptorsFor(message: Message): List<Receptor>
+    fun findReceptorsFor(message: Message): Set<Receptor>
 
 }

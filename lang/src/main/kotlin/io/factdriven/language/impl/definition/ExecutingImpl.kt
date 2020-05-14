@@ -57,10 +57,10 @@ open class ExecutingImpl<T: Any>(parent: Node):
         return this
     }
 
-    override fun findReceptorsFor(message: Message): List<Receptor> {
-        return if (successType.isInstance(message.fact.details) || failureTypes.contains(message.fact.details::class) && message.correlating != null)
+    override fun findReceptorsFor(message: Message): Set<Receptor> {
+        return (if (successType.isInstance(message.fact.details) || failureTypes.contains(message.fact.details::class) && message.correlating != null)
             listOf(Receptor(correlating = message.correlating))
-        else emptyList()
+        else emptyList()).toSet()
     }
 
     override fun isCompensating(): Boolean {

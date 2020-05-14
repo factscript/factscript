@@ -79,8 +79,8 @@ class MessageReceptorTest {
             Type(
                 RetrievePayment::class.java.`package`.name,
                 "RetrievePayment"
-            ), handling[0].receiving)
-        assertEquals(0, handling[0].expecting.size)
+            ), handling.iterator().next().receiving)
+        assertEquals(0, handling.iterator().next().expecting.size)
 
     }
 

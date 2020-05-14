@@ -65,8 +65,8 @@ object Flows {
         return active.values.asIterable()
     }
 
-    fun handling(message: Message): List<Receptor> {
-        return all().map { it.findReceptorsFor(message) }.flatten()
+    fun findReceptorsFor(message: Message): Set<Receptor> {
+        return all().map { it.findReceptorsFor(message) }.flatten().toSet()
     }
 
 }

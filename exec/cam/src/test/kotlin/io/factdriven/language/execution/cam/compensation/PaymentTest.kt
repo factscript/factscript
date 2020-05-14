@@ -122,7 +122,7 @@ class PaymentTest: TestHelper() {
 
     }
 
-    @Test @Disabled
+    @Test
     fun testPaymentFailed() {
 
         val orderId = "orderId"
@@ -157,7 +157,7 @@ class PaymentTest: TestHelper() {
 
         instance = Payment::class.load(id)
 
-        assertEquals(0, instance.covered)
+        assertEquals(0F, instance.covered)
         assertEquals(false, instance.successful)
         assertEquals(true, instance.failed)
 
