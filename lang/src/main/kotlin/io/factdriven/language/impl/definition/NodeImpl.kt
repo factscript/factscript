@@ -50,40 +50,17 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
         return id
     }
 
-/*
-    @Suppress("UNCHECKED_CAST")
-    override fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>?): N? = find(nodeOfType, dealingWith, false)
-
-    @Suppress("UNCHECKED_CAST")
-    private fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>?, self: Boolean?): N? =
-        if (self != false && nodeOfType.isInstance(this)
-            && (dealingWith == null || when {
-                nodeOfType.isSubclassOf(Throwing::class) -> (this as Throwing).throwing == dealingWith
-                nodeOfType.isSubclassOf(Promising::class) -> (this as Promising).succeeding == dealingWith || failing.contains(dealingWith)
-                nodeOfType.isSubclassOf(Consuming::class) -> (this as Consuming).consuming == dealingWith
-                else -> false
-            })
-        ) this as N? else if (self != null) (children.find { (it as NodeImpl).find(nodeOfType, dealingWith, true) != null } as NodeImpl).find(nodeOfType, dealingWith, true) else null
-
-    @Suppress("UNCHECKED_CAST")
-    override fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>?): List<N> = filter(nodesOfType, dealingWith, false)
-
-    @Suppress("UNCHECKED_CAST")
-    private fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>?, self: Boolean): List<N> =
-        listOfNotNull(find(nodesOfType, dealingWith, self)) + children.map { (it as NodeImpl).filter(nodesOfType, dealingWith, true) }.flatten()
-
-*/
     @Suppress("UNCHECKED_CAST")
     override fun <N: Node> find(nodeOfType: KClass<N>, dealingWith: KClass<*>?): N? =
         when {
             nodeOfType.isSubclassOf(Throwing::class) -> {
-                children.find { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
+                children.find { it is Throwing && nodeOfType.isInstance(it) && (it.throwing == dealingWith || dealingWith == null)}
             }
             nodeOfType.isSubclassOf(Promising::class) -> {
-                children.find { it is Promising && ((it.successType == dealingWith || it.failureTypes.contains(dealingWith) || dealingWith == null)) }
+                children.find { it is Promising && nodeOfType.isInstance(it) && (it.successType == dealingWith || it.failureTypes.contains(dealingWith) || dealingWith == null) }
             }
             nodeOfType.isSubclassOf(Consuming::class) -> {
-                children.find { it is Consuming && (it.consuming == dealingWith || dealingWith == null) }
+                children.find { it is Consuming && nodeOfType.isInstance(it) && (it.consuming == dealingWith || dealingWith == null) }
             }
             else -> children.find { nodeOfType.isInstance(it) && dealingWith == null }
         } as N?
@@ -92,13 +69,13 @@ abstract class NodeImpl(override val parent: Node?, override val entity: KClass<
     override fun <N: Node> filter(nodesOfType: KClass<N>, dealingWith: KClass<*>?): List<N> =
         when {
             nodesOfType.isSubclassOf(Throwing::class) -> {
-                children.filter { it is Throwing && (it.throwing == dealingWith || dealingWith == null)}
+                children.filter { it is Throwing && it::class.isSubclassOf(nodesOfType) && (it.throwing == dealingWith || dealingWith == null)}
             }
             nodesOfType.isSubclassOf(Promising::class) -> {
-                children.filter { it is Promising && (it.successType == dealingWith || dealingWith == null) }
+                children.filter { it is Promising && it::class.isSubclassOf(nodesOfType) && (it.successType == dealingWith || it.failureTypes.contains(dealingWith) || dealingWith == null) }
             }
             nodesOfType.isSubclassOf(Consuming::class) -> {
-                children.filter { it is Consuming && (it.consuming == dealingWith || dealingWith == null) }
+                children.filter { it is Consuming && it::class.isSubclassOf(nodesOfType) && (it.consuming == dealingWith || dealingWith == null) }
             }
             else -> children.filter { nodesOfType.isInstance(it) && dealingWith == null }
         } as List<N>

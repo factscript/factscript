@@ -12,9 +12,6 @@ object Messages {
     private lateinit var messageProcessor: MessageProcessor
     private lateinit var messagePublisher: MessagePublisher
 
-    private val log: Logger =
-        LoggerFactory.getLogger(Messages::class.java)
-
     fun register(messageStore: MessageStore) {
         Messages.messageStore = messageStore
     }
@@ -32,20 +29,15 @@ object Messages {
     }
 
     fun <I: Any> load(messages: List<Message>, type: KClass<I>): I {
-        val instance = messages.newInstance(type)
-        log.debug("Loading aggregate ${type.type} [${messages.first().id}]\n${instance.prettyJson}")
-        return instance
+        return messages.newInstance(type)
     }
 
     fun process(message: Message) {
-        log.debug("Processing message ${message.fact.type} [${message.id}]\n${message.prettyJson}")
         messageProcessor.process(message)
     }
 
     fun publish(vararg messages: Message) {
-        messages.forEach { message ->
-            log.debug("Publishing message ${message.fact.type} [${message.id}]\n${message.prettyJson}")
-        }
+        messages.forEach { message ->  if (message.receiver != null) message.log("SEND") else message.log("EMIT") }
         messagePublisher.publish(*messages)
     }
 

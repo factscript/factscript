@@ -27,6 +27,7 @@ class EngineTransitionListener: ExecutionListener {
             is Correlating -> node.endpoints(messages)
             is Executing -> node.endpoints(messages)
             is Branching -> node.endpoints(messages)
+            is Throwing -> node.endpoints(messages) // Compensation
             else -> emptyMap()
         }.forEach {
             execution.setVariable(it.key.asBpmnId(), it.value)
@@ -49,6 +50,16 @@ class EngineTransitionListener: ExecutionListener {
     private fun Branching.endpoints(messages: List<Message>): Map<String, String> {
         val instance = Messages.load(messages, entity)
         return optionalEndpoints(instance)
+    }
+
+    private fun Throwing.endpoints(messages: List<Message>): Map<String, String> {
+        if (isCompensating()) {
+            return root.descendants.filter { (it as? Executing)?.isCompensating() == true }.map {
+                (it as Executing).endpoints(messages)
+            }.map { it.map { it.key to it.value } }.flatten().toMap()
+        } else {
+            return emptyMap()
+        }
     }
 
     private fun Node.optionalEndpoints(instance: Any): Map<String, String> {

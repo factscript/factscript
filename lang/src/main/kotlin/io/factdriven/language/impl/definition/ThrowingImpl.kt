@@ -38,6 +38,10 @@ open class ThrowingImpl<T: Any, F: Any>(parent: Node):
         return root.find(nodeOfType = Promising::class)?.failureTypes?.contains(throwing) == true
     }
 
+    override fun isCompensating(): Boolean {
+        return isFailing() && root.descendants.filterIsInstance<Executing>().any { it.isCompensating() }
+    }
+
     open fun command(type: KClass<*>, factory: Any.() -> Any): Any {
         this.factType = FactType.Command
         this.throwing = type

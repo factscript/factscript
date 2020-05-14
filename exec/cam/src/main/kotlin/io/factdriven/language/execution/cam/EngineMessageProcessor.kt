@@ -10,10 +10,12 @@ import org.camunda.bpm.engine.ProcessEngine
 import org.camunda.bpm.engine.ProcessEngines
 import org.camunda.bpm.engine.impl.event.EventType
 import org.camunda.spin.plugin.variable.SpinValues
+import org.slf4j.*
 
 class EngineMessageProcessor: MessageProcessor {
 
     private val engine: ProcessEngine get() = ProcessEngines.getProcessEngines().values.first()
+    private val log: Logger = LoggerFactory.getLogger(Messages::class.java)
 
     override fun process(message: Message) {
         if (message.receiver != null) {
@@ -70,8 +72,7 @@ class EngineMessageProcessor: MessageProcessor {
 
     private fun handle(message: Message) {
 
-        val handler = message.receiver?.entity
-            ?: throw IllegalArgumentException("Messages not (yet) routed to receiver!")
+        val handler = message.receiver?.entity ?: throw IllegalArgumentException("Messages not (yet) routed to receiver!")
 
         val processInstanceId = handler.id?.let {
             engine.runtimeService.createProcessInstanceQuery()
@@ -85,12 +86,9 @@ class EngineMessageProcessor: MessageProcessor {
             val messages = Messages.load(handler.id)
 
             with(messages.toMutableList()) {
-                add(message)
-                return mapOf(
-                    MESSAGES_VAR to SpinValues.jsonValue(
-                        prettyJson
-                    ).create()
-                )
+                add(if (messages.isEmpty()) Message(message.receiver!!.entity.type.kClass, message.fact, message.id) else Message(messages, message.fact, message.id))
+                last().log("SAVE")
+                return mapOf(MESSAGES_VAR to SpinValues.jsonValue(prettyJson).create())
             }
 
         }

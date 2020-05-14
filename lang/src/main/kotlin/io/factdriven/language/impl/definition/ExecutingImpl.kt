@@ -63,4 +63,8 @@ open class ExecutingImpl<T: Any>(parent: Node):
         else emptyList()
     }
 
+    override fun isCompensating(): Boolean {
+        return (parent as? Flow)?.isCompensating() == true
+    }
+
 }

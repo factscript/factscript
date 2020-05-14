@@ -1,8 +1,13 @@
 package io.factdriven.execution
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import io.factdriven.language.Flows.all
+import io.factdriven.language.definition.*
+import io.factdriven.language.impl.definition.*
 import io.factdriven.language.impl.utils.Id
 import io.factdriven.language.impl.utils.Json
+import org.slf4j.*
+import kotlin.math.*
 import kotlin.reflect.KClass
 
 
@@ -18,18 +23,18 @@ data class Message (
 
 ) {
 
-    constructor(type: KClass<*>, fact: Fact<*>): this(
-        MessageId(
-            EntityId(
-                type,
-                fact.id
-            )
-        ), fact)
-    constructor(history: List<Message>, fact: Fact<*>, correlating: MessageId? = null): this(
-        MessageId.nextAfter(history.last().id), fact, null, correlating)
+    // INSTANTIATE
+    constructor(type: KClass<*>, fact: Fact<*>, correlating: MessageId? = null): this(MessageId(EntityId(type, fact.id)), fact, null, correlating)
+
+    // SEND & RECEIVE
+    constructor(history: List<Message>, fact: Fact<*>, correlating: MessageId? = null): this(MessageId.nextAfter(history.last().id), fact, null, correlating)
+
+    // ROUTE
     constructor(message: Message, receiver: Receiver): this(message.id, message.fact, receiver, message.correlating)
 
     companion object {
+
+        private val log: Logger = LoggerFactory.getLogger(Message::class.java)
 
         fun fromJson(json: String): Message {
             return fromJson(Json(json))
@@ -45,6 +50,21 @@ data class Message (
         }
 
     }
+
+    fun log (operation: String) {
+        val operationPad = " ".repeat(4).substring(operation.length)
+        val factPad = " ".repeat(max(fact.type.name.length, all().map { it.descendants }.flatten().filter { it is ThrowingImpl<*,*> || it is CorrelatingImpl<*> }.map { if (it is Consuming) it.consuming.type.name.length else (it as Throwing).throwing.type.name.length }.max()!!)).substring(fact.type.name.length)
+        val entityPad = " ".repeat(max(id.entity.type.name.length, all().map{ it.entity.type.name.length }.max()!!)).substring(id.entity.type.name.length)
+        log.debug(
+            "${operationPad}${operation} " +
+            "${entityPad}${id.entity.type.name}(${id.entity.id?.split("-")?.get(1) ?: ""})[${id.version}]" +
+            " -> ${factPad}${fact.type.name} (${id.hash.split("-")[1]}" +
+            (correlating?.let { ":${it.hash.split("-")[1]})" } ?: ":" + "-".repeat(8) + ")") +
+            (receiver?.let { " -> ${it.entity.type.name}(${it.entity.id?.split("-")?.get(1) ?: ""})" } ?: "")
+         )
+    }
+
+
 
 }
 
