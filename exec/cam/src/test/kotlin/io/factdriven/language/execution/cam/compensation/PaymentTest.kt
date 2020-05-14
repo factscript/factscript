@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
  */
 class PaymentTest: TestHelper() {
 
-    private val kClass = arrayOf(Payment::class, Account::class, CreditCard::class)
+    private val kClass = arrayOf(Payment::class, Account1::class, Account2::class, CreditCard::class)
     private lateinit var fact: Any
     private lateinit var id: String
 

@@ -6,7 +6,7 @@ import kotlin.math.*
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class Account(fact: WithdrawAmountFromCustomerAccount) {
+class Account1(fact: WithdrawAmountFromCustomerAccount) {
 
     val customer: String = fact.customer
     var balance: Float = 5F
@@ -17,11 +17,33 @@ class Account(fact: WithdrawAmountFromCustomerAccount) {
         balance -= fact.withdrawn
     }
 
-    fun apply(fact: CreditAmountToCustomerAccount) {
-        pending = fact.credit
+    companion object {
+
+        init {
+
+            flow <Account1> {
+
+                on command WithdrawAmountFromCustomerAccount::class emit {
+                    success event AmountWithdrawnFromCustomerAccount::class
+                }
+
+                emit success event { AmountWithdrawnFromCustomerAccount(customer, pending) }
+
+            }
+
+        }
+
     }
 
-    fun apply(fact: AmountCreditedToCustomerAccount) {
+}
+
+class Account2(fact: CreditAmountToCustomerAccount) {
+
+    val customer = fact.customer
+    var balance: Float = 0F
+    var pending: Float = fact.credit
+
+    fun load(fact: AmountCreditedToCustomerAccount) {
         pending = 0F
         balance += fact.credited
     }
@@ -30,15 +52,9 @@ class Account(fact: WithdrawAmountFromCustomerAccount) {
 
         init {
 
-            flow <Account> {
+            flow <Account2> {
 
-                on command WithdrawAmountFromCustomerAccount::class emit {
-                    success event AmountWithdrawnFromCustomerAccount::class
-                }
-
-                emit success event { AmountWithdrawnFromCustomerAccount(customer, pending) }
-
-                on command CreditAmountToCustomerAccount::class having "customer" match { customer } emit {
+                on command CreditAmountToCustomerAccount::class emit {
                     success event AmountCreditedToCustomerAccount::class
                 }
 

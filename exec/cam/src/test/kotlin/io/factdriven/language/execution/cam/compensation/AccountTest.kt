@@ -12,28 +12,27 @@ import org.junit.jupiter.api.Assertions.assertEquals
  */
 class AccountTest: TestHelper() {
 
-    private val kClass = Account::class
     private lateinit var command: Any
     private lateinit var id: String
 
-    init { activate(kClass).forEach { script -> BpmnModel(script).toTempFile(true) }  }
+    init { activate(Account1::class, Account2::class).forEach { script -> BpmnModel(script).toTempFile(true) }  }
 
     @Test
     fun testWithdraw5() {
 
         command = WithdrawAmountFromCustomerAccount(customer = "kermit", withdraw = 5F)
-        id = send(kClass, command)
+        id = send(Account1::class, command)
 
-        var instance = kClass.load(id)
+        val instance1 = Account1::class.load(id)
 
-        assertEquals(0F, instance.balance)
+        assertEquals(0F, instance1.balance)
 
         command = CreditAmountToCustomerAccount(customer = "kermit", credit = 5F)
-        send(kClass, command)
+        id = send(Account2::class, command)
 
-        instance = kClass.load(id)
+        val instance2 = Account2::class.load(id)
 
-        assertEquals(5F, instance.balance)
+        assertEquals(5F, instance2.balance)
 
     }
 
@@ -41,18 +40,18 @@ class AccountTest: TestHelper() {
     fun testWithdraw10() {
 
         command = WithdrawAmountFromCustomerAccount(customer = "kermit", withdraw = 10F)
-        id = send(kClass, command)
+        id = send(Account1::class, command)
 
-        var instance = kClass.load(id)
+        val instance1 = Account1::class.load(id)
 
-        assertEquals(0F, instance.balance)
+        assertEquals(0F, instance1.balance)
 
         command = CreditAmountToCustomerAccount(customer = "kermit", credit = 10F)
-        send(kClass, command)
+        id = send(Account2::class, command)
 
-        instance = kClass.load(id)
+        val instance2 = Account2::class.load(id)
 
-        assertEquals(10F, instance.balance)
+        assertEquals(10F, instance2.balance)
 
     }
 

@@ -12,7 +12,7 @@ interface On<T: Any>: OnCommand<T>, Await<T>
 @FlowLanguage
 interface OnCommand<T: Any>
 
-infix fun <T: Any, M: Any> OnCommand<T>.command(type: KClass<M>): OnCommandHaving<T, M> {
+infix fun <T: Any, M: Any> OnCommand<T>.command(type: KClass<M>): OnCommandEmit<T> {
     return (this as PromisingImpl<T>).command(type)
 }
 

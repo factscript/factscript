@@ -13,12 +13,7 @@ class EngineJobHandler: JobHandler<EngineJobHandlerConfiguration> {
         return TYPE
     }
 
-    override fun execute(
-        configuration: EngineJobHandlerConfiguration?,
-        execution: ExecutionEntity?,
-        commandContext: CommandContext?,
-        tenantId: String?
-    ) {
+    override fun execute(configuration: EngineJobHandlerConfiguration?, execution: ExecutionEntity?, commandContext: CommandContext?, tenantId: String?) {
         Messages.process(Message.fromJson(configuration!!.message))
     }
 
@@ -31,9 +26,7 @@ class EngineJobHandler: JobHandler<EngineJobHandlerConfiguration> {
     }
 
     companion object {
-
         const val TYPE = "flowJobHandler"
-
     }
 
 }

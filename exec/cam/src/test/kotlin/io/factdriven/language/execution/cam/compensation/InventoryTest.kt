@@ -12,29 +12,28 @@ import org.junit.jupiter.api.Assertions.assertEquals
  */
 class InventoryTest: TestHelper() {
 
-    private val kClass = Inventory::class
     private lateinit var command: Any
     private lateinit var id: String
 
-    init { activate(kClass).forEach { BpmnModel(it).toTempFile(true) }  }
+    init { activate(Inventory1::class, Inventory2::class).forEach { BpmnModel(it).toTempFile(true) }  }
 
     @Test
     fun testInventory() {
 
         command = FetchGoodsFromInventory("myOrderId")
-        id = send(kClass, command)
+        id = send(Inventory1::class, command)
 
-        var instance = kClass.load(id)
+        val instance1 = Inventory1::class.load(id)
 
-        assertEquals("myOrderId", instance.orderId)
-        assertEquals(true, instance.fetched)
+        assertEquals("myOrderId", instance1.orderId)
+        assertEquals(true, instance1.fetched)
 
         command = ReturnGoodsToInventory("myOrderId")
-        send(kClass, command)
+        id = send(Inventory2::class, command)
 
-        instance = kClass.load(id)
+        val instance2 = Inventory2::class.load(id)
 
-        assertEquals(false, instance.fetched)
+        assertEquals(true, instance2.returned)
 
     }
 

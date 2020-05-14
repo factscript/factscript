@@ -13,7 +13,6 @@ class FactDrivenLanguagePlugin: ProcessEnginePlugin {
         configuration.customJobHandlers = configuration.customJobHandlers ?: mutableListOf()
         configuration.processEnginePlugins = configuration.processEnginePlugins + SpinProcessEnginePlugin()
         configuration.customJobHandlers.add(EngineJobHandler())
-        configuration.beans = mapOf("condition" to EngineCondition())
     }
 
     override fun postInit(configuration: ProcessEngineConfigurationImpl) {

@@ -21,21 +21,25 @@ class PaymentRetrievalApplication {
         return FactDrivenLanguagePlugin()
     }
 
+    @Bean
+    fun condition(): EngineCondition {
+        return EngineCondition()
+    }
+
 }
 
 fun main(args: Array<String>) {
+
     runApplication<PaymentRetrievalApplication>(*args) {
+
         Messages.register(EngineMessageProcessor())
         Messages.register(EngineMessagePublisher())
         Messages.register(EngineMessageStore())
-        Flows.activate(
-            Fulfillment::class,
-            Shipment::class,
-            Inventory::class,
-            Payment::class,
-            Account::class,
-            CreditCard::class
-                      )
+
+        Flows.activate(Fulfillment::class, Shipment::class, Inventory1::class, Inventory2::class,
+            Payment::class, Account1::class, Account2::class, CreditCard::class)
+
     }
+
 }
 

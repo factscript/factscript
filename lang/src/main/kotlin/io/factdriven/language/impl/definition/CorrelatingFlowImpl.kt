@@ -1,7 +1,6 @@
 package io.factdriven.language.impl.definition
 
-import io.factdriven.language.Await
-import io.factdriven.language.Catch
+import io.factdriven.language.*
 import io.factdriven.language.definition.Consuming
 import io.factdriven.language.definition.Correlating
 import io.factdriven.language.definition.CorrelatingFlow

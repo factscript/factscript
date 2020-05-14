@@ -13,16 +13,16 @@ import kotlin.reflect.KClass
 @RestController
 class PaymentRetrievalController {
 
-    @RequestMapping("/retrievePayment", method = [RequestMethod.POST])
-    fun index(@RequestParam orderId: String = "anOrderId", @RequestParam accountId: String = "anAccountId", @RequestParam payment: Float = 5F): String {
+    @RequestMapping("/order", method = [RequestMethod.POST])
+    fun index(@RequestParam orderId: String = "anOrderId", @RequestParam accountId: String = "anAccountId", @RequestParam payment: Float = 5F) {
         val fact = FulfillOrder(orderId, accountId, payment)
-        return send(Fulfillment::class, fact).prettyJson
+        send(Fulfillment::class, fact).prettyJson
     }
 
-    @RequestMapping("/confirmation", method = [RequestMethod.POST])
-    fun index(@RequestParam reference: String = "anOrderId", @RequestParam valid: Boolean = true): String {
-        val fact = ConfirmationReceived(reference, valid)
-        return send(CreditCard::class, fact).prettyJson
+    @RequestMapping("/confirm", method = [RequestMethod.POST])
+    fun index(@RequestParam orderId: String = "anOrderId", @RequestParam valid: Boolean = true) {
+        val fact = ConfirmationReceived(orderId, valid)
+        send(CreditCard::class, fact).prettyJson
     }
 
     private fun send(type: KClass<*>, fact: Any): Message {
