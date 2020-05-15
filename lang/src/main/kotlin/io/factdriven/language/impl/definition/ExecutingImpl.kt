@@ -19,7 +19,7 @@ open class ExecutingImpl<T: Any>(parent: Node):
 
     override val consuming: KClass<*> get() = successType
     override val successType: KClass<*> get() = Flows.find(handling = throwing)!!.filter(Promising::class).find { it.consuming == throwing }!!.successType!!
-    override val failureTypes: List<KClass<*>> get() = Flows.find(handling = throwing)!!.filter(Promising::class).find { it.consuming == throwing }!!.failureTypes
+    override val failureTypes: List<KClass<*>> get() = Flows.all().filterIsInstance<PromisingFlow>().find { flow -> flow.consuming == throwing  }?.failureTypes ?: emptyList()
 
     override fun command(type: KClass<*>, factory: Any.() -> Any): ExecuteBut<T> {
         this.factType = FactType.Command

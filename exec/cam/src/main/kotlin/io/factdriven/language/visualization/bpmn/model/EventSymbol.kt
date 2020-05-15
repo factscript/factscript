@@ -49,7 +49,10 @@ class ThrowingEventSymbol(node: Throwing, parent: Group<out Flow>, val isCompens
         if (isCompensating) {
             CompensateEventSymbolDefinition(node, this)
         } else {
-            ErrorEventSymbolDefinition(node, this)
+            val isFailure = Flows.all()
+                .any { flow -> flow.descendants.filterIsInstance<Executing>()
+                .any { executing -> executing.failureTypes.contains(node.throwing) } }
+            if (isFailure) ErrorEventSymbolDefinition(node, this) else TerminateEventSymbolDefinition(node, this)
         }
     } else {
         MessageEventSymbolDefinition(node, this)

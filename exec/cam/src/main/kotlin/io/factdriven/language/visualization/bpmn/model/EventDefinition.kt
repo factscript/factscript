@@ -109,3 +109,9 @@ class CompensateEventSymbolDefinition(node: Node, parent: EventSymbol<*, *>): Ev
     }
 
 }
+
+class TerminateEventSymbolDefinition(node: Node, parent: EventSymbol<*, *>): EventSymbolDefinition<Node, TerminateEventDefinition>(node, parent) {
+
+    override val model = process.model.newInstance(TerminateEventDefinition::class.java)
+
+}

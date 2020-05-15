@@ -36,8 +36,10 @@ fun main(args: Array<String>) {
         Messages.register(EngineMessagePublisher())
         Messages.register(EngineMessageStore())
 
-        Flows.activate(Fulfillment::class, Shipment::class, Inventory1::class, Inventory2::class,
-            Payment::class, Account1::class, Account2::class, CreditCard::class)
+        Flows.activate(
+            Fulfillment::class, Shipment::class, Inventory1::class, Inventory2::class,
+            Payment::class, Account1::class, Account2::class, CreditCard::class
+        )
 
     }
 
