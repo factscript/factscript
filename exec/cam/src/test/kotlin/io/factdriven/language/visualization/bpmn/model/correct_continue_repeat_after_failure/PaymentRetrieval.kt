@@ -28,7 +28,7 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                     given ("No") condition { covered != payment }
 
-                    execute loop {
+                    repeat {
 
                         execute command {
                             ChargeCreditCard(account, payment)

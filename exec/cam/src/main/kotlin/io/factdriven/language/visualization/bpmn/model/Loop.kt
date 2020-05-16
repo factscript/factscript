@@ -8,7 +8,7 @@ import io.factdriven.language.impl.definition.ConditionalImpl
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
  */
-class Loop(node: LoopingFlow, parent: Element<*,*>): Group<LoopingFlow>(node, parent), Looping {
+class Loop(node: RepeatingFlow, parent: Element<*,*>): Group<RepeatingFlow>(node, parent), Looping {
 
     override fun isSucceeding() = node.isSucceeding()
     override fun isFailing() = node.isFailing()

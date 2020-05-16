@@ -20,9 +20,9 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
                 on command RetrievePayment::class
 
-                execute loop {
-                    execute loop {
-                        execute loop {
+                repeat {
+                    repeat {
+                        repeat {
                             execute command {
                                 ChargeCreditCard(
                                     id,

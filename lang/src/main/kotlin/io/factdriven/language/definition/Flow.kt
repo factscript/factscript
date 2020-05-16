@@ -23,7 +23,7 @@ interface PromisingFlow: CatchingFlow, Promising
 
 interface WaitingFlow: CatchingFlow, Waiting
 
-interface LoopingFlow: ConditionalFlow, Looping {
+interface RepeatingFlow: ConditionalFlow, Looping {
 
     override val conditional: ConditionalNode get() = children.last() as ConditionalNode
 

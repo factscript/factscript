@@ -24,20 +24,16 @@ class PaymentRetrieval(fact: RetrievePayment) {
 
         init {
 
-            flow<PaymentRetrieval> {
+            flow <PaymentRetrieval> {
 
                 on command RetrievePayment::class
 
-                execute loop {
-                    execute command {
-                        ChargeCreditCard(reference, 1F)
-                    }
-                    until("Payment charged?") condition { charged == amount }
+                repeat {
+                    execute command { ChargeCreditCard(reference, 1F) }
+                    until ("Payment charged?") condition { charged == amount }
                 }
 
-                emit event {
-                    PaymentRetrieved(amount)
-                }
+                emit event { PaymentRetrieved(amount) }
 
             }
 

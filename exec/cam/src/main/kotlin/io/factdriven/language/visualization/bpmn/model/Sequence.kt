@@ -35,7 +35,7 @@ class Sequence(node: Flow, parent: Element<*,*>): Group<Flow>(node,parent), Opti
             is Consuming -> listOf(if (parent is Task && node.children.indexOf(child) == 0) BoundaryEventSymbol(child, this) else if ((parent is Branch && parent.node.fork == Junction.First) && node.children.indexOf(child) == 0) CatchingEventSymbol(child, this) else Task(child, this))
             is Catching -> listOf(if (parent is Task && node.children.indexOf(child) == 0) BoundaryEventSymbol(child, this) else CatchingEventSymbol(child, this))
             is Branching -> listOf(Branch(child, this))
-            is LoopingFlow -> listOf(Loop(child, this))
+            is RepeatingFlow -> listOf(Loop(child, this))
             is Flow -> listOf(Sequence(child, this))
             is Conditional -> null
             else -> throw IllegalStateException()

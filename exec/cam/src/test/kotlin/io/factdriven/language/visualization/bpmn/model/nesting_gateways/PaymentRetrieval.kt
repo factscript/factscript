@@ -30,8 +30,8 @@ class PaymentRetrieval(fact: RetrievePayment) {
                             )
                         }
                     } and {
-                        execute loop {
-                            execute loop {
+                        repeat {
+                            repeat {
                                 execute command {
                                     ChargeCreditCard(
                                         id,

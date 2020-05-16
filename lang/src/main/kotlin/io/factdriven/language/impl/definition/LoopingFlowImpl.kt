@@ -1,7 +1,6 @@
 package io.factdriven.language.impl.definition
 
-import io.factdriven.language.Loop
-import io.factdriven.language.Until
+import io.factdriven.language.*
 import io.factdriven.language.definition.*
 import kotlin.reflect.KClass
 
@@ -12,11 +11,16 @@ import kotlin.reflect.KClass
 class LoopingFlowImpl<T:Any> (entity: KClass<T>, override val parent: Node? = null):
 
     Loop<T>,
+    Repeat<T>,
 
-    LoopingFlow,
+    RepeatingFlow,
     FlowImpl<T>(entity, parent)
 
 {
+
+    override fun invoke(path: Loop<T>.() -> Unit) {
+        apply(path)
+    }
 
     override val until: Until<T>
         get() {

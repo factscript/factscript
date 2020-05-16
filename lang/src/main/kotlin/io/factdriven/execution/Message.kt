@@ -51,20 +51,18 @@ data class Message (
 
     }
 
-    fun log (operation: String) {
-        val operationPad = " ".repeat(4).substring(operation.length)
+    fun log(operation: String) {
         val factPad = " ".repeat(max(fact.type.name.length, all().map { it.descendants }.flatten().filter { it is ThrowingImpl<*,*> || it is CorrelatingImpl<*> }.map { if (it is Consuming) it.consuming.type.name.length else (it as Throwing).throwing.type.name.length }.max()!!)).substring(fact.type.name.length)
         val entityPad = " ".repeat(max(id.entity.type.name.length, all().map{ it.entity.type.name.length }.max()!!)).substring(id.entity.type.name.length)
+        val operationPad = if (operation == "PUBLISH") "--- ${" ".repeat(7).substring(operation.length)}$operation -->" else "<-- ${" ".repeat(7).substring(operation.length)}$operation ---"
         log.debug(
-            "${operationPad}${operation} " +
             "${entityPad}${id.entity.type.name}(${id.entity.id?.split("-")?.get(1) ?: ""})[${id.version}]" +
-            " -> ${factPad}${fact.type.name} (${id.hash.split("-")[1]}" +
+            " $operationPad" +
+            " ${factPad}${fact.type.name} (${id.hash.split("-")[1]}" +
             (correlating?.let { ":${it.hash.split("-")[1]})" } ?: ":" + "-".repeat(8) + ")") +
             (receiver?.let { " -> ${it.entity.type.name}(${it.entity.id?.split("-")?.get(1) ?: ""})" } ?: "")
          )
     }
-
-
 
 }
 

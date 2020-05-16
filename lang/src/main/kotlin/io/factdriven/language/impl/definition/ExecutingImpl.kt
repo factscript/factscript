@@ -40,14 +40,6 @@ open class ExecutingImpl<T: Any>(parent: Node):
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun loop(path: Loop<T>.() -> Unit) {
-        val loop = LoopingFlowImpl<T>(entity as KClass<T>, parent!!)
-        (parent as NodeImpl).children.remove(this)
-        loop.apply(path)
-        (parent as NodeImpl).children.add(loop)
-    }
-
-    @Suppress("UNCHECKED_CAST")
     override fun but(path: Catch<T>.() -> Unit): ExecuteBut<T> {
         val flow = CorrelatingFlowImpl(
             entity as KClass<T>,

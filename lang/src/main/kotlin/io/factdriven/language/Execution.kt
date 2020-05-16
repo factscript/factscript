@@ -18,6 +18,8 @@ interface Execution<T: Any>: Flow, Time<T> {
 
     val select: Select<T>
 
+    val repeat: Repeat<T>
+
 }
 
 @FlowLanguage

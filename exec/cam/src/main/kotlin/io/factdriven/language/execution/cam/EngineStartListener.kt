@@ -14,10 +14,7 @@ import org.slf4j.*
 
 class EngineStartListener: ExecutionListener {
 
-    private val log: Logger = LoggerFactory.getLogger(Message::class.java)
-
     override fun notify(execution: DelegateExecution) {
-
 
         if (!execution.currentActivityId.contains("Compensate")
             && !execution.currentActivityId.contains("Fork")
@@ -31,7 +28,6 @@ class EngineStartListener: ExecutionListener {
                 return when(node) {
                     is Throwing -> {
                         val fact = node.factory.invoke(aggregate())
-                        log.debug(execution.activityInstanceId)
                         val correlating = execution.flow.find(nodeOfType = Promising::class, dealingWith = fact::class)
                         Message(messages, Fact(fact), if (correlating != null) messages.findLast { it.fact.type.kClass == correlating.consuming }!!.correlating else null)
                     }

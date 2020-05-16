@@ -85,7 +85,7 @@ class EngineMessageProcessor: MessageProcessor {
 
             with(messages.toMutableList()) {
                 add(if (messages.isEmpty()) Message(message.receiver!!.entity.type.kClass, message.fact, message.id) else Message(messages, message.fact, message.id))
-                last().log("SAVE")
+                last().log("OBSERVE")
                 return mapOf(MESSAGES_VAR to SpinValues.jsonValue(prettyJson).create())
             }
 

@@ -27,7 +27,7 @@ class PaymentRetrievalTest {
         assertEquals(RetrievePayment::class, on.consuming)
         assertEquals(definition, on.parent)
 
-        val loop = definition.children[1] as LoopingFlow
+        val loop = definition.children[1] as RepeatingFlow
         assertEquals(PaymentRetrieval::class, loop.entity)
         assertEquals("Payment covered?", loop.description)
         assertEquals(2, loop.children.size)

@@ -48,7 +48,7 @@ data class Payment(
 
                     given ("No") condition { covered == total }
 
-                    execute loop {
+                    repeat {
                         execute command {
                             ChargeCreditCard(orderId,total - covered)
                         } but {
