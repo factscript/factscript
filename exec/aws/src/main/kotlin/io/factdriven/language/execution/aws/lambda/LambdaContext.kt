@@ -1,20 +1,23 @@
 package io.factdriven.language.execution.aws.lambda
 
 import com.amazonaws.services.lambda.runtime.Context
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
 import io.factdriven.execution.newInstance
 import io.factdriven.language.definition.Flow
 import io.factdriven.language.definition.Node
+import io.factdriven.language.definition.Promising
 import io.factdriven.language.execution.aws.example.function.RetrievePayment
-import java.util.ArrayList
+import java.util.*
 import java.util.stream.Collectors
 
 data class ProcessSettings (val maximumLoopCycles: Int = 5)
 
-abstract class LambdaContext constructor(definition: Flow, val context: Context, val processSettings: ProcessSettings = ProcessSettings()) {
+abstract class LambdaContext constructor(definition: Flow, val input: Map<String, *>, val context: Context, val processSettings: ProcessSettings = ProcessSettings()) {
     enum class State {
-        INITIALIZATION, EXECUTION
+        INITIALIZATION, EXECUTION, CATCHING
     }
 
     abstract val state: State
@@ -22,7 +25,7 @@ abstract class LambdaContext constructor(definition: Flow, val context: Context,
     val definition: Flow
 
     init {
-        this.stateMachine = StateMachine(name(definition))
+        this.stateMachine = StateMachine(name(definition)+"-tmp")
         this.definition = definition
     }
 
@@ -32,24 +35,65 @@ abstract class LambdaContext constructor(definition: Flow, val context: Context,
 
     companion object {
         fun of(definition: Flow, input: Map<String, *>, context: Context) : LambdaContext{
-            return if(isInitialization(input)) {
-                LambdaInitializationContext(definition, context)
+            return if(LambdaInitializationContext.isInitialization(input)) {
+                LambdaInitializationContext(definition, input, context)
+            } else if(EventContext.isEvent(input)){
+                EventContext(definition, input, context)
             } else {
                 ProcessContext(definition, input, context)
             }
         }
-
-        private fun isInitialization(input: Any?) = input is Map<*, *> && input.isEmpty()
     }
 }
+class EventContext(definition: Flow, input: Map<String, *>, context: Context) : LambdaContext(definition, input, context){
+    override val state: State
+        get() = State.CATCHING
 
-class LambdaInitializationContext(definition: Flow, context: Context) : LambdaContext(definition, context){
+    val event : Any
+    val node : Node
+
+    init {
+        val record = input["Records"] ?: throw IllegalArgumentException("Not a SNS message")
+        val sns = (record as ArrayList<Map<String, Any>>)[0]["Sns"] as Map<String, String>
+        val subject = sns["Subject"]
+        val message = sns["Message"]
+        val objectMapper = ObjectMapper().registerModule(KotlinModule())
+
+        event = objectMapper.readValue(message, Class.forName(subject))
+
+        val possibleEventNodes = ArrayList<Promising>()
+        possibleEventNodes.add(definition.find(Promising::class)!!)
+
+        node = possibleEventNodes.first{node -> node.consuming == event::class}
+    }
+
+    companion object {
+        fun isEvent(input: Map<String, *>) : Boolean{
+            println("isEvent?")
+            val record = input["Records"] ?: return false
+            val sns = (record as ArrayList<Map<String, Any>>)[0]["Sns"] as Map<String, String>
+            val subject = sns["Subject"]
+            val message = sns["Message"]
+            return try {
+                Class.forName(subject) // heuristic, better search definition
+                true
+            } catch (e: Exception){
+                println("not a knowing event $e")
+                false
+            }
+        }
+    }
+}
+class LambdaInitializationContext(definition: Flow, input: Map<String, *>, context: Context) : LambdaContext(definition, input, context){
     override val state: State
         get() = State.INITIALIZATION
 
+    companion object {
+        fun isInitialization(input: Any?) = input is Map<*, *> && input.isEmpty()
+    }
 }
 
-class ProcessContext(definition: Flow, val input: Map<String, *>, context: Context): LambdaContext(definition, context) {
+class ProcessContext(definition: Flow, input: Map<String, *>, context: Context): LambdaContext(definition, input, context) {
 
     val token : String
     val node : Node?
@@ -67,6 +111,8 @@ class ProcessContext(definition: Flow, val input: Map<String, *>, context: Conte
             this.node = null
         }
         this.messageList = toMessageList()
+        println(messageList)
+        println(definition.entity)
         this.processInstance = messageList.newInstance(definition.entity)
     }
 
@@ -74,10 +120,6 @@ class ProcessContext(definition: Flow, val input: Map<String, *>, context: Conte
         return toMessageList(input["History"] as ArrayList<String>?)
     }
     fun toMessageList(list: List<String>?): MutableList<Message>{
-        if (list == null) {
-            val init = RetrievePayment("a", "b", 1f)
-            return mutableListOf(createMessage(init))
-        }
         return (list as ArrayList<String>).stream()
                 .map { s -> Message.fromJson(s) }
                 .collect(Collectors.toList())

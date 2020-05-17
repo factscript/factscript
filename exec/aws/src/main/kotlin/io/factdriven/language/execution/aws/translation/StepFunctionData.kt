@@ -2,6 +2,7 @@ package io.factdriven.language.execution.aws.translation
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import javax.security.auth.Subject
 
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -19,4 +20,7 @@ data class ParallelMergePayload(@JsonProperty("TaskToken.$") val taskToken : Str
 data class InclusivePayload(@JsonProperty("TaskToken.$") val taskToken : String = "\$\$.Task.Token", @JsonProperty("id") val id: String, @JsonProperty("History.$") var messages: String? = "$.Messages", @JsonProperty("Execution.$") val execution : String = "\$\$.Execution.Id", @JsonProperty("InclusiveContext.$") var inclusiveContext: String? = "$.InclusiveContext") : StepFunctionPayload
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class LoopPayload(@JsonProperty("TaskToken.$") val taskToken : String = "\$\$.Task.Token", @JsonProperty("id") val id: String, @JsonProperty("History.$") var messages: String? = "$.Messages", @JsonProperty("Execution.$") val execution : String = "\$\$.Execution.Id", @JsonProperty("LoopContext.$") var loopContext: String? = "$.LoopContext") : StepFunctionPayload
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class SnsParameter(@JsonProperty("TopicArn") val topicArn : String, @JsonProperty("Subject") val subject: String, @JsonProperty("Message.$") val message : String = "$.input.event")
 

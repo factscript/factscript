@@ -4,16 +4,24 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
 import io.factdriven.language.definition.Flow
 import io.factdriven.language.execution.aws.lambda.*
+import java.lang.Exception
+import java.lang.RuntimeException
 
 abstract class FlowlangLambda : RequestHandler<Any, Any>{
 
     abstract fun definition() : Flow
 
     override fun handleRequest(input: Any?, context: Context?): Any {
+        println("Input is $input")
+//        if(true)
+//throw RuntimeException("e")
         val inputMap = input as Map<String, *>
         val definition = definition()
 
         val lambdaContext = LambdaContext.of(definition, inputMap, context!!)
+
+        println("Using context $lambdaContext")
+
         val handler = getHandler(lambdaContext)
         val handlerResult = handler.handle(lambdaContext)
 
@@ -27,6 +35,8 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
 
     open fun getHandlers(): List<LambdaHandler> {
         return listOf(InitializationHandler(),
+                OnHandler(),
+                ThrowingHandler(),
                 MergeHandler(),
                 LoopHandler(),
                 InclusiveHandler(),

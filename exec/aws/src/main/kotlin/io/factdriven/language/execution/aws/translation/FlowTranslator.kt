@@ -9,11 +9,14 @@ import java.util.stream.Stream
 
 open class FlowTranslator {
     companion object {
-        fun translate(flow: Flow) : StateMachine {
+        fun translate(flow: Flow, lambdaFunction: LambdaFunction) : TranslationResult {
             val stateMachineBuilder =  StepFunctionBuilder.stateMachine()
-            val translationContext = TranslationContext.of(LambdaFunction("PaymentRetrieval"), SequentialTransitionStrategy(), StateMachineBuilder(stateMachineBuilder))
+            val translationContext = TranslationContext.of(lambdaFunction,
+                    SequentialTransitionStrategy(),
+                    StateMachineBuilder(stateMachineBuilder),
+                    SnsContext(namespace = "arn:aws:sns:eu-central-1:162654447161:"))
             FlowTranslator().translateGraph(translationContext, flow)
-            return stateMachineBuilder.build()
+            return TranslationResult(stateMachineBuilder.build(), translationContext)
         }
     }
 
@@ -39,6 +42,8 @@ open class FlowTranslator {
 
     open fun getTranslators() : Array<StepFunctionTranslationStrategy> {
         return arrayOf(
+                PromisingTranslationStrategy(this),
+//                ThrowingTranslationStrategy(this),
                 LoopTranslationStrategy(this),
                 ParallelTranslationStrategy(this),
                 SkipTranslationStrategy(this),

@@ -9,11 +9,9 @@ import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.conditions.NumericEqualsCondition
 import com.amazonaws.services.stepfunctions.builder.states.Choice
 import com.amazonaws.services.stepfunctions.builder.states.ChoiceState
-import com.amazonaws.services.stepfunctions.model.CreateStateMachineRequest
-import com.amazonaws.services.stepfunctions.model.StartExecutionRequest
-import com.amazonaws.services.stepfunctions.model.StateMachineAlreadyExistsException
-import com.amazonaws.services.stepfunctions.model.UpdateStateMachineRequest
+import com.amazonaws.services.stepfunctions.model.*
 import io.factdriven.language.execution.aws.lambda.LambdaInitializationContext
+import io.factdriven.language.impl.utils.compactJson
 
 class StateMachineService {
     fun createDummyStateMachineDefinition() : StateMachine {
@@ -70,6 +68,12 @@ class StateMachineService {
         return updateArn
     }
 
+    fun getStateMachineArn(name: String) : String{
+        val listStateMachines = createClient().listStateMachines(ListStateMachinesRequest())
+        val stateMachine = listStateMachines.stateMachines.first { s -> s.name == name }
+        return stateMachine.stateMachineArn
+    }
+
     fun createClient(): AWSStepFunctions {
         val client = AWSStepFunctionsClientBuilder.standard()
                 .withRegion("eu-central-1")
@@ -78,9 +82,9 @@ class StateMachineService {
         return client
     }
 
-    fun execute(arn: String?) {
+    fun execute(arn: String?, input: Any) {
         val client = createClient()
-        val startExecutionRequest: StartExecutionRequest = StartExecutionRequest().withStateMachineArn(arn)
+        val startExecutionRequest: StartExecutionRequest = StartExecutionRequest().withStateMachineArn(arn).withInput(input.compactJson)
         client.startExecution(startExecutionRequest)
     }
 }

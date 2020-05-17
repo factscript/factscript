@@ -5,9 +5,8 @@ import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.conditions.*
 import com.amazonaws.services.stepfunctions.builder.states.*
 import io.factdriven.language.*
-import io.factdriven.language.definition.Branching
+import io.factdriven.language.definition.*
 import io.factdriven.language.definition.Junction.*
-import io.factdriven.language.definition.Node
 import io.factdriven.language.impl.utils.prettyJson
 import java.util.stream.Collectors
 
@@ -150,7 +149,7 @@ class ParallelTranslationStrategy(flowTranslator: FlowTranslator) : StepFunction
 
 class FlowTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
     override fun test(node: Node): Boolean {
-        return node.parent == null
+        return node is PromisingFlow
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
@@ -162,15 +161,15 @@ class FlowTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTran
 class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
 
     override fun test(node: Node) : Boolean{
-        return node.parent != null && (node is Execute<*> || node is Emit<*> || node is On<*>)
+        return node.parent != null && (node is Execute<*> || node is Throwing)
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
         val payload = Payload(id = node.id)
         val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
 
-        if(node.isStart()) {
-            (nodeParameter.payload as Payload).messages = null
+        if(node is Throwing && node !is Execute<*>){
+            translationContext.snsContext.addTopic(node)
         }
 
         executionTranslation(translationContext, node, nodeParameter)
@@ -187,36 +186,40 @@ class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionT
     }
 }
 
-class OnTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
+class PromisingTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
     override fun test(node: Node): Boolean {
-        return node is On<*>
+        return node is Promising && node !is PromisingFlow && node !is Execute<*>
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
-
+        translationContext.snsContext.addTopic(node)
+        translationContext.stepFunctionBuilder.state(toStateName(node),
+                PassState.builder()
+                        .transition(translationContext.transitionStrategy.nextTransition(node)))
     }
 }
 
-class AwaitTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
+class ThrowingTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
     override fun test(node: Node): Boolean {
-       return node is Await<*>
+       return node is Throwing && node !is Execute<*>
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
-        TODO("Not yet implemented")
+//        val throwing = node as Throwing
+//        val throwingClass = throwing.throwing
+//        val snsContext = translationContext.snsContext
+//        val topicName = throwingClass.simpleName!!
+//        snsContext.topics.add(topicName)
+//
+//        val snsParameter = SnsParameter(snsContext.getTopicArn(topicName), throwingClass.qualifiedName!!)
+//
+//        translationContext.stepFunctionBuilder.state(toStateName(node), TaskState.builder()
+//                .resource(snsContext.resource)
+//                .parameters(snsParameter.prettyJson)
+//                .transition(translationContext.transitionStrategy.nextTransition(node)))
     }
 }
 
-class EmitTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
-
-    override fun test(node: Node): Boolean {
-        return false //node is Emit<*>
-    }
-
-    override fun translate(translationContext: TranslationContext, node: Node) {
-
-    }
-}
 class LoopTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
     override fun test(node: Node): Boolean {
         return node is Loop<*>

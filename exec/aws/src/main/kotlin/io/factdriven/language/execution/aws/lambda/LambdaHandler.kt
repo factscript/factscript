@@ -3,15 +3,18 @@ package io.factdriven.language.execution.aws.lambda
 import com.amazonaws.services.sns.model.CreateTopicRequest
 import com.amazonaws.services.sns.model.SubscribeRequest
 import com.amazonaws.services.stepfunctions.model.SendTaskSuccessRequest
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
 import io.factdriven.language.Execute
 import io.factdriven.language.Loop
 import io.factdriven.language.definition.*
+import io.factdriven.language.execution.aws.LambdaService
 import io.factdriven.language.execution.aws.SnsService
 import io.factdriven.language.execution.aws.StateMachineService
 import io.factdriven.language.execution.aws.translation.FlowTranslator
+import io.factdriven.language.execution.aws.translation.LambdaFunction
 import io.factdriven.language.execution.aws.translation.toStateName
 import io.factdriven.language.impl.utils.compactJson
 import java.lang.IllegalArgumentException
@@ -47,6 +50,7 @@ abstract class LambdaHandler {
 class InitializationHandler : LambdaHandler(){
     private val stateMachineService = StateMachineService()
     private val snsService = SnsService()
+    private val lambdaService = LambdaService()
 
     override fun test(lambdaContext: LambdaContext): Boolean {
         return lambdaContext.state == LambdaContext.State.INITIALIZATION
@@ -54,18 +58,50 @@ class InitializationHandler : LambdaHandler(){
 
     override fun handle(lambdaContext: LambdaContext) : HandlerResult {
         val context = lambdaContext as LambdaInitializationContext
+        val translationResult = FlowTranslator.translate(context.definition, LambdaFunction(lambdaContext.context.functionName))
         stateMachineService.createOrUpdateStateMachine(context,
-                FlowTranslator.translate(context.definition))
-        val invokedFunctionArn = lambdaContext.context.invokedFunctionArn
-        val snsClient = snsService.createClient()
+                translationResult.stateMachine)
 
-        val createTopicRequest = CreateTopicRequest("TestTopic")
-        val createTopic = snsClient.createTopic(createTopicRequest)
-        val subscribeRequest = SubscribeRequest(createTopic.topicArn, "lambda", invokedFunctionArn)
-        snsClient.subscribe(subscribeRequest)
+        val snsContext = translationResult.translationContext.snsContext
+        snsService.createTopics(snsContext.getAllTopicNames())
+        snsService.subscribeTopics(lambdaContext.context.invokedFunctionArn, snsContext.getSubscriptionTopicArns())
+
+        lambdaService.updateTriggers(lambdaContext.context.invokedFunctionArn, snsContext.getSubscriptionTopicArns())
 
         return HandlerResult.OK
     }
+}
+abstract class EventHandler : LambdaHandler(){
+
+    final override fun test(lambdaContext: LambdaContext): Boolean {
+        return lambdaContext is EventContext && testEvent(lambdaContext)
+    }
+
+    final override fun handle(lambdaContext: LambdaContext): HandlerResult {
+        return handleEvent(lambdaContext as EventContext)
+    }
+
+    abstract fun testEvent(eventContext: EventContext) : Boolean
+    abstract fun handleEvent(eventContext: EventContext) : HandlerResult
+
+
+}
+class OnHandler : EventHandler() {
+
+    private val stateMachineService = StateMachineService()
+
+    override fun testEvent(eventContext: EventContext): Boolean {
+        return eventContext.node is Promising
+    }
+
+    override fun handleEvent(eventContext: EventContext): HandlerResult {
+        val stateMachineArn = stateMachineService.getStateMachineArn(eventContext.stateMachine.name)
+        stateMachineService.execute(stateMachineArn, StepFunctionStarter(arrayListOf(createMessage(eventContext.event).compactJson)))
+
+        return HandlerResult.OK
+    }
+
+    data class StepFunctionStarter(@JsonProperty("Messages") val messages : ArrayList<String>)
 }
 
 class MergeHandler : LambdaHandler(){
@@ -148,6 +184,31 @@ class ExecutionHandler : NodeHandler(){
         val message = createMessage(fact)
         messageList.add(message)
         return HandlerResult(toStringList(messageList))
+    }
+}
+
+class ThrowingHandler : NodeHandler(){
+    private val snsService = SnsService()
+
+    override fun test(processContext: ProcessContext): Boolean {
+        return processContext.node is Throwing && processContext.node !is Execute<*>
+    }
+
+    override fun handle(processContext: ProcessContext) : HandlerResult {
+        val fact = (processContext.node as Throwing).factory.invoke(processContext.processInstance)
+        val messageList = processContext.messageList
+        val message = createMessage(fact)
+        messageList.add(message)
+
+        publishEvent(processContext, fact)
+
+        return HandlerResult(toStringList(messageList))
+    }
+
+    private fun publishEvent(processContext: ProcessContext, fact: Any){
+        val (_, translationContext) = FlowTranslator.translate(processContext.definition, LambdaFunction(processContext.context.functionName))
+        val topicArn = translationContext.snsContext.getTopicArn(processContext.node!!)
+        snsService.publishMessage(topicArn = topicArn, subject = fact::class.qualifiedName!!, message = fact.compactJson)
     }
 }
 

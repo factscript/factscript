@@ -110,6 +110,12 @@ data class PaymentRetrieval(
 //                    }
 //                }
 
+                emit event {
+                    ChargeCreditCard(reference = "a", charge = 1.0f)
+                }
+
+                await event ConfirmationReceived::class having "reference" match { "" }
+
                 execute command {
                     PaymentRetrievalAccepted6("1", 25f)
                 }
@@ -129,7 +135,6 @@ data class PaymentRetrieval(
     }
 
 }
-
 data class RetrievePayment(val reference: String, val accountId: String, val payment: Float)
 data class PaymentRetrievalAccepted(val paymentId: String, val additionalFee: Float)
 data class PaymentRetrievalAccepted2(val paymentId: String, val additionalFee: Float)
