@@ -16,15 +16,27 @@ abstract class StepFunctionTranslationStrategy(val flowTranslator: FlowTranslato
     
 }
 
-open class TranslationContext private constructor(val lambdaFunction: LambdaFunction, val transitionStrategy: TransitionStrategy, val stepFunctionBuilder: StepFunctionBuilder<*>, val snsContext: SnsContext) {
+open class TranslationContext private constructor(val lambdaFunction: LambdaFunction,
+                                                  val transitionStrategy: TransitionStrategy,
+                                                  val stepFunctionBuilder: StepFunctionBuilder<*>,
+                                                  val snsContext: SnsContext,
+                                                  val namingStrategy: NamingStrategy = StatefulNamingStrategy()) {
     companion object {
-        fun of(lambdaFunction: LambdaFunction, transitionStrategy: TransitionStrategy, stepFunctionBuilder: StepFunctionBuilder<*>, snsContext: SnsContext) : TranslationContext {
-            return TranslationContext(lambdaFunction, transitionStrategy, stepFunctionBuilder, snsContext)
+        fun of(lambdaFunction: LambdaFunction,
+               transitionStrategy: TransitionStrategy,
+               stepFunctionBuilder: StepFunctionBuilder<*>,
+               snsContext: SnsContext,
+               namingStrategy: NamingStrategy = StatefulNamingStrategy()) : TranslationContext {
+            return TranslationContext(lambdaFunction, transitionStrategy, stepFunctionBuilder, snsContext, namingStrategy)
         }
     }
 
-    fun copyWith(lambdaFunction: LambdaFunction = this.lambdaFunction, transitionStrategy: TransitionStrategy = this.transitionStrategy, stepFunctionBuilder: StepFunctionBuilder<*> = this.stepFunctionBuilder, snsContext: SnsContext = this.snsContext): TranslationContext {
-        return TranslationContext(lambdaFunction, transitionStrategy, stepFunctionBuilder, snsContext)
+    fun copyWith(lambdaFunction: LambdaFunction = this.lambdaFunction,
+                 transitionStrategy: TransitionStrategy = this.transitionStrategy,
+                 stepFunctionBuilder: StepFunctionBuilder<*> = this.stepFunctionBuilder,
+                 snsContext: SnsContext = this.snsContext,
+                 namingStrategy: NamingStrategy = this.namingStrategy): TranslationContext {
+        return TranslationContext(lambdaFunction, transitionStrategy, stepFunctionBuilder, snsContext, namingStrategy)
     }
 
 }
@@ -95,13 +107,13 @@ class SnsContext(val namespace: String, val topics : MutableList<Topic> = mutabl
 
 
 interface TransitionStrategy {
-    fun nextTransition(node: Node): Transition.Builder
+    fun nextTransition(translationContext: TranslationContext, node: Node): Transition.Builder
 }
 
 class SequentialTransitionStrategy : TransitionStrategy {
-    override fun nextTransition(node: Node): Transition.Builder {
+    override fun nextTransition(translationContext: TranslationContext, node: Node): Transition.Builder {
         val nextNode = node.forward
-        return if(nextNode == null) end() else next(toStateName(nextNode))
+        return if(nextNode == null) end() else next(translationContext.namingStrategy.getName(nextNode))
     }
 }
 
@@ -109,11 +121,11 @@ class ParallelTransitionStrategy(private val nextBranchingSibling: Node?) : Tran
 
     private val sequentialStrategy = SequentialTransitionStrategy()
 
-    override fun nextTransition(node: Node): Transition.Builder {
+    override fun nextTransition(translationContext: TranslationContext, node: Node): Transition.Builder {
         if(node.forward == nextBranchingSibling){
             return end()
         }
-        return sequentialStrategy.nextTransition(node)
+        return sequentialStrategy.nextTransition(translationContext, node)
     }
 }
 
@@ -121,11 +133,11 @@ class LoopTransitionStrategy(private val lastChild: Node?, private val lastTrans
 
     private val sequentialStrategy = SequentialTransitionStrategy()
 
-    override fun nextTransition(node: Node): Transition.Builder {
+    override fun nextTransition(translationContext: TranslationContext, node: Node): Transition.Builder {
         if(node == lastChild){
             return next(lastTransition)
         }
-        return sequentialStrategy.nextTransition(node)
+        return sequentialStrategy.nextTransition(translationContext, node)
     }
 }
 
@@ -133,12 +145,78 @@ class InclusiveTransitionStrategy(private val startNode: Node, private val nextB
 
     private val sequentialStrategy = SequentialTransitionStrategy()
 
-    override fun nextTransition(node: Node): Transition.Builder {
+    override fun nextTransition(translationContext: TranslationContext, node: Node): Transition.Builder {
         if(node.forward == nextBranchingSibling){
-            return next(toStateName("while", startNode))
+            return next(translationContext.namingStrategy.getName("while", startNode))
         }
-        return sequentialStrategy.nextTransition(node)
+        return sequentialStrategy.nextTransition(translationContext, node)
     }
 }
 
 data class TranslationResult(val stateMachine: StateMachine, val translationContext: TranslationContext)
+
+interface NamingStrategy {
+    fun getName(node: Node) : String
+    fun getName(prefix: String, node: Node) : String
+}
+
+class StatefulNamingStrategy : NamingStrategy {
+    private val usedNames = HashMap<String, Int>()
+    private val nodeLookup = HashMap<String, String>()
+
+    override fun getName(prefix: String, node: Node): String {
+        val lookupKey = getLookupKey(prefix, node)
+        if(nodeLookup.containsKey(lookupKey)){
+            return nodeLookup[lookupKey]!!
+        }
+        val collisionFreeName = getCollisionFreeName(toStateName(prefix, node))
+        nodeLookup[getLookupKey(prefix, node)] = collisionFreeName
+        return collisionFreeName
+    }
+
+    override fun getName(node: Node): String {
+        val lookupKey = getLookupKey(null, node)
+        if(nodeLookup.containsKey(lookupKey)){
+            return nodeLookup[lookupKey]!!
+        }
+        val collisionFreeName = getCollisionFreeName(toStateName(node))
+        nodeLookup[getLookupKey(null, node)] = collisionFreeName
+        return collisionFreeName
+    }
+
+    private fun getLookupKey(prefix: String?, node: Node): String {
+        if(prefix != null){
+            return "$prefix-${node.id}"
+        }
+        return node.id
+    }
+
+    private fun getCollisionFreeName(name: String) : String{
+        if(usedNames.containsKey(name)){
+            val increment = usedNames[name]!!.plus(1)
+            val collisionFreeName = "$name $increment"
+            usedNames[name] = increment
+            return collisionFreeName
+        }
+        usedNames[name] = 0
+        return name
+    }
+
+    private fun toStateName(prefix: String?, node: Node) : String{
+        if(prefix != null){
+            if(node.description.isBlank()){
+                return prefix
+            }
+            return "$prefix-${node.description}"
+        }
+        if(node.description.isBlank()){
+            return node.id
+        }
+        return node.description
+    }
+
+    private fun toStateName(node: Node) : String{
+        return toStateName(null, node)
+    }
+
+}

@@ -19,36 +19,42 @@ class ExclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
         val payload = Payload(id = node.id)
         val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
 
-        translationContext.stepFunctionBuilder.state(toStateName(node),
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node),
                 StepFunctionBuilder.taskState()
                         .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
                         .resultPath("$.output.condition")
-                        .transition(next(nameGateway(node))))
+                        .transition(next(nameGateway(translationContext, node))))
 
         val choices = toChoices(translationContext, node as Branching)
-        translationContext.stepFunctionBuilder.state(nameGateway(node),
+        translationContext.stepFunctionBuilder.state(nameGateway(translationContext, node),
                 ChoiceState.builder()
                         .choices(*choices)
         )
     }
 
-    private fun nameGateway(node: Node) : String {
-        return "gateway-"+toStateName(node)
+    private fun nameGateway(translationContext: TranslationContext, node: Node) : String {
+        return translationContext.namingStrategy.getName("Gateway", node)
     }
 
     private fun toChoices(translationContext: TranslationContext, branching: Branching): Array<Choice.Builder> {
-        return branching.children.stream()
-                .map {node -> node as Option<*>}
+        val conditions = branching.children.stream()
+                .map { node -> node as Option<*> }
                 .peek { conditionalExecution -> flowTranslator.translateGraph(translationContext, conditionalExecution.children.first()) }
-                .map {condition ->
-                    Choice.builder().condition(toCondition(condition)).transition(translationContext.transitionStrategy.nextTransition(condition.children.first()) as NextStateTransition.Builder?)
+                .collect(Collectors.toList())
+
+        return conditions
+                .stream()
+                .map { condition ->
+                    Choice.builder().condition(toCondition(conditions.indexOf(condition)))
+                            .transition(translationContext.transitionStrategy
+                                    .nextTransition(translationContext, condition.children.first()) as NextStateTransition.Builder?)
                 }.collect(Collectors.toList())
                 .toTypedArray()
     }
 
-    private fun toCondition(condition: Option<*>): Condition.Builder {
-        return StringEqualsCondition.builder().variable("$.output.condition").expectedValue(toStateName(condition))
+    private fun toCondition(index: Int): Condition.Builder {
+        return StringEqualsCondition.builder().variable("$.output.condition").expectedValue("$index")
     }
 }
 
@@ -61,38 +67,38 @@ class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
         val payload = InclusivePayload(inclusiveContext = null, id = node.id)
         val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
 
-        translationContext.stepFunctionBuilder.state(toStateName(node),
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node),
                 StepFunctionBuilder.taskState()
                         .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
                         .resultPath("$.InclusiveContext")
-                        .transition(next("evaluate-${toStateName(node)}")))
+                        .transition(next("evaluate-${translationContext.namingStrategy.getName(node)}")))
 
         val evaluationPayload = InclusivePayload(id = node.id)
         val evaluationNodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = evaluationPayload)
 
-        translationContext.stepFunctionBuilder.state("evaluate-${toStateName(node)}",
+        translationContext.stepFunctionBuilder.state("evaluate-${translationContext.namingStrategy.getName(node)}",
                 StepFunctionBuilder.taskState()
                         .resource(translationContext.lambdaFunction.resource)
                         .parameters(evaluationNodeParameter.prettyJson)
                         .resultPath("$.InclusiveContext")
-                        .transition(next(nameGateway(node))))
+                        .transition(next(nameGateway(translationContext, node))))
 
         val choicesTranslationContext = translationContext.copyWith(transitionStrategy = InclusiveTransitionStrategy(node, node.forward))
         val choices = toChoices(choicesTranslationContext, node as Branching)
-        translationContext.stepFunctionBuilder.state(nameGateway(node),
+        translationContext.stepFunctionBuilder.state(nameGateway(translationContext, node),
                 ChoiceState.builder()
                         .choices(*choices)
         )
 
-        translationContext.stepFunctionBuilder.state("while-${toStateName(node)}", ChoiceState.builder().choices(
-                Choice.builder().condition(NumericGreaterThanCondition.builder().variable("$.InclusiveContext.next").expectedValue(-1)).transition(next("evaluate-${toStateName(node)}")),
-                Choice.builder().condition(NumericEqualsCondition.builder().variable("$.InclusiveContext.next").expectedValue(-1)).transition(translationContext.transitionStrategy.nextTransition(node) as NextStateTransition.Builder)
+        translationContext.stepFunctionBuilder.state("while-${translationContext.namingStrategy.getName(node)}", ChoiceState.builder().choices(
+                Choice.builder().condition(NumericGreaterThanCondition.builder().variable("$.InclusiveContext.next").expectedValue(-1)).transition(next("evaluate-${translationContext.namingStrategy.getName(node)}")),
+                Choice.builder().condition(NumericEqualsCondition.builder().variable("$.InclusiveContext.next").expectedValue(-1)).transition(translationContext.transitionStrategy.nextTransition(translationContext, node) as NextStateTransition.Builder)
         ))
     }
 
-    private fun nameGateway(node: Node) : String {
-        return "gateway-"+toStateName(node)
+    private fun nameGateway(translationContext: TranslationContext, node: Node) : String {
+        return "gateway-"+translationContext.namingStrategy.getName(node)
     }
 
     private fun toChoices(translationContext: TranslationContext, branching: Branching): Array<Choice.Builder> {
@@ -100,7 +106,7 @@ class InclusiveTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
                 .map {node -> node as Option<*>}
                 .peek { conditionalExecution -> flowTranslator.translateGraph(translationContext, conditionalExecution.children.first()) }
                 .map {condition ->
-                    Choice.builder().condition(toCondition(branching.children.indexOf(condition))).transition(translationContext.transitionStrategy.nextTransition(condition.children.first()) as NextStateTransition.Builder?)
+                    Choice.builder().condition(toCondition(branching.children.indexOf(condition))).transition(translationContext.transitionStrategy.nextTransition(translationContext, condition.children.first()) as NextStateTransition.Builder?)
                 }.collect(Collectors.toList())
                 .toTypedArray()
     }
@@ -117,19 +123,19 @@ class ParallelTranslationStrategy(flowTranslator: FlowTranslator) : StepFunction
 
     override fun translate(translationContext: TranslationContext, node: Node) {
         val branches = translateBranches(translationContext, node as Branching)
-        translationContext.stepFunctionBuilder.state(toStateName(node),
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node),
                 ParallelState.builder()
                         .branches(*branches)
-                        .transition(next("merge-" + toStateName(node)))
+                        .transition(next(translationContext.namingStrategy.getName("Merge", node)))
         )
 
         val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = ParallelMergePayload())
 
-        translationContext.stepFunctionBuilder.state("merge-" + toStateName(node),
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName("Merge", node),
                 StepFunctionBuilder.taskState()
                         .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
-                        .transition(translationContext.transitionStrategy.nextTransition(node))
+                        .transition(translationContext.transitionStrategy.nextTransition(translationContext, node))
         )
     }
 
@@ -137,7 +143,7 @@ class ParallelTranslationStrategy(flowTranslator: FlowTranslator) : StepFunction
         val branches = mutableListOf<Branch.Builder>()
 
         for (subFlow in branching.children) {
-            val branch = Branch.builder().startAt(toStateName(subFlow.children.first()))
+            val branch = Branch.builder().startAt(translationContext.namingStrategy.getName(subFlow.children.first()))
             val branchTranslationContext = translationContext.copyWith(transitionStrategy = ParallelTransitionStrategy(branching.forward), stepFunctionBuilder = BranchBuilder(branch))
             flowTranslator.translateGraph(branchTranslationContext, subFlow.children.first())
             branches.add(branch)
@@ -153,7 +159,7 @@ class FlowTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTran
     }
 
     override fun translate(translationContext: TranslationContext, node: Node) {
-        translationContext.stepFunctionBuilder.startAt(toStateName(node.children.first()))
+        translationContext.stepFunctionBuilder.startAt(translationContext.namingStrategy.getName(node.children.first()))
         flowTranslator.translateGraph(translationContext, node.children.first())
     }
 }
@@ -176,12 +182,12 @@ class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionT
     }
 
     private fun executionTranslation(translationContext: TranslationContext, node: Node, nodeParameter: NodeParameter) {
-        translationContext.stepFunctionBuilder.state(toStateName(node),
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node),
                 StepFunctionBuilder.taskState()
                         .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
                         .resultPath("$.Messages")
-                        .transition(translationContext.transitionStrategy.nextTransition(node))
+                        .transition(translationContext.transitionStrategy.nextTransition(translationContext, node))
         )
     }
 }
@@ -193,9 +199,9 @@ class PromisingTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
 
     override fun translate(translationContext: TranslationContext, node: Node) {
         translationContext.snsContext.addTopic(node)
-        translationContext.stepFunctionBuilder.state(toStateName(node),
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node),
                 PassState.builder()
-                        .transition(translationContext.transitionStrategy.nextTransition(node)))
+                        .transition(translationContext.transitionStrategy.nextTransition(translationContext, node)))
     }
 }
 
@@ -213,7 +219,7 @@ class ThrowingTranslationStrategy(flowTranslator: FlowTranslator) : StepFunction
 //
 //        val snsParameter = SnsParameter(snsContext.getTopicArn(topicName), throwingClass.qualifiedName!!)
 //
-//        translationContext.stepFunctionBuilder.state(toStateName(node), TaskState.builder()
+//        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node), TaskState.builder()
 //                .resource(snsContext.resource)
 //                .parameters(snsParameter.prettyJson)
 //                .transition(translationContext.transitionStrategy.nextTransition(node)))
@@ -228,43 +234,43 @@ class LoopTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTran
     override fun translate(translationContext: TranslationContext, node: Node) {
         val first = node.children.first()
         val last = node.children[node.children.size-2]//node.children.last { node !is Until<*> }
-        val loopTransitionStrategy  = LoopTransitionStrategy(last, "evaluate-${toStateName(node)}")
+        val loopTransitionStrategy  = LoopTransitionStrategy(last, "evaluate-${translationContext.namingStrategy.getName(node)}")
 
         val payload = LoopPayload(id = node.id, loopContext = null)
         val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
 
-        translationContext.stepFunctionBuilder.state(toStateName(node),
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node),
                 StepFunctionBuilder.taskState()
                         .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
                         .resultPath("$.LoopContext")
-                        .transition(next(toStateName(first))))
+                        .transition(next(translationContext.namingStrategy.getName(first))))
 
         flowTranslator.translateGraph(translationContext.copyWith(transitionStrategy = loopTransitionStrategy), first)
 
         val evaluationPayload = LoopPayload(id = node.id)
         val evaluationNodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = evaluationPayload)
 
-        translationContext.stepFunctionBuilder.state("evaluate-${toStateName(node)}",
+        translationContext.stepFunctionBuilder.state("evaluate-${translationContext.namingStrategy.getName(node)}",
                 StepFunctionBuilder.taskState()
                         .resource(translationContext.lambdaFunction.resource)
                         .parameters(evaluationNodeParameter.prettyJson)
                         .resultPath("$.LoopContext")
-                        .transition(next("while-${toStateName(node)}")))
+                        .transition(next("while-${translationContext.namingStrategy.getName(node)}")))
 
-        translationContext.stepFunctionBuilder.state("while-${toStateName(node)}",
+        translationContext.stepFunctionBuilder.state("while-${translationContext.namingStrategy.getName(node)}",
                 StepFunctionBuilder.choiceState()
                         .choices(
                                 Choice.builder()
                                         .condition(BooleanEqualsCondition.builder()
                                                 .variable("$.LoopContext.continue")
                                                 .expectedValue(true))
-                                        .transition(next(toStateName(first))),
+                                        .transition(next(translationContext.namingStrategy.getName(first))),
                                 Choice.builder()
                                         .condition(BooleanEqualsCondition.builder()
                                                 .variable("$.LoopContext.continue")
                                                 .expectedValue(false))
-                                        .transition(translationContext.transitionStrategy.nextTransition(node) as NextStateTransition.Builder)
+                                        .transition(translationContext.transitionStrategy.nextTransition(translationContext, node) as NextStateTransition.Builder)
                         ))
 
     }
@@ -280,13 +286,3 @@ class SkipTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTran
     }
 }
 
-fun toStateName(prefix: String?, node: Node) : String{
-    if(prefix != null){
-        return "$prefix-${node.description}-${node.id}"
-    }
-    return "${node.description}-${node.id}"
-}
-
-fun toStateName(node: Node) : String{
-    return toStateName(null, node)
-}

@@ -87,4 +87,16 @@ class StateMachineService {
         val startExecutionRequest: StartExecutionRequest = StartExecutionRequest().withStateMachineArn(arn).withInput(input.compactJson)
         client.startExecution(startExecutionRequest)
     }
+
+    fun list(){
+        val client = createClient()
+        val listStateMachines = client.listStateMachines(ListStateMachinesRequest())
+        for (stateMachine in listStateMachines.stateMachines) {
+            val describeStateMachine = client.describeStateMachine(DescribeStateMachineRequest())
+            val describeStateMachineForExecution = client.describeStateMachineForExecution(DescribeStateMachineForExecutionRequest())
+            val describeExecution = client.describeExecution(DescribeExecutionRequest())
+            val describeActivity = client.describeActivity(DescribeActivityRequest())
+
+        }
+    }
 }

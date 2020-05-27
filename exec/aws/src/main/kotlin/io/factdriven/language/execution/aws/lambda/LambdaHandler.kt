@@ -15,7 +15,6 @@ import io.factdriven.language.execution.aws.SnsService
 import io.factdriven.language.execution.aws.StateMachineService
 import io.factdriven.language.execution.aws.translation.FlowTranslator
 import io.factdriven.language.execution.aws.translation.LambdaFunction
-import io.factdriven.language.execution.aws.translation.toStateName
 import io.factdriven.language.impl.utils.compactJson
 import java.lang.IllegalArgumentException
 import java.util.stream.Collectors
@@ -285,10 +284,10 @@ class ExclusiveHandler : NodeHandler() {
     }
 
     private fun evaluateConditions(processInstance: Any, branching: Branching) : String{
-        for(conditionalExecution in branching.children){
+        for((index, conditionalExecution) in branching.children.withIndex()){
             val conditional = conditionalExecution.children[0] as Conditional
             if(conditional.condition?.invoke(processInstance)!!){
-                return toStateName(conditionalExecution)
+                return "$index"
             }
         }
         throw NoConditionMatchedException()
