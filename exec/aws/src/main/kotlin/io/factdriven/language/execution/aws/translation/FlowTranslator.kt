@@ -1,20 +1,24 @@
 package io.factdriven.language.execution.aws.translation
 
-import com.amazonaws.services.stepfunctions.builder.StateMachine
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder
 import io.factdriven.language.definition.Flow
 import io.factdriven.language.definition.Node
+import io.factdriven.language.execution.aws.translation.context.LambdaFunction
+import io.factdriven.language.execution.aws.translation.context.SnsContext
+import io.factdriven.language.execution.aws.translation.context.TranslationContext
+import io.factdriven.language.execution.aws.translation.context.TranslationResult
+import io.factdriven.language.execution.aws.translation.transition.SequentialTransitionStrategy
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
 open class FlowTranslator {
     companion object {
-        fun translate(flow: Flow, lambdaFunction: LambdaFunction) : TranslationResult {
+        fun translate(flow: Flow, lambdaFunction: LambdaFunction, snsContext: SnsContext) : TranslationResult {
             val stateMachineBuilder =  StepFunctionBuilder.stateMachine()
             val translationContext = TranslationContext.of(lambdaFunction,
                     SequentialTransitionStrategy(),
                     StateMachineBuilder(stateMachineBuilder),
-                    SnsContext(namespace = "arn:aws:sns:eu-central-1:162654447161:"))
+                    snsContext)
             FlowTranslator().translateGraph(translationContext, flow)
             return TranslationResult(stateMachineBuilder.build(), translationContext)
         }

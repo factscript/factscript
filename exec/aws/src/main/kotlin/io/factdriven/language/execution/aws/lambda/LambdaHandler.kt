@@ -1,7 +1,5 @@
 package io.factdriven.language.execution.aws.lambda
 
-import com.amazonaws.services.sns.model.CreateTopicRequest
-import com.amazonaws.services.sns.model.SubscribeRequest
 import com.amazonaws.services.stepfunctions.model.SendTaskSuccessRequest
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -14,9 +12,10 @@ import io.factdriven.language.execution.aws.LambdaService
 import io.factdriven.language.execution.aws.SnsService
 import io.factdriven.language.execution.aws.StateMachineService
 import io.factdriven.language.execution.aws.translation.FlowTranslator
-import io.factdriven.language.execution.aws.translation.LambdaFunction
+import io.factdriven.language.execution.aws.translation.context.LambdaFunction
+import io.factdriven.language.execution.aws.translation.context.SnsContext
 import io.factdriven.language.impl.utils.compactJson
-import java.lang.IllegalArgumentException
+import io.factdriven.language.impl.utils.prettyJson
 import java.util.stream.Collectors
 
 data class HandlerResult(val output: Any){
@@ -57,11 +56,12 @@ class InitializationHandler : LambdaHandler(){
 
     override fun handle(lambdaContext: LambdaContext) : HandlerResult {
         val context = lambdaContext as LambdaInitializationContext
-        val translationResult = FlowTranslator.translate(context.definition, LambdaFunction(lambdaContext.context.functionName))
+
+        val snsContext = SnsContext.fromLambdaArn(lambdaContext.context.invokedFunctionArn)
+        val translationResult = FlowTranslator.translate(context.definition, LambdaFunction(lambdaContext.context.functionName), snsContext)
         stateMachineService.createOrUpdateStateMachine(context,
                 translationResult.stateMachine)
 
-        val snsContext = translationResult.translationContext.snsContext
         snsService.createTopics(snsContext.getAllTopicNames())
         snsService.subscribeTopics(lambdaContext.context.invokedFunctionArn, snsContext.getSubscriptionTopicArns())
 
@@ -205,7 +205,8 @@ class ThrowingHandler : NodeHandler(){
     }
 
     private fun publishEvent(processContext: ProcessContext, fact: Any){
-        val (_, translationContext) = FlowTranslator.translate(processContext.definition, LambdaFunction(processContext.context.functionName))
+        val snsContext = SnsContext.fromLambdaArn(processContext.context.invokedFunctionArn)
+        val (_, translationContext) = FlowTranslator.translate(processContext.definition, LambdaFunction(processContext.context.functionName), snsContext)
         val topicArn = translationContext.snsContext.getTopicArn(processContext.node!!)
         snsService.publishMessage(topicArn = topicArn, subject = fact::class.qualifiedName!!, message = fact.compactJson)
     }
