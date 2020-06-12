@@ -114,7 +114,22 @@ data class PaymentRetrieval(
                     ChargeCreditCard(reference = "a", charge = 1.0f)
                 }
 
-                await event ConfirmationReceived::class having "reference" match { "" }
+                select ("1 oder 2?") either {
+                    given("") condition {true}
+                    emit event {
+                        ChargeCreditCard(reference = "a", charge = 1.0f)
+                    }
+
+                } or {
+                    given("") condition {false}
+                    emit event {
+                        ChargeCreditCard(reference = "a", charge = 1.0f)
+                    }
+                }
+
+                await event CreditCardCharged::class having {"reference" match { "a" };}
+
+                on time duration ("30 seconds") { "PT30S" }
 
                 execute command {
                     PaymentRetrievalAccepted6("1", 25f)

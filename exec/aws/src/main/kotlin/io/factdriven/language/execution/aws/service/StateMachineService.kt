@@ -1,4 +1,4 @@
-package io.factdriven.language.execution.aws
+package io.factdriven.language.execution.aws.service
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.services.stepfunctions.AWSStepFunctions
@@ -49,9 +49,10 @@ class StateMachineService {
                     .withDefinition(stateMachine))
 
             println("creation result: $resultCreate")
+
             return resultCreate.stateMachineArn
         } catch (e: StateMachineAlreadyExistsException){
-            e.printStackTrace()
+            println(e.message)
             updateArn = Regex("arn.*(?=\')").find(e.message.orEmpty())?.value
         }
 

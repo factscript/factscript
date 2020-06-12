@@ -1,4 +1,4 @@
-package io.factdriven.language.execution.aws
+package io.factdriven.language.execution.aws.service
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain
 import com.amazonaws.services.sns.AmazonSNS
@@ -21,7 +21,6 @@ class SnsService {
     fun createTopics(topics: List<String>) {
         val client = createClient()
         for (topic in topics) {
-            println("topicName" + topic)
             client.createTopic(CreateTopicRequest(topic))
         }
     }

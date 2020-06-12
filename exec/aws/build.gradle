@@ -2,6 +2,7 @@ import com.amazonaws.services.lambda.model.InvocationType
 import com.amazonaws.services.lambda.model.Runtime
 import jp.classmethod.aws.gradle.lambda.AWSLambdaInvokeTask
 import jp.classmethod.aws.gradle.lambda.AWSLambdaMigrateFunctionTask
+import jp.classmethod.aws.gradle.sns.*
 
 buildscript {
 
@@ -26,10 +27,15 @@ targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    maven {
+        name 'exposed'
+        url  'https://dl.bintray.com/kotlin/exposed/'
+    }
 }
 
 apply plugin: 'kotlin'
 apply plugin: "jp.classmethod.aws.lambda"
+apply plugin: "jp.classmethod.aws.sns"
 
 group 'factdriven'
 version '1.0.0-SNAPSHOT'
@@ -43,6 +49,16 @@ dependencies {
     compile group: 'com.amazonaws', name: 'aws-java-sdk-lambda', version: '1.11.729'
     compile group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.0'
     compile group: 'com.amazonaws', name: 'aws-java-sdk-sns', version: '1.11.780'
+    runtimeOnly group: 'com.amazonaws', name: 'aws-lambda-java-log4j2', version: '1.2.0'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.30'
+    compile group: 'org.slf4j', name: 'jcl-over-slf4j', version: '1.7.30'
+
+
+    compile group: 'org.jetbrains.exposed', name: 'exposed-core', version: '0.25.1'
+    compile group: 'org.jetbrains.exposed', name: 'exposed-java-time', version: '0.25.1'
+    runtime group: 'org.jetbrains.exposed', name: 'exposed-jdbc', version: '0.25.1'
+
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.20'
 
     testCompile("org.junit.jupiter:junit-jupiter-api:5.3.2")
     testCompile("org.junit.jupiter:junit-jupiter-params:5.3.2")
@@ -67,39 +83,22 @@ task zip(type: Zip, dependsOn: clean) {
     destinationDir file("build")
 }
 
-task migrateFunction(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
-    functionName = "MyFunctionKt"
-    role = System.getenv("LAMBDA_ROLE_ARN")
-    zipFile = zip.archivePath
-    handler = "io.factdriven.language.execution.aws.example.function.MyFunctionKt::handleRequest"
-    alias = 'DEV'
-    runtime = Runtime.Java8
-    timeout = 30
-    memorySize = 512
-    environment = [
-            STEP_FUNCTION_ROLE_ARN: System.getenv("STEP_FUNCTION_ROLE_ARN")
-    ]
-}
-
-task invokeFunction(type: AWSLambdaInvokeTask) {
-    functionName = "MyFunctionKt"
-    invocationType = InvocationType.RequestResponse
-    doLast {
-        println "Lambda function result: " + new String(invokeResult.payload.array(), "UTF-8")
-    }
-}
 
 task migrateFunctionPaymentRetrieval(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
     functionName = "PaymentRetrieval"
-    role = System.getenv("LAMBDA_ROLE_ARN")
+    role = lambdaRoleArn
     zipFile = zip.archivePath
     handler = "io.factdriven.language.execution.aws.example.function.PaymentRetrievalLambda::handleRequest"
     alias = 'DEV'
     runtime = Runtime.Java8
-    timeout = 30
+    timeout = 120
     memorySize = 512
     environment = [
-            STEP_FUNCTION_ROLE_ARN: System.getenv("STEP_FUNCTION_ROLE_ARN")
+            STEP_FUNCTION_ROLE_ARN: stepfunctionRoleArn,
+            AWS_FLOW_RDS_URL: awsRdsUrl,
+            AWS_FLOW_RDS_DRIVER: awsRdsDriver,
+            AWS_FLOW_RDS_USER: awsRdsUser,
+            AWS_FLOW_RDS_PASSWORD: awsRdsPassword,
     ]
 }
 
@@ -111,8 +110,63 @@ task invokeFunctionPaymentRetrieval(type: AWSLambdaInvokeTask) {
     }
 }
 
-task migrateAndInvokePaymentRetrieval(type: GradleBuild) {
-    tasks = ['migrateFunctionPaymentRetrieval', 'invokeFunctionPaymentRetrieval']
+
+task migrateFunctionCreditCardCharge(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
+    functionName = "CreditCardCharge"
+    role = lambdaRoleArn
+    zipFile = zip.archivePath
+    handler = "io.factdriven.language.execution.aws.example.function.CreditCardChargeLambda::handleRequest"
+    alias = 'DEV'
+    runtime = Runtime.Java8
+    timeout = 30
+    memorySize = 512
+    environment = [
+            STEP_FUNCTION_ROLE_ARN: stepfunctionRoleArn,
+            AWS_FLOW_RDS_URL: awsRdsUrl,
+            AWS_FLOW_RDS_DRIVER: awsRdsDriver,
+            AWS_FLOW_RDS_USER: awsRdsUser,
+            AWS_FLOW_RDS_PASSWORD: awsRdsPassword,
+    ]
+}
+
+task invokeFunctionCreditCardCharge(type: AWSLambdaInvokeTask) {
+    functionName = "CreditCardCharge"
+    invocationType = InvocationType.RequestResponse
+    doLast {
+        println "Lambda function result: " + new String(invokeResult.payload.array(), "UTF-8")
+    }
+}
+
+task publishJsonMessage(type: AmazonSNSPublishMessageTask) {
+    topicArn initTopicArn
+    subject "io.factdriven.language.execution.aws.example.function.RetrievePayment"
+    message "{\"reference\":\"a\",\"accountId\":\"b\",\"payment\":1.0}"
+}
+
+task migrateTimerEventLambda(type: AWSLambdaMigrateFunctionTask, dependsOn: zip) {
+    functionName = "FlowlangTimerEvent"
+    role = lambdaRoleArn
+    zipFile = zip.archivePath
+    handler = "io.factdriven.language.execution.aws.lambda.FlowlangTimerEventLambda::handleRequest"
+    alias = 'DEV'
+    runtime = Runtime.Java8
+    timeout = 120
+    memorySize = 512
+    environment = [
+            STEP_FUNCTION_ROLE_ARN: stepfunctionRoleArn,
+            AWS_FLOW_RDS_URL: awsRdsUrl,
+            AWS_FLOW_RDS_DRIVER: awsRdsDriver,
+            AWS_FLOW_RDS_USER: awsRdsUser,
+            AWS_FLOW_RDS_PASSWORD: awsRdsPassword,
+    ]
+}
+
+task migrateAndInvokeAndSendMessage(type: GradleBuild) {
+    tasks = ['migrateFunctionPaymentRetrieval',
+             'migrateFunctionCreditCardCharge',
+             'invokeFunctionPaymentRetrieval',
+             'invokeFunctionCreditCardCharge',
+             'publishJsonMessage']
 }
 
 task migrateAndInvoke(type: GradleBuild) {

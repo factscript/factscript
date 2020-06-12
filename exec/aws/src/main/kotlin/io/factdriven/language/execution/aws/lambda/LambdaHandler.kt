@@ -8,14 +8,14 @@ import io.factdriven.execution.Message
 import io.factdriven.language.Execute
 import io.factdriven.language.Loop
 import io.factdriven.language.definition.*
-import io.factdriven.language.execution.aws.LambdaService
-import io.factdriven.language.execution.aws.SnsService
-import io.factdriven.language.execution.aws.StateMachineService
+import io.factdriven.language.execution.aws.event.EventService
+import io.factdriven.language.execution.aws.service.LambdaService
+import io.factdriven.language.execution.aws.service.SnsService
+import io.factdriven.language.execution.aws.service.StateMachineService
 import io.factdriven.language.execution.aws.translation.FlowTranslator
 import io.factdriven.language.execution.aws.translation.context.LambdaFunction
 import io.factdriven.language.execution.aws.translation.context.SnsContext
 import io.factdriven.language.impl.utils.compactJson
-import io.factdriven.language.impl.utils.prettyJson
 import java.util.stream.Collectors
 
 data class HandlerResult(val output: Any){
@@ -59,14 +59,21 @@ class InitializationHandler : LambdaHandler(){
 
         val snsContext = SnsContext.fromLambdaArn(lambdaContext.context.invokedFunctionArn)
         val translationResult = FlowTranslator.translate(context.definition, LambdaFunction(lambdaContext.context.functionName), snsContext)
+
+        println("Updating state machine")
         stateMachineService.createOrUpdateStateMachine(context,
                 translationResult.stateMachine)
 
+        println("Updating topics")
         snsService.createTopics(snsContext.getAllTopicNames())
+
+        println("Updating subscriptions")
         snsService.subscribeTopics(lambdaContext.context.invokedFunctionArn, snsContext.getSubscriptionTopicArns())
 
+        println("Updating triggers")
         lambdaService.updateTriggers(lambdaContext.context.invokedFunctionArn, snsContext.getSubscriptionTopicArns())
 
+        println("Finished initialization")
         return HandlerResult.OK
     }
 }
@@ -304,5 +311,55 @@ class NoopHandler : NodeHandler() {
         // skip
         println("WARNING: no handler found for node ${processContext.node!!.javaClass}. Using default handler")
         return HandlerResult(toStringList(processContext.messageList))
+    }
+}
+
+class CorrelatingHandler : NodeHandler() {
+
+    private val eventService = EventService()
+
+    override fun test(processContext: ProcessContext): Boolean {
+        return processContext.node is Correlating
+    }
+
+    override fun handleSuccess(processContext: ProcessContext, result: HandlerResult) {
+        // waiting for correlation
+    }
+
+    override fun handle(processContext: ProcessContext): HandlerResult {
+        eventService.registerEvent(processContext, processContext.node!! as Correlating)
+        return HandlerResult.OK
+    }
+}
+
+class WaitingHandler : NodeHandler(){
+    private val eventService = EventService()
+
+    override fun test(processContext: ProcessContext): Boolean {
+        return processContext.node is Waiting
+    }
+
+    override fun handleSuccess(processContext: ProcessContext, result: HandlerResult) {
+        // waiting for external correlation
+    }
+
+    override fun handle(processContext: ProcessContext): HandlerResult {
+        eventService.registerTimerEvent(processContext)
+        return HandlerResult.OK
+    }
+}
+
+class GenericEventHandler : EventHandler(){
+
+    private val eventService = EventService()
+
+    override fun testEvent(eventContext: EventContext): Boolean {
+        return true
+    }
+
+    override fun handleEvent(eventContext: EventContext): HandlerResult {
+        eventService.correlateEvent(eventContext)
+
+        return HandlerResult.OK
     }
 }

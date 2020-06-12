@@ -6,12 +6,11 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
 import io.factdriven.execution.newInstance
-import io.factdriven.language.definition.Flow
-import io.factdriven.language.definition.Node
-import io.factdriven.language.definition.Promising
+import io.factdriven.language.definition.*
 import io.factdriven.language.execution.aws.example.function.RetrievePayment
 import java.util.*
 import java.util.stream.Collectors
+import kotlin.collections.HashSet
 
 data class ProcessSettings (val maximumLoopCycles: Int = 5)
 
@@ -61,15 +60,15 @@ class EventContext(definition: Flow, input: Map<String, *>, context: Context) : 
 
         event = objectMapper.readValue(message, Class.forName(subject))
 
-        val possibleEventNodes = ArrayList<Promising>()
+        val possibleEventNodes = HashSet<Consuming>()
         possibleEventNodes.add(definition.find(Promising::class)!!)
-
+        possibleEventNodes.addAll(definition.filter(Correlating::class))
+        println("possible event nodes: $possibleEventNodes")
         node = possibleEventNodes.first{node -> node.consuming == event::class}
     }
 
     companion object {
         fun isEvent(input: Map<String, *>) : Boolean{
-            println("isEvent?")
             val record = input["Records"] ?: return false
             val sns = (record as ArrayList<Map<String, Any>>)[0]["Sns"] as Map<String, String>
             val subject = sns["Subject"]
@@ -78,7 +77,7 @@ class EventContext(definition: Flow, input: Map<String, *>, context: Context) : 
                 Class.forName(subject) // heuristic, better search definition
                 true
             } catch (e: Exception){
-                println("not a knowing event $e")
+                println("not a known event $e")
                 false
             }
         }
