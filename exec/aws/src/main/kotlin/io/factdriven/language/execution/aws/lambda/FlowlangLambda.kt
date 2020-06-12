@@ -46,6 +46,8 @@ abstract class FlowlangLambda : RequestHandler<Any, Any>{
                 CorrelatingHandler(),
                 WaitingHandler(),
                 GenericEventHandler(),
+                EventGatewayHandler(),
+                EventGatewayEvaluationHandler(),
                 NoopHandler())
     }
 }

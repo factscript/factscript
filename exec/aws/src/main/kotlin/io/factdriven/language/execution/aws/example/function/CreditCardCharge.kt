@@ -17,6 +17,8 @@ class CreditCardCharge(fact: ChargeCreditCard) {
             flow <CreditCardCharge> {
                 on command ChargeCreditCard::class emit { success event CreditCardCharged::class }
 
+                on time duration ("Wait 1 Minute") { "PT1M" }
+
                 emit success event { CreditCardCharged(reference = reference, charge = charge) }
             }
 

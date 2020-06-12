@@ -54,7 +54,8 @@ open class FlowTranslator {
                 FlowTranslationStrategy(this),
                 ExclusiveTranslationStrategy(this),
                 InclusiveTranslationStrategy(this),
-                ExecuteTranslationStrategy(this)
+                ExecuteTranslationStrategy(this),
+                EventGatewayTranslationStrategy(this)
         )
     }
 }

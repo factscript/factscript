@@ -344,7 +344,7 @@ class WaitingHandler : NodeHandler(){
     }
 
     override fun handle(processContext: ProcessContext): HandlerResult {
-        eventService.registerTimerEvent(processContext)
+        eventService.registerTimerEvent(processContext, processContext.node as Waiting)
         return HandlerResult.OK
     }
 }
@@ -361,5 +361,76 @@ class GenericEventHandler : EventHandler(){
         eventService.correlateEvent(eventContext)
 
         return HandlerResult.OK
+    }
+}
+
+class EventGatewayEvaluationHandler : NodeHandler(){
+    override fun test(processContext: ProcessContext): Boolean {
+        return processContext.node is Branching && processContext.node.fork == Junction.First && processContext.phase == "Evaluation"
+    }
+
+    override fun handle(processContext: ProcessContext): HandlerResult {
+        val result = evaluateConditions(processContext)
+        return HandlerResult("$result")
+    }
+
+    private fun evaluateConditions(processContext: ProcessContext): Long {
+        val branching = processContext.node as Branching
+
+        val fact = processContext.messageList.last().fact
+        var waitingIndex : Long? = null
+        var counter = 0L
+        var result : Long? = null
+        branching.children
+                .map { n -> n.children.first() }
+                .forEach { eventNode ->
+                    println("Evalutating event node $eventNode fact is $fact ")
+                    if(eventNode is Correlating && eventNode.consuming == fact.details::class){
+                        result = counter
+                        println("event result is $counter")
+                    }
+                    if(eventNode is Waiting){
+                        println("waiting counter is $counter")
+                        waitingIndex = counter // there should not be 2 waiting events
+                    }
+                    counter++
+                }
+
+        if(result == null && waitingIndex != null){
+            return waitingIndex!!
+        }
+
+        if(result != null){
+            return result!!
+        }
+
+        throw NoConditionMatchedException()
+    }
+}
+class EventGatewayHandler : NodeHandler(){
+
+    private val eventService = EventService()
+
+    override fun test(processContext: ProcessContext): Boolean {
+        return processContext.node is Branching && processContext.node.fork == Junction.First && processContext.phase == "Waiting"
+    }
+
+    override fun handle(processContext: ProcessContext): HandlerResult {
+        val branching = processContext.node as Branching
+        branching.children
+                .map { n -> n.children.first() }
+                .forEach { eventNode ->
+                    if(eventNode is Waiting){
+                        eventService.registerTimerEvent(processContext, eventNode)
+                    } else {
+                        eventService.registerEvent(processContext, eventNode as Correlating)
+                    }
+                }
+
+        return HandlerResult.OK
+    }
+
+    override fun handleSuccess(processContext: ProcessContext, result: HandlerResult) {
+        // handle manually
     }
 }

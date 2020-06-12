@@ -24,3 +24,6 @@ data class LoopPayload(@JsonProperty("TaskToken.$") val taskToken : String = "\$
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SnsParameter(@JsonProperty("TopicArn") val topicArn : String, @JsonProperty("Subject") val subject: String, @JsonProperty("Message.$") val message : String = "$.input.event")
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class PhaseNodePayload(@JsonProperty("TaskToken.$") val taskToken : String = "\$\$.Task.Token", @JsonProperty("id") val id: String, @JsonProperty("History.$") var messages: String? = "$.Messages", @JsonProperty("Execution.$") val execution : String = "\$\$.Execution.Id", @JsonProperty("Phase") val phase: String) : StepFunctionPayload
+

@@ -7,7 +7,9 @@ import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
 import io.factdriven.execution.newInstance
 import io.factdriven.language.definition.*
-import io.factdriven.language.execution.aws.example.function.RetrievePayment
+import io.factdriven.language.execution.aws.translation.FlowTranslator
+import io.factdriven.language.execution.aws.translation.context.LambdaFunction
+import io.factdriven.language.execution.aws.translation.context.SnsContext
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.collections.HashSet
@@ -60,11 +62,11 @@ class EventContext(definition: Flow, input: Map<String, *>, context: Context) : 
 
         event = objectMapper.readValue(message, Class.forName(subject))
 
-        val possibleEventNodes = HashSet<Consuming>()
-        possibleEventNodes.add(definition.find(Promising::class)!!)
-        possibleEventNodes.addAll(definition.filter(Correlating::class))
-        println("possible event nodes: $possibleEventNodes")
-        node = possibleEventNodes.first{node -> node.consuming == event::class}
+        val translationResult = FlowTranslator.translate(definition, LambdaFunction(context.functionName), SnsContext.fromLambdaArn(context.invokedFunctionArn))
+        val snsContext = translationResult.translationContext.snsContext
+
+        println("possible event nodes: ${snsContext.consumingNodes}")
+        node = snsContext.consumingNodes.first{node -> node.consuming == event::class} // TODO multiple possible
     }
 
     companion object {
@@ -98,6 +100,7 @@ class ProcessContext(definition: Flow, input: Map<String, *>, context: Context):
     val node : Node?
     val messageList : MutableList<Message>
     val processInstance : Any
+    val phase : String?
 
     override val state: State
         get() = State.EXECUTION
@@ -108,6 +111,11 @@ class ProcessContext(definition: Flow, input: Map<String, *>, context: Context):
             this.node = definition.get(input["id"] as String)
         } else {
             this.node = null
+        }
+        if(input["Phase"] != null){
+            phase = input["Phase"] as String
+        } else {
+            phase = null
         }
         this.messageList = toMessageList()
         println(messageList)

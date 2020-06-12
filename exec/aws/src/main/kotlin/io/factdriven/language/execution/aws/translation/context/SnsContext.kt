@@ -5,6 +5,8 @@ import io.factdriven.language.definition.Node
 import io.factdriven.language.definition.Throwing
 
 class SnsContext(val namespace: String, val topics : MutableList<Topic> = mutableListOf(), val resource : String = "arn:aws:states:::sns:publish"){
+    val consumingNodes = mutableListOf<Consuming>()
+
     companion object{
         fun fromLambdaArn(lambdaArn: String) : SnsContext {
             val regionAndUser = lambdaArn
@@ -43,6 +45,7 @@ class SnsContext(val namespace: String, val topics : MutableList<Topic> = mutabl
         if(node is Throwing){
             topics.add(Topic(node.throwing.simpleName!!, Topic.Type.Throwing))
         } else if (node is Consuming) {
+            consumingNodes.add(node)
             topics.add(Topic(node.consuming.simpleName!!, Topic.Type.Consuming))
         }
     }

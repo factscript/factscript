@@ -55,7 +55,9 @@ class EventService {
             client.sendTaskSuccess(sendTaskSuccessRequest)
         }
 
-        eventRepository.deleteTaskTokens(eventEntities.map { t -> t.token })
+        val tokenList = eventEntities.map { t -> t.token }
+        eventRepository.deleteTaskTokens(tokenList)
+        timerEventRepository.deleteTaskTokens(tokenList)
     }
 
     private fun getEventReferenceValue(fact: Any, node: Correlating): String {
@@ -73,8 +75,7 @@ class EventService {
         return hashString(map.toString())
     }
 
-    fun registerTimerEvent(processContext: ProcessContext){
-        val waiting = processContext.node as Waiting
+    fun registerTimerEvent(processContext: ProcessContext, waiting: Waiting){
         val limit = waiting.limit?.invoke(processContext.processInstance)
         val duration = waiting.period?.invoke(processContext.processInstance)
         val dateTime : LocalDateTime = limit ?: LocalDateTime.now().plus(Duration.parse(duration))
@@ -100,5 +101,6 @@ class EventService {
         }
         val tokenList = timerEvents.map { timerEvent -> timerEvent.token }.toList()
         timerEventRepository.deleteTaskTokens(tokenList)
+        eventRepository.deleteTaskTokens(tokenList)
     }
 }

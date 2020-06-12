@@ -1,11 +1,13 @@
 package io.factdriven.language.execution.aws.translation
 
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder
+import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
 import com.amazonaws.services.stepfunctions.builder.conditions.*
 import com.amazonaws.services.stepfunctions.builder.states.*
 import io.factdriven.language.Loop
 import io.factdriven.language.Option
 import io.factdriven.language.definition.Branching
+import io.factdriven.language.definition.Correlating
 import io.factdriven.language.definition.Junction
 import io.factdriven.language.definition.Node
 import io.factdriven.language.execution.aws.translation.context.TranslationContext
@@ -205,5 +207,64 @@ class LoopTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTran
                                         .transition(translationContext.transitionStrategy.nextTransition(translationContext, node) as NextStateTransition.Builder)
                         ))
 
+    }
+}
+
+class EventGatewayTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
+    override fun test(node: Node): Boolean {
+        return node is Branching && node.fork == Junction.First
+    }
+
+    override fun translate(translationContext: TranslationContext, node: Node) {
+        val payload = PhaseNodePayload(id = node.id, phase = "Waiting")
+        val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)
+
+        // Register Events and wait
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node),
+                StepFunctionBuilder.taskState()
+                        .resource(translationContext.lambdaFunction.resource)
+                        .parameters(nodeParameter.prettyJson)
+                        .resultPath("$.Messages")
+                        .transition(next(translationContext.namingStrategy.getName("Evaluate", node)))
+        )
+
+        val evaluationPayload = PhaseNodePayload(id = node.id, phase = "Evaluation")
+        val evaluationNodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = evaluationPayload)
+
+        // Evaluate
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName("Evaluate", node),
+                StepFunctionBuilder.taskState()
+                        .resource(translationContext.lambdaFunction.resource)
+                        .parameters(evaluationNodeParameter.prettyJson)
+                        .resultPath("$.output.condition")
+                        .transition(next(translationContext.namingStrategy.getName("Gateway", node)))
+        )
+
+        val choices = toChoices(translationContext, node as Branching)
+        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName("Gateway", node),
+                ChoiceState.builder()
+                        .choices(*choices)
+        )
+
+    }
+
+    private fun toChoices(translationContext: TranslationContext, branching: Branching): Array<Choice.Builder> {
+        var counter = 0L
+        val choices = mutableListOf<Choice.Builder>()
+        for(branch in branching.children){
+            val event = branch.children.first()
+            if(event is Correlating) {
+                translationContext.snsContext.addTopic(event)
+            }
+
+            val choice = Choice.builder().condition(NumericEqualsCondition.builder().expectedValue(counter).variable("$.output.condition")).transition(next(translationContext.namingStrategy.getName(event)))
+            translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(event),
+                    PassState.builder()
+                    .transition(translationContext.transitionStrategy.nextTransition(translationContext, event)))
+            flowTranslator.translateGraph(translationContext, event.nextSibling)
+            choices.add(choice)
+            counter++
+        }
+        return choices.toTypedArray()
     }
 }

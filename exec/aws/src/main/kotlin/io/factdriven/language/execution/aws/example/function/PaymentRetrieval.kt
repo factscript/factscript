@@ -114,22 +114,18 @@ data class PaymentRetrieval(
                     ChargeCreditCard(reference = "a", charge = 1.0f)
                 }
 
-                select ("1 oder 2?") either {
-                    given("") condition {true}
-                    emit event {
-                        ChargeCreditCard(reference = "a", charge = 1.0f)
-                    }
+                await first {
+                    on event FreePaymentAccepted::class having "accountId" match { "b" }
 
                 } or {
-                    given("") condition {false}
+                    on time duration ("Two weeks") { "PT30S" }
+
                     emit event {
                         ChargeCreditCard(reference = "a", charge = 1.0f)
                     }
+
+                    await event CreditCardCharged::class having {"reference" match { "a" };}
                 }
-
-                await event CreditCardCharged::class having {"reference" match { "a" };}
-
-                on time duration ("30 seconds") { "PT30S" }
 
                 execute command {
                     PaymentRetrievalAccepted6("1", 25f)
@@ -151,6 +147,7 @@ data class PaymentRetrieval(
 
 }
 data class RetrievePayment(val reference: String, val accountId: String, val payment: Float)
+data class FreePaymentAccepted(val accountId: String)
 data class PaymentRetrievalAccepted(val paymentId: String, val additionalFee: Float)
 data class PaymentRetrievalAccepted2(val paymentId: String, val additionalFee: Float)
 data class PaymentRetrievalAccepted3(val paymentId: String, val additionalFee: Float)

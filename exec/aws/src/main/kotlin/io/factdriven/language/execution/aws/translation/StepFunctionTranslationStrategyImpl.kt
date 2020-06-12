@@ -61,28 +61,6 @@ class PromisingTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctio
     }
 }
 
-class ThrowingTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
-    override fun test(node: Node): Boolean {
-       return node is Throwing && node !is Execute<*>
-    }
-
-    override fun translate(translationContext: TranslationContext, node: Node) {
-//        val throwing = node as Throwing
-//        val throwingClass = throwing.throwing
-//        val snsContext = translationContext.snsContext
-//        val topicName = throwingClass.simpleName!!
-//        snsContext.topics.add(topicName)
-//
-//        val snsParameter = SnsParameter(snsContext.getTopicArn(topicName), throwingClass.qualifiedName!!)
-//
-//        translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node), TaskState.builder()
-//                .resource(snsContext.resource)
-//                .parameters(snsParameter.prettyJson)
-//                .transition(translationContext.transitionStrategy.nextTransition(node)))
-    }
-}
-
-
 class SkipTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator){
     override fun test(node: Node): Boolean {
         return node is Given<*> || node is Until <*>
