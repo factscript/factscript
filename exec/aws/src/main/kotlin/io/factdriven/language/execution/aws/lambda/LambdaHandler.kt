@@ -21,6 +21,7 @@ import java.util.stream.Collectors
 data class HandlerResult(val output: Any){
     companion object{
         val OK = HandlerResult("Ok")
+        val ERROR = HandlerResult("Error")
     }
 
     override fun toString(): String {
@@ -152,8 +153,11 @@ abstract class NodeHandler : LambdaHandler (){
             throw IllegalArgumentException("Need a ProcessContext")
         }
         val result = handle(lambdaContext)
-        handleSuccess(lambdaContext, result)
-        return HandlerResult.OK
+        if(result != HandlerResult.ERROR) {
+            handleSuccess(lambdaContext, result)
+            return HandlerResult.OK
+        }
+        return HandlerResult.ERROR
     }
 
     abstract fun test(processContext: ProcessContext) : Boolean
@@ -180,16 +184,62 @@ class PromisingHandler : NodeHandler(){
 }
 
 class ExecutionHandler : NodeHandler(){
+
+    val boundaryHandler = BoundaryHandler()
+
     override fun test(processContext: ProcessContext): Boolean {
         return processContext.node is Execute<*>
     }
 
     override fun handle(processContext: ProcessContext) : HandlerResult {
-        val fact = (processContext.node as Throwing).factory.invoke(processContext.processInstance)
-        val messageList = processContext.messageList
-        val message = createMessage(fact)
-        messageList.add(message)
-        return HandlerResult(toStringList(messageList))
+        boundaryHandler.handle(processContext)
+
+        try {
+            val fact = execute(processContext)
+            val messageList = processContext.messageList
+            val message = createMessage(fact)
+            messageList.add(message)
+            return HandlerResult(toStringList(messageList))
+        } catch (e : FactException){
+            boundaryHandler.handleException(processContext, e)
+        }
+        return HandlerResult.ERROR
+    }
+
+    private fun execute(processContext: ProcessContext) : Any{
+        return (processContext.node as Throwing).factory.invoke(processContext.processInstance)
+    }
+}
+
+class BoundaryHandler(){
+
+    private val eventService = EventService()
+
+    fun handle(processContext: ProcessContext){
+        val children = processContext.node?.children ?: return
+
+        children.filterIsInstance<Correlating>()
+                .forEach {correlating ->
+                    val event = correlating.children.first()
+
+                    if(event is Waiting){
+                        eventService.registerTimerErrorEvent(processContext, event)
+                    } else if(event is Consuming){
+                        eventService.registerErrorEvent(processContext, event as Correlating)
+                    }
+                }
+    }
+
+    fun handleException(processContext: ProcessContext, e: FactException) {
+        val children = processContext.node?.children ?: return
+
+        children.forEach {
+            correlatingFlow ->
+            val eventNode = correlatingFlow.children.first()
+            if(eventNode is Correlating) {
+                eventService.correlateEvent(eventNode, e.fact)
+            }
+        }
     }
 }
 

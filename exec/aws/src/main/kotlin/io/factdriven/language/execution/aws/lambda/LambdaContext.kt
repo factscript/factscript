@@ -6,13 +6,13 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.factdriven.execution.Fact
 import io.factdriven.execution.Message
 import io.factdriven.execution.newInstance
-import io.factdriven.language.definition.*
+import io.factdriven.language.definition.Flow
+import io.factdriven.language.definition.Node
 import io.factdriven.language.execution.aws.translation.FlowTranslator
 import io.factdriven.language.execution.aws.translation.context.LambdaFunction
 import io.factdriven.language.execution.aws.translation.context.SnsContext
 import java.util.*
 import java.util.stream.Collectors
-import kotlin.collections.HashSet
 
 data class ProcessSettings (val maximumLoopCycles: Int = 5)
 
@@ -124,7 +124,14 @@ class ProcessContext(definition: Flow, input: Map<String, *>, context: Context):
     }
 
     fun toMessageList(): MutableList<Message> {
-        return toMessageList(input["History"] as ArrayList<String>?)
+
+        var messageSource = input["History"]
+
+        if(messageSource is LinkedHashMap<*, *> && messageSource["Error"] != null){
+                messageSource = ObjectMapper().readValue(messageSource["Cause"] as String, List::class.java)
+        }
+
+        return toMessageList(messageSource as List<String>?)
     }
     fun toMessageList(list: List<String>?): MutableList<Message>{
         return (list as ArrayList<String>).stream()

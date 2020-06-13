@@ -21,7 +21,7 @@ class TimerEventRepository {
         Database.connect(url, driver, user, password)
     }
 
-    fun save(taskToken: String, reactionType: EventReactionType, dateTime: LocalDateTime, stateMachineArn: String, messageList: List<Message>){
+    fun save(taskToken: String, reactionType: EventReactionType, dateTime: LocalDateTime, stateMachineArn: String, messageList: List<Message>, errorCode : String? = null){
         connect()
         transaction {
             SchemaUtils.createMissingTablesAndColumns(TimerEventEntityDefinition)
@@ -33,6 +33,9 @@ class TimerEventRepository {
                 it[TimerEventEntityDefinition.createdOn] = LocalDateTime.now()
                 it[TimerEventEntityDefinition.reactionType] = reactionType.toString()
                 it[TimerEventEntityDefinition.messageHistory] = ExposedBlob(messageList.compactJson.toByteArray())
+                if(errorCode != null) {
+                    it[TimerEventEntityDefinition.errorCode] = errorCode
+                }
             }
         }
     }
@@ -51,7 +54,12 @@ class TimerEventRepository {
                         val clob = String(it[TimerEventEntityDefinition.messageHistory].bytes)
                         val messageList = jacksonObjectMapper()
                                 .readValue<List<Message>>(clob, object : TypeReference<List<Message>>() {})
-                        TimerEventEntity(it[TimerEventEntityDefinition.taskToken], messageList, it[TimerEventEntityDefinition.dateTime], EventReactionType.valueOf(it[TimerEventEntityDefinition.reactionType]))
+                        TimerEventEntity(it[TimerEventEntityDefinition.taskToken],
+                                messageList,
+                                it[TimerEventEntityDefinition.dateTime],
+                                EventReactionType.valueOf(it[TimerEventEntityDefinition.reactionType]),
+                                it[TimerEventEntityDefinition.errorCode]
+                        )
                     }
                     .toCollection(arrayListOf())
         }

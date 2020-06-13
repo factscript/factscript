@@ -33,6 +33,17 @@ class EventService {
                 processContext.messageList)
     }
 
+    fun registerErrorEvent(processContext: ProcessContext, node: Correlating) {
+        eventRepository.save(node.consuming.qualifiedName!!,
+                processContext.token,
+                EventReactionType.ERROR,
+                extractCorrelationValue(processContext, node),
+                processContext.stateMachine.name,
+                processContext.messageList,
+                node.consuming.simpleName
+        )
+    }
+
     private fun extractCorrelationValue(processContext: ProcessContext, node: Correlating): String {
         val references = node.correlating.entries.
                 map { e -> e.key to  e.value.invoke(processContext.processInstance).toString()}
@@ -43,13 +54,20 @@ class EventService {
     fun correlateEvent(eventContext: EventContext){
         val correlating = eventContext.node as Correlating
         val fact = eventContext.event
-        val eventReferenceValue = getEventReferenceValue(fact, eventContext.node)
+
+        correlateEvent(correlating, fact)
+    }
+
+    fun correlateEvent(correlating: Correlating, fact: Any){
+
+        val eventReferenceValue = getEventReferenceValue(fact, correlating)
         val eventEntities = eventRepository.getEventsByNameAndReference(correlating.consuming.qualifiedName!!, eventReferenceValue)
         val message = Message(fact.javaClass::class, Fact(fact))
 
         for(eventEntity in eventEntities){
             val messageList = eventEntity.messages
-            correlateToken(eventEntity.token, eventEntity.reactionType, (messageList.plus(message).map { m -> m.compactJson }).compactJson)
+            val output = (messageList.plus(message).map { m -> m.compactJson }).compactJson
+            correlateToken(eventEntity.token, eventEntity.reactionType, output, eventEntity.errorCode)
         }
 
         val tokenList = eventEntities.map { t -> t.token }
@@ -80,19 +98,32 @@ class EventService {
         timerEventRepository.save(processContext.token, EventReactionType.SUCCESS, dateTime, processContext.stateMachine.name, processContext.messageList)
     }
 
+    fun registerTimerErrorEvent(processContext: ProcessContext, waiting: Waiting) {
+        val limit = waiting.limit?.invoke(processContext.processInstance)
+        val duration = waiting.period?.invoke(processContext.processInstance)
+        val dateTime : LocalDateTime = limit ?: LocalDateTime.now().plus(Duration.parse(duration))
+
+        timerEventRepository.save(processContext.token,
+                EventReactionType.ERROR,
+                dateTime,
+                processContext.stateMachine.name,
+                processContext.messageList,
+                "waiting")
+    }
+
     fun correlateTimerEvents(){
         val timerEvents = timerEventRepository.getDueTimerEvents()
 
         timerEvents.forEach { timerEvent ->
             val messageList = timerEvent.messages
-            correlateToken(timerEvent.token, timerEvent.reactionType, (messageList.map { m -> m.compactJson }).compactJson)
+            correlateToken(timerEvent.token, timerEvent.reactionType, (messageList.map { m -> m.compactJson }).compactJson, timerEvent.errorCode)
         }
         val tokenList = timerEvents.map { timerEvent -> timerEvent.token }.toList()
         timerEventRepository.deleteTaskTokens(tokenList)
         eventRepository.deleteTaskTokens(tokenList)
     }
 
-    private fun correlateToken(taskToken : String, reactionType: EventReactionType, output : String, error: String? = null){
+    private fun correlateToken(taskToken : String, reactionType: EventReactionType, output : String, errorCodeIfError: String? = null){
         val client = stateMachineService.createClient()
         when(reactionType){
             EventReactionType.SUCCESS -> {
@@ -109,7 +140,7 @@ class EventService {
                 val sendTaskFailureRequest = SendTaskFailureRequest()
                         .withTaskToken(taskToken)
                         .withCause(output)
-                        .withError(error)
+                        .withError(errorCodeIfError)
                 try {
                     client.sendTaskFailure(sendTaskFailureRequest)
                 } catch (e : TaskTimedOutException){
@@ -121,4 +152,8 @@ class EventService {
             }
         }
     }
+
+
+
+
 }

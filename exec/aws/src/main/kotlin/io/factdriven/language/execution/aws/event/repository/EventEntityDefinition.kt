@@ -12,6 +12,7 @@ object EventEntityDefinition : Table("FLOW_EVENTS"){
     val stateMachineArn = varchar("STATE_MACHINE_ARN", length = 255)
     val createdOn = datetime("CREATED_ON")
     val messageHistory = blob("MESSAGE_HISTORY")
+    val errorCode = varchar("ERROR_CODE", length = 1024)
 
     override val primaryKey = PrimaryKey(id, name = "PK_EVENT_ID")
 }

@@ -21,7 +21,7 @@ class EventRepository {
         Database.connect(url, driver, user, password)
     }
 
-    fun save(eventName: String, taskToken: String, reactionType: EventReactionType, reference: String, stateMachineArn: String, messageList: List<Message>){
+    fun save(eventName: String, taskToken: String, reactionType: EventReactionType, reference: String, stateMachineArn: String, messageList: List<Message>, errorCode : String? = null){
         connect()
         transaction {
             SchemaUtils.createMissingTablesAndColumns(EventEntityDefinition)
@@ -34,6 +34,9 @@ class EventRepository {
                 it[EventEntityDefinition.createdOn] = LocalDateTime.now()
                 it[EventEntityDefinition.reactionType] = reactionType.toString()
                 it[EventEntityDefinition.messageHistory] = ExposedBlob(messageList.compactJson.toByteArray())
+                if(errorCode != null) {
+                    it[EventEntityDefinition.errorCode] = errorCode
+                }
             }
         }
     }
@@ -53,7 +56,12 @@ class EventRepository {
                         val clob = String(it[EventEntityDefinition.messageHistory].bytes)
                         val messageList = jacksonObjectMapper()
                                 .readValue<List<Message>>(clob, object : TypeReference<List<Message>>() {})
-                        EventEntity(it[EventEntityDefinition.taskToken], messageList, it[EventEntityDefinition.reference], EventReactionType.valueOf(it[EventEntityDefinition.reactionType]))
+                        EventEntity(it[EventEntityDefinition.taskToken],
+                                messageList,
+                                it[EventEntityDefinition.reference],
+                                EventReactionType.valueOf(it[EventEntityDefinition.reactionType]),
+                                it[EventEntityDefinition.errorCode]
+                        )
                     }
                     .toCollection(arrayListOf())
         }

@@ -57,6 +57,7 @@ class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionT
                             "waiting"
                         }
                         is Consuming -> {
+                            translationContext.snsContext.addTopic(event)
                             event.consuming.simpleName
                         }
                         else -> {
