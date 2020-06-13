@@ -92,7 +92,7 @@ class EventService {
         eventRepository.deleteTaskTokens(tokenList)
     }
 
-    private fun correlateToken(taskToken : String, reactionType: EventReactionType, output : String){
+    private fun correlateToken(taskToken : String, reactionType: EventReactionType, output : String, error: String? = null){
         val client = stateMachineService.createClient()
         when(reactionType){
             EventReactionType.SUCCESS -> {
@@ -108,7 +108,8 @@ class EventService {
             EventReactionType.ERROR -> {
                 val sendTaskFailureRequest = SendTaskFailureRequest()
                         .withTaskToken(taskToken)
-                        .withError(output)
+                        .withCause(output)
+                        .withError(error)
                 try {
                     client.sendTaskFailure(sendTaskFailureRequest)
                 } catch (e : TaskTimedOutException){

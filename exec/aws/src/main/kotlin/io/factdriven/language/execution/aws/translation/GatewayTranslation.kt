@@ -12,7 +12,7 @@ import io.factdriven.language.definition.Junction
 import io.factdriven.language.definition.Node
 import io.factdriven.language.execution.aws.translation.context.TranslationContext
 import io.factdriven.language.execution.aws.translation.transition.InclusiveTransitionStrategy
-import io.factdriven.language.execution.aws.translation.transition.LoopTransitionStrategy
+import io.factdriven.language.execution.aws.translation.transition.LastTransitionStrategy
 import io.factdriven.language.execution.aws.translation.transition.ParallelTransitionStrategy
 import io.factdriven.language.impl.utils.prettyJson
 import java.util.stream.Collectors
@@ -168,7 +168,7 @@ class LoopTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTran
     override fun translate(translationContext: TranslationContext, node: Node) {
         val first = node.children.first()
         val last = node.children[node.children.size-2]//node.children.last { node !is Until<*> }
-        val loopTransitionStrategy  = LoopTransitionStrategy(last, "evaluate-${translationContext.namingStrategy.getName(node)}")
+        val loopTransitionStrategy  = LastTransitionStrategy(last, "evaluate-${translationContext.namingStrategy.getName(node)}")
 
         val payload = LoopPayload(id = node.id, loopContext = null)
         val nodeParameter = NodeParameter(functionName = translationContext.lambdaFunction.name, payload = payload)

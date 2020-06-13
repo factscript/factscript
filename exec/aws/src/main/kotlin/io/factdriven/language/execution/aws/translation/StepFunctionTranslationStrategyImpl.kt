@@ -1,12 +1,15 @@
 package io.factdriven.language.execution.aws.translation
 
 import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder
+import com.amazonaws.services.stepfunctions.builder.StepFunctionBuilder.next
+import com.amazonaws.services.stepfunctions.builder.states.Catcher
 import com.amazonaws.services.stepfunctions.builder.states.PassState
 import io.factdriven.language.Execute
 import io.factdriven.language.Given
 import io.factdriven.language.Until
 import io.factdriven.language.definition.*
 import io.factdriven.language.execution.aws.translation.context.TranslationContext
+import io.factdriven.language.execution.aws.translation.transition.LastTransitionStrategy
 import io.factdriven.language.impl.utils.prettyJson
 
 class FlowTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionTranslationStrategy(flowTranslator) {
@@ -34,17 +37,49 @@ class ExecuteTranslationStrategy(flowTranslator: FlowTranslator) : StepFunctionT
             translationContext.snsContext.addTopic(node)
         }
 
-        executionTranslation(translationContext, node, nodeParameter)
-    }
-
-    private fun executionTranslation(translationContext: TranslationContext, node: Node, nodeParameter: NodeParameter) {
         translationContext.stepFunctionBuilder.state(translationContext.namingStrategy.getName(node),
                 StepFunctionBuilder.taskState()
+                        .catchers(*getCatchers(translationContext, flowTranslator, node.children))
                         .resource(translationContext.lambdaFunction.resource)
                         .parameters(nodeParameter.prettyJson)
                         .resultPath("$.Messages")
                         .transition(translationContext.transitionStrategy.nextTransition(translationContext, node))
         )
+    }
+
+    private fun getCatchers(translationContext: TranslationContext, flowTranslator: FlowTranslator, children: List<Node> = emptyList()): Array<Catcher.Builder> {
+        return children.filter { node -> node is Correlating }
+                .map { correlating ->
+                    val event = correlating.children.first()
+
+                    val error = when (event) {
+                        is Waiting -> {
+                            "waiting"
+                        }
+                        is Consuming -> {
+                            event.consuming.simpleName
+                        }
+                        else -> {
+                            throw RuntimeException(event::class.toString())
+                        }
+                    }
+
+                    val catcher = Catcher.builder()
+                            .resultPath("$.Messages")
+                            .errorEquals(error)
+                            .transition(next(translationContext.namingStrategy.getName(event)))
+
+                    val localTranslationContext = translationContext.copyWith(transitionStrategy = LastTransitionStrategy(correlating.lastChild,
+                            translationContext.namingStrategy.getName(correlating.parent?.nextSibling!!)))
+
+                    localTranslationContext.stepFunctionBuilder.state(localTranslationContext.namingStrategy.getName(event),
+                            PassState.builder()
+                                    .transition(localTranslationContext.transitionStrategy.nextTransition(localTranslationContext, event)))
+
+                    flowTranslator.translateGraph(localTranslationContext, event.nextSibling)
+
+                    catcher
+                }.toTypedArray()
     }
 }
 

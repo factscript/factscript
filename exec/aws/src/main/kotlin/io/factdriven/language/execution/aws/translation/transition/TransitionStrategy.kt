@@ -28,7 +28,7 @@ class ParallelTransitionStrategy(private val nextBranchingSibling: Node?) : Tran
     }
 }
 
-class LoopTransitionStrategy(private val lastChild: Node?, private val lastTransition : String) : TransitionStrategy {
+class LastTransitionStrategy(private val lastChild: Node?, private val lastTransition : String) : TransitionStrategy {
 
     private val sequentialStrategy = SequentialTransitionStrategy()
 
