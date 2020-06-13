@@ -3,6 +3,7 @@ package io.factdriven.language.execution.aws.event.repository
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.factdriven.execution.Message
+import io.factdriven.language.execution.aws.event.EventReactionType
 import io.factdriven.language.impl.utils.compactJson
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
@@ -20,7 +21,7 @@ class TimerEventRepository {
         Database.connect(url, driver, user, password)
     }
 
-    fun save(taskToken: String, dateTime: LocalDateTime, stateMachineArn: String, messageList: List<Message>){
+    fun save(taskToken: String, reactionType: EventReactionType, dateTime: LocalDateTime, stateMachineArn: String, messageList: List<Message>){
         connect()
         transaction {
             SchemaUtils.createMissingTablesAndColumns(TimerEventEntityDefinition)
@@ -30,6 +31,7 @@ class TimerEventRepository {
                 it[TimerEventEntityDefinition.dateTime] = dateTime
                 it[TimerEventEntityDefinition.stateMachineArn] = stateMachineArn
                 it[TimerEventEntityDefinition.createdOn] = LocalDateTime.now()
+                it[TimerEventEntityDefinition.reactionType] = reactionType.toString()
                 it[TimerEventEntityDefinition.messageHistory] = ExposedBlob(messageList.compactJson.toByteArray())
             }
         }
@@ -49,7 +51,7 @@ class TimerEventRepository {
                         val clob = String(it[TimerEventEntityDefinition.messageHistory].bytes)
                         val messageList = jacksonObjectMapper()
                                 .readValue<List<Message>>(clob, object : TypeReference<List<Message>>() {})
-                        TimerEventEntity(it[TimerEventEntityDefinition.taskToken], messageList, it[TimerEventEntityDefinition.dateTime])
+                        TimerEventEntity(it[TimerEventEntityDefinition.taskToken], messageList, it[TimerEventEntityDefinition.dateTime], EventReactionType.valueOf(it[TimerEventEntityDefinition.reactionType]))
                     }
                     .toCollection(arrayListOf())
         }

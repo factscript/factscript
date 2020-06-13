@@ -1,5 +1,6 @@
 package io.factdriven.language.execution.aws.event
 
+import com.amazonaws.services.stepfunctions.model.SendTaskFailureRequest
 import com.amazonaws.services.stepfunctions.model.SendTaskSuccessRequest
 import com.amazonaws.services.stepfunctions.model.TaskTimedOutException
 import io.factdriven.execution.Fact
@@ -26,6 +27,7 @@ class EventService {
     fun registerEvent(processContext: ProcessContext, node: Correlating) {
         eventRepository.save(node.consuming.qualifiedName!!,
                 processContext.token,
+                EventReactionType.SUCCESS,
                 extractCorrelationValue(processContext, node),
                 processContext.stateMachine.name,
                 processContext.messageList)
@@ -43,16 +45,11 @@ class EventService {
         val fact = eventContext.event
         val eventReferenceValue = getEventReferenceValue(fact, eventContext.node)
         val eventEntities = eventRepository.getEventsByNameAndReference(correlating.consuming.qualifiedName!!, eventReferenceValue)
-        val client = stateMachineService.createClient()
         val message = Message(fact.javaClass::class, Fact(fact))
 
         for(eventEntity in eventEntities){
             val messageList = eventEntity.messages
-
-            val sendTaskSuccessRequest = SendTaskSuccessRequest()
-                    .withTaskToken(eventEntity.token)
-                    .withOutput((messageList.plus(message).map { m -> m.compactJson }).compactJson)
-            client.sendTaskSuccess(sendTaskSuccessRequest)
+            correlateToken(eventEntity.token, eventEntity.reactionType, (messageList.plus(message).map { m -> m.compactJson }).compactJson)
         }
 
         val tokenList = eventEntities.map { t -> t.token }
@@ -80,27 +77,47 @@ class EventService {
         val duration = waiting.period?.invoke(processContext.processInstance)
         val dateTime : LocalDateTime = limit ?: LocalDateTime.now().plus(Duration.parse(duration))
 
-        timerEventRepository.save(processContext.token, dateTime, processContext.stateMachine.name, processContext.messageList)
+        timerEventRepository.save(processContext.token, EventReactionType.SUCCESS, dateTime, processContext.stateMachine.name, processContext.messageList)
     }
 
     fun correlateTimerEvents(){
-        val client = stateMachineService.createClient()
         val timerEvents = timerEventRepository.getDueTimerEvents()
 
         timerEvents.forEach { timerEvent ->
             val messageList = timerEvent.messages
-
-            val sendTaskSuccessRequest = SendTaskSuccessRequest()
-                    .withTaskToken(timerEvent.token)
-                    .withOutput((messageList.map { m -> m.compactJson }).compactJson)
-            try {
-                client.sendTaskSuccess(sendTaskSuccessRequest)
-            } catch (e : TaskTimedOutException){
-                // ignore
-            }
+            correlateToken(timerEvent.token, timerEvent.reactionType, (messageList.map { m -> m.compactJson }).compactJson)
         }
         val tokenList = timerEvents.map { timerEvent -> timerEvent.token }.toList()
         timerEventRepository.deleteTaskTokens(tokenList)
         eventRepository.deleteTaskTokens(tokenList)
+    }
+
+    private fun correlateToken(taskToken : String, reactionType: EventReactionType, output : String){
+        val client = stateMachineService.createClient()
+        when(reactionType){
+            EventReactionType.SUCCESS -> {
+                val sendTaskSuccessRequest = SendTaskSuccessRequest()
+                        .withTaskToken(taskToken)
+                        .withOutput(output)
+                try {
+                    client.sendTaskSuccess(sendTaskSuccessRequest)
+                } catch (e : TaskTimedOutException){
+                    // ignore
+                }
+            }
+            EventReactionType.ERROR -> {
+                val sendTaskFailureRequest = SendTaskFailureRequest()
+                        .withTaskToken(taskToken)
+                        .withError(output)
+                try {
+                    client.sendTaskFailure(sendTaskFailureRequest)
+                } catch (e : TaskTimedOutException){
+                    // ignore
+                }
+            }
+            else -> {
+                throw ReactionTypeNotSupportedException("this event reaction type has no correlation method")
+            }
+        }
     }
 }

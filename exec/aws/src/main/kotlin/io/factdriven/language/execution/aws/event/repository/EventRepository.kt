@@ -3,6 +3,7 @@ package io.factdriven.language.execution.aws.event.repository
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.factdriven.execution.Message
+import io.factdriven.language.execution.aws.event.EventReactionType
 import io.factdriven.language.impl.utils.compactJson
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
@@ -20,7 +21,7 @@ class EventRepository {
         Database.connect(url, driver, user, password)
     }
 
-    fun save(eventName: String, taskToken: String, reference: String, stateMachineArn: String, messageList: List<Message>){
+    fun save(eventName: String, taskToken: String, reactionType: EventReactionType, reference: String, stateMachineArn: String, messageList: List<Message>){
         connect()
         transaction {
             SchemaUtils.createMissingTablesAndColumns(EventEntityDefinition)
@@ -31,6 +32,7 @@ class EventRepository {
                 it[EventEntityDefinition.reference] = reference
                 it[EventEntityDefinition.stateMachineArn] = stateMachineArn
                 it[EventEntityDefinition.createdOn] = LocalDateTime.now()
+                it[EventEntityDefinition.reactionType] = reactionType.toString()
                 it[EventEntityDefinition.messageHistory] = ExposedBlob(messageList.compactJson.toByteArray())
             }
         }
@@ -51,7 +53,7 @@ class EventRepository {
                         val clob = String(it[EventEntityDefinition.messageHistory].bytes)
                         val messageList = jacksonObjectMapper()
                                 .readValue<List<Message>>(clob, object : TypeReference<List<Message>>() {})
-                        EventEntity(it[EventEntityDefinition.taskToken], messageList, it[EventEntityDefinition.reference])
+                        EventEntity(it[EventEntityDefinition.taskToken], messageList, it[EventEntityDefinition.reference], EventReactionType.valueOf(it[EventEntityDefinition.reactionType]))
                     }
                     .toCollection(arrayListOf())
         }
