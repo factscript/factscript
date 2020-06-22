@@ -84,10 +84,3 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-test {
-    useJUnitPlatform()
-    testLogging {
-        events "failed"
-        exceptionFormat "full"
-    }
-}

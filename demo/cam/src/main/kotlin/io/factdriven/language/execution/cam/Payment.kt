@@ -1,6 +1,7 @@
 package io.factdriven.language.execution.cam
 
 import io.factdriven.language.*
+import java.time.LocalDateTime
 
 /**
  * @author Martin Schimak <martin.schimak@plexiti.com>
@@ -85,7 +86,6 @@ data class Payment (
                 }
 
                 emit success event { PaymentRetrieved(orderId) }
-
             }
 
         }

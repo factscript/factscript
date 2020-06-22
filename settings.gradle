@@ -10,3 +10,4 @@ include 'aws'
 project(':aws').projectDir = new File('exec/aws')
 include 'aws-demo'
 project(':aws-demo').projectDir = new File('demo/aws')
+include 'example'

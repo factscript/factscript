@@ -54,6 +54,7 @@ class Account2(fact: CreditAmountToCustomerAccount) {
 
             flow <Account2> {
 
+
                 on command CreditAmountToCustomerAccount::class emit {
                     success event AmountCreditedToCustomerAccount::class
                 }

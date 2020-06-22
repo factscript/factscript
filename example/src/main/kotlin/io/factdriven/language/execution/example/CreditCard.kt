@@ -1,17 +1,13 @@
-package io.factdriven.language.execution.cam
+package io.factdriven.language.execution.example
 
 import io.factdriven.language.*
-import java.util.*
 
-/**
- * @author Martin Schimak <martin.schimak@plexiti.com>
- */
 data class CreditCard (
 
-    val reference: String,
-    val charge: Float,
-    var confirmed: Boolean = false,
-    var successful: Boolean = false
+        val reference: String,
+        val charge: Float,
+        var confirmed: Boolean = false,
+        var successful: Boolean = false
 
 ){
 
@@ -58,3 +54,4 @@ data class ChargeCreditCard(val reference: String, val charge: Float)
 data class CreditCardExpired(val reference: String, val charge: Float)
 data class CreditCardProcessed(val reference: String, val valid: Boolean)
 data class CreditCardCharged(val reference: String, val charge: Float)
+
