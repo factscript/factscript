@@ -1,9 +1,9 @@
-# lang
+# Factscript
 [![Build Status](https://travis-ci.com/factdriven/lang.svg?branch=master)](https://travis-ci.com/factdriven/lang)
 
 # Getting started
 
-This tutorial will walk you through creating a very simple process definition in Flow language and deploying and executing it in Camunda.
+This tutorial will walk you through creating a very simple process definition in Facscript and deploying and executing it in Camunda.
 
 First, clone this repository and open it in an IDE such as IntelliJ IDEA.
 
@@ -19,7 +19,7 @@ Create a package inside *main/kotlin* where you will put your process definition
 
 Create a Kotlin file with for your process (use a separate file for each process definition). 
 
-To be able to use the Flow language for your process, you need to import the language definition:
+To be able to use Facscript for your process, you need to import the language definition:
 ```kotlin
 import io.factdriven.language.*
 ```
@@ -54,12 +54,12 @@ Now, in a companion object ...
 companion object {
     init {
 ```
-... you are ready to script your first process in Flow!
+... you are ready to script your first process in Factscript!
 ```kotlin
 flow <CreditCard> {
 ```
 
-Every process definition in Flow starts with a message type that starts the process and an optional promise of how the process can finish. This is information is particularly important if the process is not started manually but called by another process.
+Every process definition in Factscript starts with a message type that starts the process and an optional promise of how the process can finish. This is information is particularly important if the process is not started manually but called by another process.
 ```kotlin
  on command ChargeCreditCard::class emit {
     success event CreditCardCharged::class
@@ -140,7 +140,7 @@ Don't have running instances yet? Right! Because you did not start any! To do so
 
 # Advanced processes
 
-Now that you got your first process up and runnung, you may want to script more advanced processes that actually make sense in a production environment. And of course Flow allows you to do it! (Otherwise, why would we create it?) So, in this section, we will show you two more advanced processes that use all currently available cool features of the Flow language. 
+Now that you got your first process up and running, you may want to script more advanced processes that actually make sense in a production environment. And of course Factscript allows you to do it! (Otherwise, why would we create it?) So, in this section, we will show you two more advanced processes that use all currently available cool features of Factscript. 
 
 ## Payment process
 
@@ -148,7 +148,7 @@ This process can be found in the [Payment.kt](https://github.com/factdriven/lang
 
 So, create a new *data class* Payment and define the variables, constructor and co. Afterwards, in the *companion object* you can define the ```flow <Payment>```. 
 
-As we said, **every** process in Flow starts with the so called API definition, i.e. defining the message type that starts a process and all message types with which it can respond.
+As we said, **every** process in Factscript starts with the so called API definition, i.e. defining the message type that starts a process and all message types with which it can respond.
 ```kotlin
 on command RetrievePayment::class emit {
     success event PaymentRetrieved::class
@@ -161,9 +161,9 @@ And this is where the cool stuff begins! Now, you can call another process using
     WithdrawAmountFromCustomerAccount(customer = accountId, withdraw = total)
 }
 ```
-As you can see, we can execute another process by just sending the respective message to it and we can use our variables defined for the process as parameters. This command will wait for the *successful* execution of the called process and let our process continue afterwards. Note that the process to be called also has to be defined in Flow. We do not show the definition of the account withdrawal process in our tutorial, so feel free to script it by yourself or use the [this](https://github.com/factdriven/lang/blob/master/demo/cam/src/main/kotlin/io/factdriven/language/execution/cam/Account.kt) mock-up process from our demo.
+As you can see, we can execute another process by just sending the respective message to it and we can use our variables defined for the process as parameters. This command will wait for the *successful* execution of the called process and let our process continue afterwards. Note that the process to be called also has to be defined in Factscript. We do not show the definition of the account withdrawal process in our tutorial, so feel free to script it by yourself or use the [this](https://github.com/factdriven/lang/blob/master/demo/cam/src/main/kotlin/io/factdriven/language/execution/cam/Account.kt) mock-up process from our demo.
 
-However, something may go wrong during the execution of called process or even afterwards. For these cases Flow language offers the ```but``` statement--a very powerful exception handling tool. It allows you to catch failure messages from the called process, set timeouts and much more. You will see many possible usages for it in this tutorial.
+However, something may go wrong during the execution of called process or even afterwards. For these cases Factscript offers the ```but``` statement--a very powerful exception handling tool. It allows you to catch failure messages from the called process, set timeouts and much more. You will see many possible usages for it in this tutorial.
 Right now we will use the ```but``` statement to return money back to the customer account in case the payment process breaks later on. It is quite important as our customer won't be very happy if the order is not fulfilled but the money is still withdrawn :-)
 So, our process call will look as follows:
 ```kotlin
@@ -236,7 +236,7 @@ emit success event { PaymentRetrieved(orderId) }
 ```
 Now, define the messages used in this process as *data classes*. Note that as you already have defined the messages related to the credit card charging process in this package, you don't need to define them again, so only define the new, previously unmentioned message types.
 
-Now, you have successfully defined another process in Flow language. Congratulations! In order to deploy it in Camunda, open your application file and add this new process to the ```Flows.activate``` call:
+Now, you have successfully defined another process in Factscript. Congratulations! In order to deploy it in Camunda, open your application file and add this new process to the ```Flows.activate``` call:
 ```kotlin
 // ExampleApplication.kt
 ...
@@ -277,7 +277,7 @@ Then, we can emit an event stating that we have started the order fulfillment. T
 ```kotlin
 emit event { OrderFulfillmentStarted(orderId, accountId, total) }
 ```
-Next, we want to fetch the goods from the inventory and simultaneously retreive the payment. As these two steps are independent from each other, we do not care much about in the order in which they are executed. What we do care about is that they both have to finish successfully before we continue. As you may know, this is called parallel execution, and in the Flow language it is scripted with the ```execute all``` statement.
+Next, we want to fetch the goods from the inventory and simultaneously retreive the payment. As these two steps are independent from each other, we do not care much about in the order in which they are executed. What we do care about is that they both have to finish successfully before we continue. As you may know, this is called parallel execution, and in Factscript it is scripted with the ```execute all``` statement.
 ```kotlin
 execute all {
     execute command {
@@ -303,6 +303,6 @@ emit event { OrderReadyToShip(orderId) }
 execute command { ShipGoods(orderId) }
 emit success event { OrderFulfilled(orderId) }
 ```
-So, by now you have already scripted three processes in Flow!
+So, by now you have already scripted three processes in Factscript!
 
 Don't forget to add the newly defined process to your application and update the controller to start this process externally.
