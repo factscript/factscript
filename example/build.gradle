@@ -25,7 +25,7 @@ apply plugin: 'kotlin-spring'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
-group 'factdriven'
+group 'factscript'
 version '1.0.0-SNAPSHOT'
 
 sourceCompatibility = 1.8

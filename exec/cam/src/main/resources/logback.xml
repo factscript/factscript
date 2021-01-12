@@ -7,7 +7,7 @@
     </encoder>
   </appender>
   
-  <logger name="io.factdriven" level="trace"/>
+  <logger name="org.factscript" level="trace"/>
   <logger name="org.camunda" level="info" />
 
   <root level="warn">

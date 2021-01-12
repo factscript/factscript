@@ -1,6 +1,6 @@
 import com.amazonaws.services.lambda.runtime.ClientContext
 import com.amazonaws.services.lambda.runtime.CognitoIdentity
-import io.factdriven.language.execution.aws.example.function.PaymentRetrievalLambda
+import org.factscript.language.execution.aws.example.function.PaymentRetrievalLambda
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import com.amazonaws.services.lambda.runtime.Context
@@ -13,7 +13,7 @@ class FlowlangLambdaTest {
     fun test(){
 
         PaymentRetrievalLambda().handleRequest(
-                mapOf<String, Any?>("id" to "io.factdriven.language.execution.aws.example.function-PaymentRetrieval-Exclusive",
+                mapOf<String, Any?>("id" to "org.factscript.language.execution.aws.example.function-PaymentRetrieval-Exclusive",
                         "TaskToken" to "1",
                         "History" to null
                 ),

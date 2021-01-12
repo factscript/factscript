@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group 'factdriven'
+group 'factscript'
 version '1.0.0-SNAPSHOT'
 
 repositories {

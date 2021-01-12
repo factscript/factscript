@@ -1,6 +1,6 @@
 enableFeaturePreview('IMPROVED_POM_SUPPORT')
 
-rootProject.name = 'factdriven'
+rootProject.name = 'factscript'
 include 'lang'
 include 'cam'
 project(':cam').projectDir = new File('exec/cam')

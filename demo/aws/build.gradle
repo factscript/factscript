@@ -18,7 +18,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 
-group 'factdriven'
+group 'factscript'
 version '1.0.0-SNAPSHOT'
 
 sourceCompatibility = 1.8

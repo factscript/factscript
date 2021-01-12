@@ -7,9 +7,9 @@ This tutorial will walk you through creating a very simple process definition in
 
 First, clone this repository and open it in an IDE such as IntelliJ IDEA.
 
-Create a new module as a child module of *factdriven*.
+Create a new module as a child module of *factscript*.
 
-In the new module, you first have to modify the *build.gradle* file. You can use the [*build.gradle*](https://github.com/factdriven/lang/blob/master/demo/cam/build.gradle) file of the existing *cam-demo* module as a template (don't forget to remove *test* )
+In the new module, you first have to modify the *build.gradle* file. You can use the [*build.gradle*](https://github.com/factscript/factscript/blob/master/demo/cam/build.gradle) file of the existing *cam-demo* module as a template (don't forget to remove *test* )
 
 ## Scripting the process
 
@@ -21,7 +21,7 @@ Create a Kotlin file with for your process (use a separate file for each process
 
 To be able to use Facscript for your process, you need to import the language definition:
 ```kotlin
-import io.factdriven.language.*
+import org.factscript.language.*
 ```
 Create a *data class* for your process. First, define all variables that the process will use. We define these 4 variables, you will see their usage in the process definition later on.
 
@@ -99,9 +99,9 @@ data class CreditCardCharged(val reference: String, val charge: Float)
 
 ## Application
 
-Next, you will need to create an application file. Feel free to use the [PaymentRetreivalApplication.kt](https://github.com/factdriven/lang/blob/master/demo/cam/src/main/kotlin/io/factdriven/language/execution/cam/PaymentRetrievalApplication.kt) as a template. Make sure to include the following line in your file:
+Next, you will need to create an application file. Feel free to use the [PaymentRetreivalApplication.kt](https://github.com/factscript/lang/blob/master/demo/cam/src/main/kotlin/io/factscript/language/execution/cam/PaymentRetrievalApplication.kt) as a template. Make sure to include the following line in your file:
 ```kotlin
-import io.factdriven.language.execution.cam.*
+import org.factscript.language.execution.cam.*
 ```
 Also update the class name and put it into `runApplication` statement of the `main` function.
 
@@ -115,7 +115,7 @@ In case you have defined multiple processes, separate them by a comma.
 
 ## Controller
 
-You also have to create a controller, which will allow external applications to communicate with your process via HTTP requests. As before, you can use the [PaymentRetreivalController](https://github.com/factdriven/lang/blob/master/demo/cam/src/main/kotlin/io/factdriven/language/execution/cam/PaymentRetrievalController.kt) from the *cam-demo* package as a template. For the example process you will need to define two paths:
+You also have to create a controller, which will allow external applications to communicate with your process via HTTP requests. As before, you can use the [PaymentRetreivalController](https://github.com/factscript/lang/blob/master/demo/cam/src/main/kotlin/io/factscript/language/execution/cam/PaymentRetrievalController.kt) from the *cam-demo* package as a template. For the example process you will need to define two paths:
 ```kotlin
 @RequestMapping("/charge", method = [RequestMethod.POST])
     fun chargeCreditCard(@RequestParam reference: String, @RequestParam charge: Float) {
@@ -130,7 +130,7 @@ You also have to create a controller, which will allow external applications to 
 
 ## Camunda properties
 
-As the last step towards your executable process, you will need to add a Camunda configuration file called *application.properties* to *main/resources*. You can also use [this file](https://github.com/factdriven/lang/blob/master/demo/cam/src/main/resources/application.properties) as a template.
+As the last step towards your executable process, you will need to add a Camunda configuration file called *application.properties* to *main/resources*. You can also use [this file](https://github.com/factscript/lang/blob/master/demo/cam/src/main/resources/application.properties) as a template.
 
 ## Execution
 
@@ -144,7 +144,7 @@ Now that you got your first process up and running, you may want to script more 
 
 ## Payment process
 
-This process can be found in the [Payment.kt](https://github.com/factdriven/lang/blob/master/demo/cam/src/main/kotlin/io/factdriven/language/execution/cam/Payment.kt) file, so we will skip some secondary things like defining variables and message types and focus more on the process itself.
+This process can be found in the [Payment.kt](https://github.com/factscript/lang/blob/master/demo/cam/src/main/kotlin/io/factscript/language/execution/cam/Payment.kt) file, so we will skip some secondary things like defining variables and message types and focus more on the process itself.
 
 So, create a new *data class* Payment and define the variables, constructor and co. Afterwards, in the *companion object* you can define the ```flow <Payment>```. 
 
@@ -161,7 +161,7 @@ And this is where the cool stuff begins! Now, you can call another process using
     WithdrawAmountFromCustomerAccount(customer = accountId, withdraw = total)
 }
 ```
-As you can see, we can execute another process by just sending the respective message to it and we can use our variables defined for the process as parameters. This command will wait for the *successful* execution of the called process and let our process continue afterwards. Note that the process to be called also has to be defined in Factscript. We do not show the definition of the account withdrawal process in our tutorial, so feel free to script it by yourself or use the [this](https://github.com/factdriven/lang/blob/master/demo/cam/src/main/kotlin/io/factdriven/language/execution/cam/Account.kt) mock-up process from our demo.
+As you can see, we can execute another process by just sending the respective message to it and we can use our variables defined for the process as parameters. This command will wait for the *successful* execution of the called process and let our process continue afterwards. Note that the process to be called also has to be defined in Factscript. We do not show the definition of the account withdrawal process in our tutorial, so feel free to script it by yourself or use the [this](https://github.com/factscript/lang/blob/master/demo/cam/src/main/kotlin/io/factscript/language/execution/cam/Account.kt) mock-up process from our demo.
 
 However, something may go wrong during the execution of called process or even afterwards. For these cases Factscript offers the ```but``` statement--a very powerful exception handling tool. It allows you to catch failure messages from the called process, set timeouts and much more. You will see many possible usages for it in this tutorial.
 Right now we will use the ```but``` statement to return money back to the customer account in case the payment process breaks later on. It is quite important as our customer won't be very happy if the order is not fulfilled but the money is still withdrawn :-)
@@ -259,7 +259,7 @@ You can also define a function to send a *RetrievePayment* message to start the 
 
 ## Order fulfillment process
 
-The last process we will define in this tutorial is the order fulfillment process. You can find the complete code of this process [here](https://github.com/factdriven/lang/blob/master/demo/cam/src/main/kotlin/io/factdriven/language/execution/cam/Fulfillment.kt). 
+The last process we will define in this tutorial is the order fulfillment process. You can find the complete code of this process [here](https://github.com/factscript/lang/blob/master/demo/cam/src/main/kotlin/io/factscript/language/execution/cam/Fulfillment.kt). 
 As you will see, this process is simpler than the previous one, still it demonstrates a couple of important language features that will be very useful for your processes.
 
 Again, we skip the definition of the constructor, variables and functions. We will also skip the definition of the message types.
